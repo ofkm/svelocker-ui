@@ -17,7 +17,7 @@
 	<title>Svelocker UI</title>
 </svelte:head>
 
-<div class="flex min-h-screen w-full flex-col justify-between bg-muted/40">
+<div class="flex min-h-screen w-full flex-col justify-between bg-muted/80">
 	{#if reposArray.length > 0}
 	<Repo repos={reposArray} />
 	{:else}
