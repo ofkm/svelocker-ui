@@ -6,8 +6,8 @@ node_modules
 # Output
 .output
 .vercel
-/frontend/.svelte-kit
-/frontend/build
+.svelte-kit
+build
 /backend/bin
 
 # OS
