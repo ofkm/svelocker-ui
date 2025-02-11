@@ -28,7 +28,13 @@
 </svelte:head>
 
 <div class="flex min-h-screen w-full flex-col justify-between bg-muted/40">
+	{#if reposArray.length > 0}
 	<Repo repos={reposArray} />
+	{:else}
+		<div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
+			<h2 class="text-lg poppins">Could not pull registry data...</h2>
+		</div>
+	{/if}
 </div>
 
 
