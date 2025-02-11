@@ -1,24 +1,25 @@
-# <div align="center"><img  src="./.gitlab/svelocker-logo-rounded.png" width="200"/> <br />Svelocker </div>
-<div align="center"><h4>A Simple easy to use docker registry ui built with Typescript and SvelteKit.</h3></div>
+# <div align="center"><img style="border-radius: 50%;" src="./.gitlab/s.png" width="200"/> <br />Svelocker </div>
+<div align="center"><h3>A Simple easy to use docker registry ui built with Typescript and SvelteKit.</h3></div>
 
 
-## Developing
+## Features:
+
+- Simple and Elegant
+- Connects to Local Registries using the office registry image.
+- Fully written in TypeScript and Svelte(Kit)
+
+## Get Started
+
+### Requirements
+
+- Node.JS (v22+)
 
 ```bash
+git clone https://github.com/kmendell/svelocker.git
+
+cd svelocker
+
+npm i
+
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
