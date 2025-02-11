@@ -20,7 +20,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 		{#each repos as repo}
-		<CollapsibleCard id="repo" title={repo.name} description="This is a Docker Registry repo.">
+		<CollapsibleCard id="repo" title={repo.name} description="0 Tags found">
 			{#each tagsArray as tag}
 				{#if tag.name === "latest"}
 					<Badge class='mr-5 poppins text-green-500' variant='secondary'>{tag.name}</Badge>
