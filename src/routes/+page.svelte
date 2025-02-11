@@ -1,12 +1,14 @@
 <script lang="ts">
     import Repo from '$lib/components/repo.svelte';
 		import { getRegistryRepos } from '$lib/utils/repos.ts'
+		import { REGISTRY_URL }from '$lib/utils/env.ts'
 
 		let reposArray = [] as { name: string, image?: string  }[];
 
 		// Call the function with the specified URL
 		getRegistryRepos('https://kmcr.cc/v2/_catalog')
 			.then(data => {
+
 				reposArray = data.repositories;
 			})
 			.catch(error => console.error('Error:', error));
