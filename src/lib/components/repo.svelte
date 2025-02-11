@@ -18,7 +18,7 @@
 
 </script>
 
-	<div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
+<div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 		{#each repos as repo}
 		<CollapsibleCard id="repo" title={repo.name} description="This is a Docker Registry repo.">
 			{#each tagsArray as tag}
@@ -27,8 +27,7 @@
 				{:else}
 					<Badge class='mr-5 poppins' variant='outline'>{tag.name}</Badge>
 				{/if}
-
 			{/each}
 		</CollapsibleCard>
-{/each}
-	</div>
+	{/each}
+</div>
