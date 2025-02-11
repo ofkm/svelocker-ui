@@ -1,6 +1,7 @@
 <script lang="ts">
     import Repo from '$lib/components/repo.svelte';
 
+
 		interface RegistryRepos {
 			repositories: string[];
 		}
@@ -18,13 +19,15 @@
 		parseDockerRegistryRepoJson('https://kmcr.cc/v2/_catalog')
 			.then(data => {
 				reposArray = data.repositories;
-				console.log(reposArray)
+				// console.log(reposArray)
 			})
 			.catch(error => console.error('Error:', error));
 
 </script>
 
-
+<svelte:head>
+	<title>Svelocker Registry UI</title>
+</svelte:head>
 
 <div class="flex min-h-screen w-full flex-col justify-between bg-muted/40">
 	<Repo repos={reposArray} />
