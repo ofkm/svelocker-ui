@@ -11,7 +11,7 @@
 	<div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 		{#each repos as repo}
 		<CollapsibleCard id="repo" title={repo.name} description="This is a Docker Registry repo.">
-			<h1 class="poppins text-3xl font-bold mb-4">{repo.image}</h1>
+			<h1 class="poppins text-3xl font-bold mb-4">This is where a image would be haha</h1>
 		</CollapsibleCard>
 		<!--{#each categoryApps as app}-->
 		<!--	<Card app={app} />-->

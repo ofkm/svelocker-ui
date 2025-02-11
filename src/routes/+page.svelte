@@ -5,30 +5,22 @@
 			repositories: string[];
 		}
 
-		const reposArray = [
+		let reposArray = [] as { name: string, image?: string  }[];
 
-		];
-
-		function parseDockerRegistryRepoJson(url: string): RegistryRepos {
-			const response = fetch(url);
-			// const json = response.json();
-			console.log(response.body)
-			const repos: RegistryRepos = response;
-
-
-			// repos.repositories.forEach((repo) => {
-			// 	// reposArray.push(
-			// 	// 	{ name: repo, image: "caddy:latest" }
-			// 	// );
-			// 	console.log(reposArray)
-			// });
-
-			return repos;
+		async function parseDockerRegistryRepoJson(url: string): Promise<RegistryRepos> {
+			const response = await fetch(url);
+			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+			const data = await response.json();
+			return { repositories: data.repositories.map(repo => ({ name: repo })) };
 		}
 
-
-
-		parseDockerRegistryRepoJson('https://kmcr.cc/v2/_catalog');
+		// Call the function with the specified URL
+		parseDockerRegistryRepoJson('https://kmcr.cc/v2/_catalog')
+			.then(data => {
+				reposArray = data.repositories;
+				console.log(reposArray)
+			})
+			.catch(error => console.error('Error:', error));
 
 </script>
 
