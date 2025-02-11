@@ -3,8 +3,6 @@
 		import type { PageProps } from './$types';
 
 		let { data }: PageProps = $props();
-
-
 </script>
 
 <svelte:head>
@@ -17,8 +15,9 @@
 			<Repo repos={data.repos.repositories} />
 		</div>
 	{:else}
+		<div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 			<h2 class="text-lg poppins">Could not pull registry data...</h2>
-
+		</div>
 	{/if}
 
 </div>
