@@ -1,6 +1,4 @@
-# sv
-
-# <div align="center"><img  src="./.gitlab/svelocker-logo-rounded.png" width="100"/> </br>Svelocker</div>
+# <div align="center"><img  src="./.gitlab/svelocker-logo-rounded.png" width="200"/> <br />Svelocker</div>
 
 A Simple easy to use docker registry ui built with Typescript and SvelteKit.
 
