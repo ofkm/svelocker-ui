@@ -6,13 +6,13 @@ h1, h2, h3, .poppins{
 	font-family: 'Poppins' sans-serif;
 }
 
-#badgeLinkLatest {
+.badgeLinkLatest {
 	margin-right: 5px;
 	color: var(--color-green-500);
 	font-family: 'Poppins' sans-serif;
 }
 
-#badgeLink {
+.badgeLink {
 	margin-right: 5px;
 	font-family: 'Poppins' sans-serif;
 }

@@ -22,19 +22,19 @@
 
 <div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 		{#each repos as repo}
-		<CollapsibleCard id="repo" title={repo.name}>
+		<CollapsibleCard id={repo.name} title={repo.name}>
 			{#each tagsArray as tag}
 				{#if tag.name === "latest"}
 <!--					<a id="badgeLinkLatest" href="/tags/{repo.name}/{tag.name}" class={badgeVariants({ variant: "secondary" })}>{tag.name}</a>-->
 					<Sheet.Root>
-						<Sheet.Trigger class={buttonVariants({ variant: "primary" })}
-						>{tag.name}</Sheet.Trigger
-						>
+						<Sheet.Trigger class="{buttonVariants({ variant: 'secondary' })} badgeLinkLatest">
+							{tag.name}
+						</Sheet.Trigger>
 						<Sheet.Content side="right">
 							<Sheet.Header>
-								<Sheet.Title>Edit profile</Sheet.Title>
+								<Sheet.Title>{tag.name}</Sheet.Title>
 								<Sheet.Description>
-									Make changes to your profile here. Click save when you're done.
+									sha256:hashsumhere
 								</Sheet.Description>
 							</Sheet.Header>
 							<div class="grid gap-4 py-4">
@@ -49,7 +49,7 @@
 							</div>
 							<Sheet.Footer>
 								<Sheet.Close class={buttonVariants({ variant: "outline" })}
-								>Save changes</Sheet.Close
+								>Delete</Sheet.Close
 								>
 							</Sheet.Footer>
 						</Sheet.Content>
