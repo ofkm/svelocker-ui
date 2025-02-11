@@ -8,7 +8,7 @@
     <div class="flex h-16 items-center">
         <img src="/img/svelocker.png" class="mr-3 h-8 w-8" alt="Logo" />
         <h1 class="text-lg font-medium" data-testid="application-name">
-            Svelocker Registry UI
+					Svelocker UI
         </h1>
     </div>
 
