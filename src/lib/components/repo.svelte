@@ -14,8 +14,6 @@
 		})
 		.catch(error => console.error('Error:', error));
 
-	// console.log(list())
-
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
