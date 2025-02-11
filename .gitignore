@@ -1,0 +1,50 @@
+# JetBrains
+**/.idea
+
+node_modules
+
+# Output
+.output
+.vercel
+/frontend/.svelte-kit
+/frontend/build
+/backend/bin
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Application specific
+data
+/frontend/tests/.auth
+/frontend/tests/.report
+pocket-id-backend
+/backend/GeoLite2-City.mmdb
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

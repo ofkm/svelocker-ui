@@ -1,0 +1,17 @@
+<script lang="ts">
+</script>
+
+<div class="w-full border-b">
+	<div
+		class="mx-auto flex w-full items-center justify-between px-4 md:px-10"
+	>
+    <div class="flex h-16 items-center">
+        <img src="/img/docker-mark-blue.png" class="mr-3 h-6 w-8" alt="Logo" />
+        <h1 class="text-lg font-medium" data-testid="application-name">
+            Registry UI
+        </h1>
+    </div>
+
+
+		</div>
+	</div>
