@@ -1,21 +1,11 @@
 <script lang="ts">
     import Repo from '$lib/components/repo.svelte';
-
-		interface RegistryRepos {
-			repositories: string[];
-		}
+		import { getRegistryRepos } from '$lib/utils/repos.ts'
 
 		let reposArray = [] as { name: string, image?: string  }[];
 
-		async function parseDockerRegistryRepoJson(url: string): Promise<RegistryRepos> {
-			const response = await fetch(url);
-			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-			const data = await response.json();
-			return { repositories: data.repositories.map(repo => ({ name: repo })) };
-		}
-
 		// Call the function with the specified URL
-		parseDockerRegistryRepoJson('https://kmcr.cc/v2/_catalog')
+		getRegistryRepos('https://kmcr.cc/v2/_catalog')
 			.then(data => {
 				reposArray = data.repositories;
 			})
