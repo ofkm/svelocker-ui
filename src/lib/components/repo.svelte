@@ -2,7 +2,7 @@
 	// import Card from "./Card.svelte";
 	import CollapsibleCard from '$lib/components/dropdown-card.svelte';
 	import { list } from '$lib/utils/tags.ts'
-	import { Badge } from '$lib/components/ui/badge/index';
+	import { badgeVariants } from "$lib/components/ui/badge/index.js";
 
 	export let repos;
 
@@ -20,12 +20,12 @@
 
 <div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 		{#each repos as repo}
-		<CollapsibleCard id="repo" title={repo.name} description="0 Tags found">
+		<CollapsibleCard id="repo" title={repo.name}>
 			{#each tagsArray as tag}
 				{#if tag.name === "latest"}
-					<Badge class='mr-5 poppins text-green-500' variant='secondary'>{tag.name}</Badge>
+					<a id="badgeLinkLatest" href="/tags/{repo.name}/{tag.name}" class={badgeVariants({ variant: "secondary" })}>{tag.name}</a>
 				{:else}
-					<Badge class='mr-5 poppins' variant='outline'>{tag.name}</Badge>
+					<a id="badgeLink" href="/tags/{repo.name}/{tag.name}" class={badgeVariants({ variant: "secondary" })}>{tag.name}</a>
 				{/if}
 			{/each}
 		</CollapsibleCard>
