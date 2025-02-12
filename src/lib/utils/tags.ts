@@ -1,23 +1,41 @@
 // {"name":"ofkm/caddy","tags":["latest","main","1.0.1","1.0","1","f84cee9"]}
 
-interface RegistryTag {
-	name: string;
-}
+import type { ImageTag } from '$lib/models/tag.ts';
+import type { RepoImage } from '$lib/models/image.ts';
+import { fetchDockerMetadata } from '$lib/utils/manifest.ts'
 
-interface RegistryImage {
-	name: string;
-	tags: RegistryTag[];
-}
-
-export async function list(): Promise<RegistryImage> {
-	const response = await fetch('https://kmcr.cc/v2/ofkm/caddy/tags/list');
+export async function getImageTags(url: string): Promise<RepoImage> {
+	const response = await fetch(url);
 	if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-	const data = await response.json();
-	const name = data.name;
-	const tags = Object.values(data.tags).map((name) => ({ name }));
+
+	const data: { name: string; tags: string[] } = await response.json();
 
 	return {
-		name,
+		name: data.name,
+		tags: data.tags.map((tag) => ({ name: tag })),
+	};
+}
+
+export async function getDockerTagsNew(registryUrl: string, repo: string): Promise<RepoImage> {
+	// const registryUrl = "https://kmcr.cc"; // Base registry URL
+	// const repo = "ofkm/caddy"; // Repository name
+
+	// Fetch the list of tags
+	const response = await fetch(`${registryUrl}/v2/${repo}/tags/list`);
+	if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+	const data: { name: string; tags: string[] } = await response.json();
+
+	// Fetch metadata for each tag
+	const tags = await Promise.all(
+		data.tags.map(async (tag) => {
+			const metadata = await fetchDockerMetadata(registryUrl, repo, tag);
+			return { name: tag, metadata };
+		})
+	);
+
+	return {
+		name: data.name,
 		tags,
 	};
 }

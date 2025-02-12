@@ -4,6 +4,7 @@ export type ImageMetadata = {
 	architecture: string;
 	author?: string;
 	dockerVersion: string;
+	configDigest: string;
 };
 
 // const metadata = {
