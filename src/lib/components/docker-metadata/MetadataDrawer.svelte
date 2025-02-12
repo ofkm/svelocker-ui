@@ -58,9 +58,6 @@
 								<p class="text-sm font-semibold pb-2" id="author">{tag.metadata.author}</p>
 							{/if}
 						</div>
-
-
-
 					</div>
 				</div>
 			{/if}
