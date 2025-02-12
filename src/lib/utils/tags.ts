@@ -2,14 +2,14 @@
 
 import type { ImageTag } from '$lib/models/tag.ts';
 import type { RepoImage } from '$lib/models/image.ts';
-import { fetchDockerMetadata } from '$lib/utils/manifest.ts'
+import { fetchDockerMetadata } from '$lib/utils/manifest.ts';
 
 export async function getDockerTagsNew(registryUrl: string, repo: string): Promise<RepoImage> {
 	// const registryUrl = "https://kmcr.cc"; // Base registry URL
 	// const repo = "ofkm/caddy"; // Repository name
 
-	let tags: ImageTag[] = []
-	let data: { name: string; tags: string[] } = []
+	let tags: ImageTag[] = [];
+	let data: { name: string; tags: string[] } = [];
 
 	// Fetch the list of tags
 	const response = await fetch(`${registryUrl}/v2/${repo}/tags/list`);
@@ -27,21 +27,18 @@ export async function getDockerTagsNew(registryUrl: string, repo: string): Promi
 
 		// ...
 	} catch (error) {
-		console.error("Error fetching repo images:", error);
+		console.error('Error fetching repo images:', error);
 		return {
 			name: data.name,
-			tags: [],
+			tags: []
 		};
 	}
 
-
-
 	// Fetch metadata for each tag
-
 
 	return {
 		name: data.name,
-		tags,
+		tags
 	};
 }
 

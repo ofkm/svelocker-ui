@@ -4,7 +4,6 @@
 	import RepoImage from '$lib/components/docker-metadata/RepoImage.svelte';
 	// import { getDockerTagsNew } from '$lib/utils/tags.ts'
 
-
 	//Models
 	import type { ImageTag } from '$lib/models/tag.ts';
 	//
@@ -32,13 +31,12 @@
 	// 		})
 	// 		.catch((error) => console.error("Error fetching repo images:", error));
 	// }
-
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
-		{#each repos as repo}
+	{#each repos as repo}
 		<CollapsibleCard id={repo.name} title={repo.name}>
-			<RepoImage repo="{repo.name}" />
+			<RepoImage repo={repo.name} />
 		</CollapsibleCard>
 	{/each}
 </div>

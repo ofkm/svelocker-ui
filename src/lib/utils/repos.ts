@@ -10,5 +10,5 @@ export async function getRegistryRepos(url: string): Promise<RegistryRepos> {
 	// const data = await response.json();
 	const data: { repositories: string[] } = await response.json();
 	// return { repositories: data.repositories.map(repo => ({ name: repo })) };
-	return { repositories: data.repositories.map(repo => ({ name: repo })) };
+	return { repositories: data.repositories.map((repo) => ({ name: repo })) };
 }

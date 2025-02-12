@@ -1,8 +1,11 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @config '../tailwind.config.ts';
 
-h1, h2, h3, .poppins{
+h1,
+h2,
+h3,
+.poppins {
 	font-family: 'Poppins' sans-serif;
 }
 
@@ -57,16 +60,15 @@ h1, h2, h3, .poppins{
 	}
 
 	.dark {
-
 	}
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  
-  body {
-    @apply bg-background text-foreground;
-  }
+	* {
+		@apply border-border;
+	}
+
+	body {
+		@apply bg-background text-foreground;
+	}
 }

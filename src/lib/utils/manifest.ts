@@ -1,11 +1,9 @@
-
-
 export async function fetchDockerManifest(url: string) {
 	try {
 		const response = await fetch(url, {
 			headers: {
-				"Accept": "application/vnd.docker.distribution.manifest.v2+json",
-			},
+				Accept: 'application/vnd.docker.distribution.manifest.v2+json'
+			}
 		});
 
 		if (!response.ok) {
@@ -14,7 +12,7 @@ export async function fetchDockerManifest(url: string) {
 
 		const manifest = await response.json();
 
-		console.log("Docker Manifest:", manifest);
+		console.log('Docker Manifest:', manifest);
 
 		// Extracting key details
 		const schemaVersion = manifest.schemaVersion;
@@ -23,17 +21,17 @@ export async function fetchDockerManifest(url: string) {
 		const layers = manifest.layers?.map((layer: any) => ({
 			mediaType: layer.mediaType,
 			size: layer.size,
-			digest: layer.digest,
+			digest: layer.digest
 		}));
 
 		return {
 			schemaVersion,
 			mediaType,
 			configDigest,
-			layers,
+			layers
 		};
 	} catch (error) {
-		console.error("Error fetching manifest:", error);
+		console.error('Error fetching manifest:', error);
 	}
 }
 
@@ -43,7 +41,10 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 
 		// Fetch the manifest JSON
 		const manifestResponse = await fetch(manifestUrl, {
-			headers: { "Accept": "application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json"},
+			headers: {
+				Accept:
+					'application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json'
+			}
 		});
 
 		// const manifestResponse = await fetch(manifestUrl, requestInit);
@@ -56,7 +57,7 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 		const configDigest = manifest.config?.digest;
 
 		if (!configDigest) {
-			throw new Error("Config digest not found in manifest.");
+			throw new Error('Config digest not found in manifest.');
 		}
 
 		// console.log("Config Digest:", configDigest);
@@ -73,17 +74,17 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 
 		// Extract important metadata
 		const metadata = {
-			created: config.created,  // Creation timestamp
-			os: config.os,            // OS type
+			created: config.created, // Creation timestamp
+			os: config.os, // OS type
 			architecture: config.architecture, // CPU architecture
-			author: config.author,    // Image author (if available)
+			author: config.author, // Image author (if available)
 			history: config.history?.map((entry: any) => entry.created_by), // Commands used
-			configDigest: configDigest,
+			configDigest: configDigest
 		};
 
 		return metadata;
 	} catch (error) {
-		console.error("Error fetching metadata:", error);
+		console.error('Error fetching metadata:', error);
 	}
 }
 

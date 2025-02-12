@@ -1,6 +1,6 @@
 # <div align="center"><img style="border-radius: 50%;" src="./.gitlab/s.png" width="200"/> <br />Svelocker </div>
-<div align="center"><h3>A Simple easy to use docker registry ui built with Typescript and SvelteKit.</h3></div>
 
+<div align="center"><h3>A Simple easy to use docker registry ui built with Typescript and SvelteKit.</h3></div>
 
 ## Features:
 

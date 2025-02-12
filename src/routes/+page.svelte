@@ -1,16 +1,16 @@
 <script lang="ts">
-    import Repo from '$lib/components/repo.svelte';
-		import type { PageProps } from './$types';
+	import Repo from '$lib/components/repo.svelte';
+	import type { PageProps } from './$types';
 
-		let { data }: PageProps = $props();
+	let { data }: PageProps = $props();
 
-		//Testing Area
-		import { fetchDockerMetadata } from '$lib/utils/manifest.ts'
+	//Testing Area
+	import { fetchDockerMetadata } from '$lib/utils/manifest.ts';
 
-		// fetchDockerMetadata("https://kmcr.cc", "ofkm/caddy", "latest")
-		// 	.then(data => console.log("Extracted Metadata:", data))
-		// 	.catch(error => console.error("Fetch error:", error));
-		//
+	// fetchDockerMetadata("https://kmcr.cc", "ofkm/caddy", "latest")
+	// 	.then(data => console.log("Extracted Metadata:", data))
+	// 	.catch(error => console.error("Fetch error:", error));
+	//
 </script>
 
 <svelte:head>
@@ -27,8 +27,4 @@
 			<h2 class="text-lg poppins">Could not pull registry data...</h2>
 		</div>
 	{/if}
-
 </div>
-
-
-

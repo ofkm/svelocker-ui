@@ -1,7 +1,6 @@
 import { getRegistryRepos } from '$lib/utils/repos.ts';
 
 export async function load() {
-
 	// let reposArray = [] as { name: string }[];
 	//
 	// let reposTest = [] as string[];
@@ -11,5 +10,5 @@ export async function load() {
 
 	return {
 		repos: await getRegistryRepos('https://kmcr.cc/v2/_catalog')
-	}
+	};
 }
