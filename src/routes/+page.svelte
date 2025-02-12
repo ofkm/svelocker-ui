@@ -17,7 +17,7 @@
 	<title>Svelocker UI</title>
 </svelte:head>
 
-<div class="flex min-h-screen w-full flex-col justify-between bg-muted/80">
+<div class="flex min-h-screen max-h-screen w-full flex-col justify-between bg-muted/80">
 	{#if data.repos.repositories.length > 0}
 		<div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 			<Repo repos={data.repos.repositories} />

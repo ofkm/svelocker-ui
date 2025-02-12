@@ -40,7 +40,6 @@ export async function fetchDockerManifest(url: string) {
 export async function fetchDockerMetadata(registryUrl: string, repo: string, tag: string) {
 	try {
 		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
-		console.log(manifestUrl)
 
 		// Fetch the manifest JSON
 		const manifestResponse = await fetch(manifestUrl, {
@@ -58,7 +57,7 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			throw new Error("Config digest not found in manifest.");
 		}
 
-		console.log("Config Digest:", configDigest);
+		// console.log("Config Digest:", configDigest);
 
 		// Fetch the image config JSON
 		const configUrl = `${registryUrl}/v2/${repo}/blobs/${configDigest}`;
