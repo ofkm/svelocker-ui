@@ -41,20 +41,12 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 	try {
 		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
 
-		const requestHeaders = new Headers();
-		requestHeaders.append('Accept', 'application/vnd.docker.distribution.manifest.v2+json');
-		requestHeaders.append('Accept', 'application/vnd.oci.image.manifest.v1+json');
-
-		const requestInit = {
-			headers: requestHeaders,
-		};
-
 		// Fetch the manifest JSON
-		// const manifestResponse = await fetch(manifestUrl, {
-		// 	headers: { "Accept": "application/vnd.docker.distribution.manifest.v2+json", "Accept": "application/vnd.oci.image.manifest.v1+json"},
-		// });
+		const manifestResponse = await fetch(manifestUrl, {
+			headers: { "Accept": "application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json"},
+		});
 
-		const manifestResponse = await fetch(manifestUrl, requestInit);
+		// const manifestResponse = await fetch(manifestUrl, requestInit);
 
 		if (!manifestResponse.ok) {
 			throw new Error(`Failed to fetch manifest: ${manifestResponse.status}`);
