@@ -9,6 +9,10 @@ h3,
 	font-family: 'Poppins' sans-serif;
 }
 
+.dockerButton {
+	border-color: var(--color-blue-500) !important;
+}
+
 .badgeLinkLatest {
 	margin-right: 5px;
 	min-width: 40px;

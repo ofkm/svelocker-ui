@@ -5,6 +5,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Label } from '$lib/components/ui/label';
 	import * as Drawer from '$lib/components/ui/drawer';
+	import DockerfileDialog from '$lib/components/docker-metadata/ViewFileDialog.svelte';
 
 	export let tag;
 	export let repo;
@@ -64,7 +65,8 @@
 			<Drawer.Footer>
 				<div class="grid gap-4 py-4">
 					<div class="grid grid-col-2 grid-rows-1 grid-flow-col gap-4 items-center">
-						<Button variant="outline" class="border-solid border-blue-500">View Dockerfile</Button>
+						<DockerfileDialog image={repo} tag={tag.name}/>
+<!--						<Button variant="outline" class="border-solid border-blue-500">View Dockerfile</Button>-->
 						<Drawer.Close class="{buttonVariants({ variant: 'destructive' })}">
 							Delete Tag
 						</Drawer.Close>
