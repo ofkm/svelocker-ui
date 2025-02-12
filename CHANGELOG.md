@@ -1,3 +1,8 @@
+## [0.11.1](https://github.com/kmendell/svelocker-ui/compare/v0.11.0...v0.11.1) (2025-02-12)
+
+### Features
+
+* metadata darwer instead of sheet ([872e24e](https://github.com/kmendell/svelocker-ui/commit/872e24e6022f654e45505f7868ac3439e7f04be2))
 ## [0.11.0](https://github.com/kmendell/svelocker-ui/compare/v0.10.3...v0.11.0) (2025-02-12)
 
 ### Features
