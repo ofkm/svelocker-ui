@@ -23,7 +23,6 @@ jobs:
           images: |
             ghcr.io/${{ github.repository }}
           tags: |
-            latest
             type=semver,pattern={{version}},prefix=v
             type=semver,pattern={{major}}.{{minor}},prefix=v
 
