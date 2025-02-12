@@ -9,8 +9,7 @@
 		UserPen
 	} from 'lucide-svelte';
 	import { Label } from '$lib/components/ui/label';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import * as Sheet from '$lib/components/ui/sheet';
+	import * as Drawer from '$lib/components/ui/drawer';
 	import type { ImageTag } from '$lib/models/tag.ts';
 	import { getDockerTagsNew } from '$lib/utils/tags.ts';
 	import { env } from '$env/dynamic/public'
@@ -29,30 +28,24 @@
 {#each tagsArray as tag}
 	<!--{#each repoSpecificRun(repo.name) as tag}-->
 	{#if tag.name === 'latest'}
-		<Sheet.Root>
-			<Sheet.Trigger
+		<Drawer.Root>
+			<Drawer.Trigger
 				class="{buttonVariants({ variant: 'outline' })} badgeLinkLatest text-center border-solid"
 			>
 				{tag.name}
-			</Sheet.Trigger>
-			<Sheet.Content side="right">
-				<Sheet.Header>
-					<Sheet.Title>{repo}:{tag.name}</Sheet.Title>
-					<Sheet.Description>
+			</Drawer.Trigger>
+			<Drawer.Content>
+				<div class="mx-auto w-full max-w-2xl">
+				<Drawer.Header>
+					<Drawer.Title>{repo}:{tag.name}</Drawer.Title>
+					<Drawer.Description>
 						{#if tag.metadata}
-							<Tooltip.Provider>
-								<Tooltip.Root>
-									<Tooltip.Trigger class="underline">SHA256 Digest</Tooltip.Trigger>
-									<Tooltip.Content>
-										<p>{tag.metadata.configDigest}</p>
-									</Tooltip.Content>
-								</Tooltip.Root>
-							</Tooltip.Provider>
+							{tag.metadata.configDigest}
 						{:else}
 							No config Digest Found
 						{/if}
-					</Sheet.Description>
-				</Sheet.Header>
+					</Drawer.Description>
+				</Drawer.Header>
 				{#if tag.metadata}
 					<div class="grid gap-4 py-4">
 						<div class="grid grid-cols-2 gap-4 items-center">
@@ -82,41 +75,36 @@
 						</div>
 					</div>
 				{/if}
-				<Sheet.Footer>
-					<Sheet.Close
+				<Drawer.Footer>
+					<Drawer.Close
 						disabled
 						class="{buttonVariants({ variant: 'outline' })} border-solid border-rose-600"
 					>
 						Delete
-					</Sheet.Close>
-				</Sheet.Footer>
-			</Sheet.Content>
-		</Sheet.Root>
+					</Drawer.Close>
+				</Drawer.Footer>
+				</div>
+			</Drawer.Content>
+		</Drawer.Root>
 	{:else}
-		<Sheet.Root>
-			<Sheet.Trigger
+		<Drawer.Root>
+			<Drawer.Trigger
 				class="{buttonVariants({ variant: 'outline' })} badgeLink border border-solid border-white"
 			>
 				<span class="text-center items-center font-light">{tag.name}</span>
-			</Sheet.Trigger>
-			<Sheet.Content side="right">
-				<Sheet.Header>
-					<Sheet.Title>{repo}:{tag.name}</Sheet.Title>
-					<Sheet.Description>
+			</Drawer.Trigger>
+			<Drawer.Content>
+				<div class="mx-auto w-full max-w-2xl">
+				<Drawer.Header>
+					<Drawer.Title>{repo}:{tag.name}</Drawer.Title>
+					<Drawer.Description>
 						{#if tag.metadata}
-							<Tooltip.Provider>
-								<Tooltip.Root>
-									<Tooltip.Trigger class="underline">SHA256 Digest</Tooltip.Trigger>
-									<Tooltip.Content>
-										<p>{tag.metadata.configDigest}</p>
-									</Tooltip.Content>
-								</Tooltip.Root>
-							</Tooltip.Provider>
+							{tag.metadata.configDigest}
 						{:else}
 							No config Digest Found
 						{/if}
-					</Sheet.Description>
-				</Sheet.Header>
+					</Drawer.Description>
+				</Drawer.Header>
 				{#if tag.metadata}
 					<div class="grid gap-4 py-4">
 						<div class="grid grid-cols-2 gap-4 items-center">
@@ -146,15 +134,16 @@
 						</div>
 					</div>
 				{/if}
-				<Sheet.Footer>
-					<Sheet.Close
+				<Drawer.Footer>
+					<Drawer.Close
 						disabled
 						class="{buttonVariants({ variant: 'outline' })} border-solid border-rose-600"
 					>
 						Delete
-					</Sheet.Close>
-				</Sheet.Footer>
-			</Sheet.Content>
-		</Sheet.Root>
+					</Drawer.Close>
+				</Drawer.Footer>
+				</div>
+			</Drawer.Content>
+		</Drawer.Root>
 	{/if}
 {/each}
