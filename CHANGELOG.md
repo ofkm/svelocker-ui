@@ -1,3 +1,12 @@
+## [0.11.0](https://github.com/kmendell/svelocker-ui/compare/v0.10.3...v0.11.0) (2025-02-12)
+
+### Features
+
+* add env config ([3b1baaa](https://github.com/kmendell/svelocker-ui/commit/3b1baaa64e2ea0014e752aa3f59e551b768b928f))
+
+### Bug Fixes
+
+* repo name not showing on non latest tags ([2f44549](https://github.com/kmendell/svelocker-ui/commit/2f445494182acf2fcd5d94129490eeb62f9802a6))
 ## 0.10.3 (2025-02-12)
 
 ### Features
