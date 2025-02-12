@@ -31,11 +31,11 @@ services:
 You will need to add the following env setup to your registry container so Svelocker can query and grab all docker information:
 
 ```env
-      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '["*"]'
-      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Methods: '[HEAD,GET,OPTIONS,DELETE]'
-      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Credentials: '[true]'
-      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Headers: '[Authorization,Accept,Cache-Control,application/vnd.oci.image.manifest.v1+json]'
-      REGISTRY_HTTP_HEADERS_Access-Control-Expose-Headers: '[Docker-Content-Digest]'
+REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '["*"]'
+REGISTRY_HTTP_HEADERS_Access-Control-Allow-Methods: '[HEAD,GET,OPTIONS,DELETE]'
+REGISTRY_HTTP_HEADERS_Access-Control-Allow-Credentials: '[true]'
+REGISTRY_HTTP_HEADERS_Access-Control-Allow-Headers: '[Authorization,Accept,Cache-Control,application/vnd.oci.image.manifest.v1+json]'
+REGISTRY_HTTP_HEADERS_Access-Control-Expose-Headers: '[Docker-Content-Digest]'
 ```
 
 You can replace the * in the `REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '["*"]'` line to your hostname of Svelocker UI.
