@@ -2,6 +2,7 @@
 	// import Card from "./Card.svelte";
 	import CollapsibleCard from '$lib/components/dropdown-card.svelte';
 	import { list } from '$lib/utils/tags.ts'
+	import { fetchDockerMetadata } from '$lib/utils/manifest.ts'
 	import { badgeVariants } from "$lib/components/ui/badge/index.js";
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Sheet from "$lib/components/ui/sheet";
@@ -38,7 +39,7 @@
 								</Sheet.Description>
 							</Sheet.Header>
 							<div class="grid gap-4 py-4">
-								<div class="grid grid-cols-4 items-center gap-4">
+								<div class="grid grid-cols-2 items-center gap-4">
 									<Label for="name" class="text-right">Name</Label>
 									<Input id="name" value="Pedro Duarte" class="col-span-3" />
 								</div>
@@ -48,17 +49,15 @@
 								</div>
 							</div>
 							<Sheet.Footer>
-								<Sheet.Close class={buttonVariants({ variant: "outline" })}
-								>Delete</Sheet.Close
-								>
+								<Sheet.Close class={buttonVariants({ variant: "outline" })}>
+									Delete
+								</Sheet.Close>
 							</Sheet.Footer>
 						</Sheet.Content>
 					</Sheet.Root>
 				{:else}
 					<Sheet.Root>
-						<Sheet.Trigger class={buttonVariants({ variant: "secondary" })}
-						>{tag.name}</Sheet.Trigger
-						>
+						<Sheet.Trigger class={buttonVariants({ variant: "secondary" })}>{tag.name}</Sheet.Trigger>
 						<Sheet.Content side="right">
 							<Sheet.Header>
 								<Sheet.Title>Edit profile</Sheet.Title>
@@ -77,9 +76,9 @@
 								</div>
 							</div>
 							<Sheet.Footer>
-								<Sheet.Close class={buttonVariants({ variant: "outline" })}
-								>Save changes</Sheet.Close
-								>
+								<Sheet.Close class={buttonVariants({ variant: "outline" })}>
+									Save changes
+								</Sheet.Close>
 							</Sheet.Footer>
 						</Sheet.Content>
 					</Sheet.Root>
