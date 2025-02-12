@@ -68,7 +68,7 @@ getDockerTagsNew('https://kmcr.cc', repo)
 					</div>
 				{/if}
 				<Sheet.Footer>
-					<Sheet.Close class="{buttonVariants({ variant: 'outline' })} border-solid border-rose-600">
+					<Sheet.Close disabled class="{buttonVariants({ variant: 'outline' })} border-solid border-rose-600">
 						Delete
 					</Sheet.Close>
 				</Sheet.Footer>
@@ -119,7 +119,7 @@ getDockerTagsNew('https://kmcr.cc', repo)
 					</div>
 				{/if}
 				<Sheet.Footer>
-					<Sheet.Close class="{buttonVariants({ variant: 'outline' })} border-solid border-rose-600">
+					<Sheet.Close disabled class="{buttonVariants({ variant: 'outline' })} border-solid border-rose-600">
 						Delete
 					</Sheet.Close>
 				</Sheet.Footer>
