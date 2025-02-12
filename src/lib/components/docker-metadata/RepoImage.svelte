@@ -13,12 +13,13 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import type { ImageTag } from '$lib/models/tag.ts';
 	import { getDockerTagsNew } from '$lib/utils/tags.ts';
+	import { env } from '$env/dynamic/public'
 
 	let tagsArray: ImageTag[] = [];
 
 	export let repo;
 
-	getDockerTagsNew('https://kmcr.cc', repo)
+	getDockerTagsNew(env.PUBLIC_REGISTRY_URL, repo)
 		.then((repoImage) => {
 			tagsArray = repoImage.tags;
 		})

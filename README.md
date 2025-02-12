@@ -18,6 +18,12 @@
 
 ## Docker Compose (recommended)
 
+Modify the env file to fit your setup:
+
+```env
+PUBLIC_REGISTRY_URL=https://yourregistry.com
+```
+
 ```yaml
 services:
   svelocker-ui:
