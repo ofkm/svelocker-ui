@@ -20,19 +20,36 @@ export async function getDockerTagsNew(registryUrl: string, repo: string): Promi
 	// const registryUrl = "https://kmcr.cc"; // Base registry URL
 	// const repo = "ofkm/caddy"; // Repository name
 
+	let tags: ImageTag[] = []
+	let data: { name: string; tags: string[] } = []
+
 	// Fetch the list of tags
 	const response = await fetch(`${registryUrl}/v2/${repo}/tags/list`);
 	if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-	const data: { name: string; tags: string[] } = await response.json();
+	try {
+		data = await response.json();
+
+		tags = await Promise.all(
+			data.tags.map(async (tag) => {
+				const metadata = await fetchDockerMetadata(registryUrl, repo, tag);
+				return { name: tag, metadata };
+			})
+		);
+
+		// ...
+	} catch (error) {
+		console.error("Error fetching repo images:", error);
+		return {
+			name: data.name,
+			tags: [],
+		};
+	}
+
+
 
 	// Fetch metadata for each tag
-	const tags = await Promise.all(
-		data.tags.map(async (tag) => {
-			const metadata = await fetchDockerMetadata(registryUrl, repo, tag);
-			return { name: tag, metadata };
-		})
-	);
+
 
 	return {
 		name: data.name,

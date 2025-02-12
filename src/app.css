@@ -8,12 +8,17 @@ h1, h2, h3, .poppins{
 
 .badgeLinkLatest {
 	margin-right: 5px;
-	color: var(--color-green-500);
+	min-width: 40px;
+	min-height: 25px;
+	color: var(--color-emerald-500);
+	border-color: var(--color-emerald-500);
 	font-family: 'Poppins' sans-serif;
 }
 
 .badgeLink {
 	margin-right: 5px;
+	min-width: 40px;
+	min-height: 25px;
 	font-family: 'Poppins' sans-serif;
 }
 

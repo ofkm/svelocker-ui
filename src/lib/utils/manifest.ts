@@ -40,6 +40,7 @@ export async function fetchDockerManifest(url: string) {
 export async function fetchDockerMetadata(registryUrl: string, repo: string, tag: string) {
 	try {
 		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
+		console.log(manifestUrl)
 
 		// Fetch the manifest JSON
 		const manifestResponse = await fetch(manifestUrl, {
