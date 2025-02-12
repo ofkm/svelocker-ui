@@ -13,6 +13,22 @@
 ### Requirements
 
 - Node.JS (v22+)
+- Docker and Docker Compose
+
+
+## Docker Compose (recommended)
+
+```yaml
+services:
+  svelocker-ui:
+    image: ghcr.io/kmendell/svelocker-ui:latest
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - 3000:3000
+```
+
+## Local Install
 
 ```bash
 git clone https://github.com/kmendell/svelocker.git
