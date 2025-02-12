@@ -1,6 +1,6 @@
 <script lang="ts">
 
-	import { buttonVariants } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { AppWindowMac, CalendarCog, CircuitBoard, UserPen } from 'lucide-svelte';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Label } from '$lib/components/ui/label';
@@ -18,7 +18,7 @@
 		{tag.name}
 	</Drawer.Trigger>
 	<Drawer.Content>
-		<div class="mx-auto w-full max-w-2xl">
+		<div class="mx-auto w-full max-w-[85%]">
 			<Drawer.Header>
 				<Drawer.Title>{repo}:{tag.name}</Drawer.Title>
 				<Drawer.Description>
@@ -30,41 +30,49 @@
 				</Drawer.Description>
 			</Drawer.Header>
 			{#if tag.metadata}
-				<div class="grid gap-4 py-4">
-					<div class="grid grid-cols-2 gap-4 items-center">
-						<Separator class="col-span-2" />
-						<Label for="os" class="font-light text-muted-foreground flex items-center gap-2"
-						><AppWindowMac width="16" height="16" /> OS</Label
-						>
-						<p class="text-sm font-semibold" id="os">{tag.metadata.os}</p>
-						<Separator class="col-span-2" />
-						<Label for="arch" class="font-light text-muted-foreground flex items-center gap-2"
-						><CircuitBoard class="w-8 h-8" /> Arch</Label
-						>
-						<p class="text-sm font-semibold" id="arch">{tag.metadata.architecture}</p>
-						<Separator class="col-span-2" />
-						<Label for="created" class="font-light text-muted-foreground flex items-center gap-2"
-						><CalendarCog class="w-8 h-8" /> Created</Label
-						>
-						<p class="text-sm font-semibold" id="created">{tag.metadata.created}</p>
-						{#if tag.metadata.author}
-							<Separator class="col-span-2" />
-							<Label for="author" class="font-light text-muted-foreground flex items-center gap-2"
-							><UserPen class="w-8 h-8" /> Author</Label
-							>
-							<p class="text-sm font-semibold" id="author">{tag.metadata.author}</p>
-						{/if}
-						<Separator class="col-span-2" />
+				<div class="pl-4 grid gap-4 py-4">
+					<div class="grid col-auto grid-rows-3 grid-flow-col gap-4 items-center">
+						<div class="">
+							<Label for="os" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
+								<AppWindowMac class="w-5 h-5" /> OS
+							</Label>
+							<p class="text-sm font-semibold pb-2" id="os">{tag.metadata.os}</p>
+						</div>
+						<div>
+							<Label for="arch" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
+								<CircuitBoard class="w-5 h-5" /> Arch
+							</Label>
+							<p class="text-sm font-semibold pb-2" id="arch">{tag.metadata.architecture}</p>
+						</div>
+						<div>
+							<Label for="created" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
+								<CalendarCog class="w-5 h-5" /> Created
+							</Label>
+							<p class="text-sm font-semibold pb-2" id="created">{tag.metadata.created}</p>
+						</div>
+						<div>
+							{#if tag.metadata.author}
+								<Label for="author" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
+									<UserPen class="w-5 h-5" /> Author
+								</Label>
+								<p class="text-sm font-semibold pb-2" id="author">{tag.metadata.author}</p>
+							{/if}
+						</div>
+
+
+
 					</div>
 				</div>
 			{/if}
 			<Drawer.Footer>
-				<Drawer.Close
-					disabled
-					class="{buttonVariants({ variant: 'outline' })} border-solid border-rose-600"
-				>
-					Delete
-				</Drawer.Close>
+				<div class="grid gap-4 py-4">
+					<div class="grid grid-col-2 grid-rows-1 grid-flow-col gap-4 items-center">
+						<Button variant="outline" class="border-solid border-blue-500">View Dockerfile</Button>
+						<Drawer.Close class="{buttonVariants({ variant: 'destructive' })}">
+							Delete Tag
+						</Drawer.Close>
+					</div>
+				</div>
 			</Drawer.Footer>
 		</div>
 	</Drawer.Content>
