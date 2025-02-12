@@ -100,7 +100,7 @@
 			</Sheet.Trigger>
 			<Sheet.Content side="right">
 				<Sheet.Header>
-					<Sheet.Title>{repo.name}:{tag.name}</Sheet.Title>
+					<Sheet.Title>{repo}:{tag.name}</Sheet.Title>
 					<Sheet.Description>
 						{#if tag.metadata}
 							<Tooltip.Provider>
