@@ -40,6 +40,7 @@
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
+		"@sveltejs/adapter-node": "^5.2.12",
 		"@tailwindcss/vite": "^4.0.5",
 		"@types/axios": "^0.9.36",
 		"axios": "^1.7.9",
