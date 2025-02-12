@@ -58,9 +58,6 @@ getDockerTagsNew('https://kmcr.cc', repo)
 							<Separator class="col-span-2" />
 							<Label for="created" class="font-light text-muted-foreground flex items-center gap-2"><CalendarCog class="w-8 h-8"/> Created</Label>
 							<p class="text-sm font-semibold" id="created">{tag.metadata.created}</p>
-							<Separator class="col-span-2" />
-							<Label for="dockerVersion" class="font-light text-muted-foreground flex items-center gap-2"><GalleryHorizontalEnd class="w-8 h-8"/> Docker Version</Label>
-							<p class="text-sm font-semibold" id="dockerVersion">{tag.metadata.dockerVersion}</p>
 							{#if tag.metadata.author}
 								<Separator class="col-span-2" />
 								<Label for="author" class="font-light text-muted-foreground flex items-center gap-2"><UserPen class="w-8 h-8"/> Author</Label>
@@ -112,9 +109,6 @@ getDockerTagsNew('https://kmcr.cc', repo)
 							<Separator class="col-span-2" />
 							<Label for="created" class="font-light text-muted-foreground flex items-center gap-2"><CalendarCog class="w-8 h-8"/> Created</Label>
 							<p class="text-sm font-semibold" id="created">{tag.metadata.created}</p>
-							<Separator class="col-span-2" />
-							<Label for="dockerVersion" class="font-light text-muted-foreground flex items-center gap-2"><GalleryHorizontalEnd class="w-8 h-8"/> Docker Version</Label>
-							<p class="text-sm font-semibold" id="dockerVersion">{tag.metadata.dockerVersion}</p>
 							{#if tag.metadata.author}
 								<Separator class="col-span-2" />
 								<Label for="author" class="font-light text-muted-foreground flex items-center gap-2"><UserPen class="w-8 h-8"/> Author</Label>

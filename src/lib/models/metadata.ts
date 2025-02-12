@@ -3,7 +3,6 @@ export type ImageMetadata = {
 	os: string;
 	architecture: string;
 	author?: string;
-	dockerVersion: string;
 	configDigest: string;
 };
 

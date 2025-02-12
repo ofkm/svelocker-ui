@@ -77,7 +77,6 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			os: config.os,            // OS type
 			architecture: config.architecture, // CPU architecture
 			author: config.author,    // Image author (if available)
-			dockerVersion: config.docker_version, // Docker version used
 			history: config.history?.map((entry: any) => entry.created_by), // Commands used
 			configDigest: configDigest,
 		};
