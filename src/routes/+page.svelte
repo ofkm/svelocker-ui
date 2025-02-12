@@ -7,9 +7,9 @@
 		//Testing Area
 		import { fetchDockerMetadata } from '$lib/utils/manifest.ts'
 
-		fetchDockerMetadata("https://kmcr.cc", "ofkm/caddy", "latest")
-			.then(data => console.log("Extracted Metadata:", data))
-			.catch(error => console.error("Fetch error:", error));
+		// fetchDockerMetadata("https://kmcr.cc", "ofkm/caddy", "latest")
+		// 	.then(data => console.log("Extracted Metadata:", data))
+		// 	.catch(error => console.error("Fetch error:", error));
 		//
 </script>
 
