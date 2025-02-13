@@ -1,3 +1,8 @@
+## [0.14.2](https://github.com/kmendell/svelocker-ui/compare/v0.14.1...v0.14.2) (2025-02-13)
+
+### Bug Fixes
+
+* use server-side running for dockerfile ([1dee166](https://github.com/kmendell/svelocker-ui/commit/1dee1663778e302080fac1d86c5d3ebd87fc91cd))
 ## [0.14.1](https://github.com/kmendell/svelocker-ui/compare/v0.14.0...v0.14.1) (2025-02-13)
 
 ### Bug Fixes
