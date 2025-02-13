@@ -46,6 +46,6 @@
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "json": "^11.0.0",
-    "tailwindcss": "^4.0.5"
+    "tailwindcss": "^4.0.6"
   }
 }
