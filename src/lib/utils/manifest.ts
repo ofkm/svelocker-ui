@@ -111,7 +111,7 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			throw new Error('Config digest not found in manifest.');
 		}
 
-		// console.log("Config Digest:", configDigest);
+		const totalSize = manifest.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
 
 		// Fetch the image config JSON
 		const configUrl = `${registryUrl}/v2/${repo}/blobs/${configDigest}`;
@@ -144,13 +144,24 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			// history: config.history?.map((entry: any) => entry.created_by),
 			dockerFile: dockerfileCommands,
 			configDigest: configDigest,
-			exposedPorts: exposedPorts
+			exposedPorts: exposedPorts,
+			totalSize: formatSize(totalSize)
 		};
 
 		return metadata;
 	} catch (error) {
 		console.error('Error fetching metadata:', error);
 	}
+}
+
+function formatSize(bytes: number): string {
+	const units = ["B", "KB", "MB", "GB", "TB"];
+	let i = 0;
+	while (bytes >= 1024 && i < units.length - 1) {
+		bytes /= 1024;
+		i++;
+	}
+	return `${bytes.toFixed(2)} ${units[i]}`;
 }
 
 // Example usage

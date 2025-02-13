@@ -6,4 +6,5 @@ export type ImageMetadata = {
 	dockerFile: string;
 	configDigest: string;
 	exposedPorts: string[];
+	totalSize: string;
 };

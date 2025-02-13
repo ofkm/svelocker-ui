@@ -1,7 +1,7 @@
 <script lang="ts">
 
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { AppWindowMac, CalendarCog, CircuitBoard, UserPen, EthernetPort } from 'lucide-svelte';
+	import { AppWindowMac, CalendarCog, CircuitBoard, UserPen, EthernetPort, Scaling } from 'lucide-svelte';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Label } from '$lib/components/ui/label';
 	import * as Drawer from '$lib/components/ui/drawer';
@@ -67,6 +67,12 @@
 								<EthernetPort class="w-5 h-5" /> Exposed Ports
 							</Label>
 									<p class="text-sm font-semibold pb-2" id="exposedPorts">{tag.metadata.exposedPorts}</p>
+						</div>
+						<div>
+							<Label for="totalSize" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
+								<Scaling class="w-5 h-5" /> Container Size
+							</Label>
+							<p class="text-sm font-semibold pb-2" id="totalSize">{tag.metadata.totalSize}</p>
 						</div>
 						<div>
 								<Label for="author" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
