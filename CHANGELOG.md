@@ -1,3 +1,15 @@
+## [0.12.0](https://github.com/kmendell/svelocker-ui/compare/v0.11.1...v0.12.0) (2025-02-13)
+
+### Features
+
+* more streamlined drawer ui ([d5469c4](https://github.com/kmendell/svelocker-ui/commit/d5469c400fc74a95e15b181d04a99cbb2261baea))
+* view dockerfile from drawer ([66f8b0a](https://github.com/kmendell/svelocker-ui/commit/66f8b0a186de2b1d029d0f92b33942121fa34661))
+
+### Bug Fixes
+
+* page overflow-y, and cursor pointer mismatch ([c061ac8](https://github.com/kmendell/svelocker-ui/commit/c061ac8937236a8f79125522e3b4da61756c8b9b))
+## [0.11.1](https://github.com/kmendell/svelocker-ui/compare/v0.11.0...v0.11.1) (2025-02-12)
+
 ## [0.11.1](https://github.com/kmendell/svelocker-ui/compare/v0.11.0...v0.11.1) (2025-02-12)
 
 ### Features
