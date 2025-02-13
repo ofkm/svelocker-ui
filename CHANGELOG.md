@@ -1,3 +1,14 @@
+## [0.13.0](https://github.com/kmendell/svelocker-ui/compare/v0.12.1...v0.13.0) (2025-02-13)
+
+### Features
+
+* add copy dockerfile button ([b034931](https://github.com/kmendell/svelocker-ui/commit/b034931c0097c4aa76230b230aa3ec58b352081a))
+* add latest version badge to drawer ([6ca13af](https://github.com/kmendell/svelocker-ui/commit/6ca13af1652cc35f940c2a740a8f93e7fb13f4ca))
+* add version label in header ([e3b8393](https://github.com/kmendell/svelocker-ui/commit/e3b8393b81d1cccf8571d8899537d2fb3b230dfc))
+
+### Bug Fixes
+
+* disable delte button till feature is added ([fb54c57](https://github.com/kmendell/svelocker-ui/commit/fb54c570dd7605d405ecc98a094aef24902363e2))
 ## [0.12.1](https://github.com/kmendell/svelocker-ui/compare/v0.12.0...v0.12.1) (2025-02-13)
 
 ### Bug Fixes
