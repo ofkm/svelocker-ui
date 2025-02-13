@@ -1,4 +1,4 @@
-import { getRegistryRepos } from '$lib/utils/repos.ts';
+import { getRegistryReposNew } from '$lib/utils/repos.ts';
 import { env } from '$env/dynamic/public'
 
 export async function load() {
@@ -14,7 +14,9 @@ export async function load() {
 	//
 	// export let data: PageData;
 
-	const repos = await getRegistryRepos(env.PUBLIC_REGISTRY_URL + '/v2/_catalog')
+	// const repos = await getRegistryRepos(env.PUBLIC_REGISTRY_URL + '/v2/_catalog')
+
+	const repos = await getRegistryReposNew(env.PUBLIC_REGISTRY_URL + '/v2/_catalog')
 
 	return {
 		repos: repos,

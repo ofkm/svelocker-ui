@@ -7,10 +7,10 @@
 
 	let tagsArray: ImageTag[] = [];
 
-	export let repo;
 	export let data: PageData;
+	export let repoIndex: number;
 
-	getDockerTagsNew(env.PUBLIC_REGISTRY_URL, repo)
+	getDockerTagsNew(env.PUBLIC_REGISTRY_URL, data.repos.repositories[repoIndex].name)
 		.then((repoImage) => {
 			tagsArray = repoImage.tags;
 		})
@@ -21,8 +21,8 @@
 
 {#each tagsArray as tag}
 	{#if tag.name === 'latest'}
-		<MetadataDrawer tag={tag} repo={repo} isLatest={true} />
+		<MetadataDrawer tag={tag} repo={data.repos.repositories[repoIndex].name} isLatest={true} />
 	{:else}
-		<MetadataDrawer tag={tag} repo={repo} isLatest={false} />
+		<MetadataDrawer tag={tag} repo={data.repos.repositories[repoIndex].name} isLatest={false} />
 	{/if}
 {/each}
