@@ -1,3 +1,8 @@
+## [0.12.1](https://github.com/kmendell/svelocker-ui/compare/v0.12.0...v0.12.1) (2025-02-13)
+
+### Bug Fixes
+
+* restructure time string ([fc3c90a](https://github.com/kmendell/svelocker-ui/commit/fc3c90a572101be241caa1b44d9d3df5fc7a4aab))
 ## [0.12.0](https://github.com/kmendell/svelocker-ui/compare/v0.11.1...v0.12.0) (2025-02-13)
 
 ### Features
