@@ -1,3 +1,8 @@
+## [0.14.0](https://github.com/kmendell/svelocker-ui/compare/v0.13.0...v0.14.0) (2025-02-13)
+
+### Features
+
+* run all registry api calls server-side ([cee03ff](https://github.com/kmendell/svelocker-ui/commit/cee03ff7a16a862544a37e8a4f9f65cb26354e8a))
 ## [0.13.0](https://github.com/kmendell/svelocker-ui/compare/v0.12.1...v0.13.0) (2025-02-13)
 
 ### Features
