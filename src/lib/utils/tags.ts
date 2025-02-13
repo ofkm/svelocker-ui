@@ -5,8 +5,6 @@ import type { RepoImage } from '$lib/models/image.ts';
 import { fetchDockerMetadata } from '$lib/utils/manifest.ts';
 
 export async function getDockerTagsNew(registryUrl: string, repo: string): Promise<RepoImage> {
-	// const registryUrl = "https://kmcr.cc"; // Base registry URL
-	// const repo = "ofkm/caddy"; // Repository name
 
 	let tags: ImageTag[] = [];
 	let data: { name: string; tags: string[] } = [];
