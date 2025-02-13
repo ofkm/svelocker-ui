@@ -4,6 +4,8 @@
 	import { ScrollArea } from "$lib/components/ui/scroll-area/index.js";
 	import { fetchDockerfile } from '$lib/utils/manifest.ts';
 	import { env } from '$env/dynamic/public'
+	import { copyTextToClipboard } from '$lib/utils/clipboard.ts';
+	import { Copy } from 'lucide-svelte';
 
 	export let image: string;
 	export let tag: string;
@@ -31,6 +33,17 @@
 			dockerfileContents = normalizeDockerfile(dockerfile);
 		})
 		.catch((error) => console.error('Error fetching repo images:', error));
+
+	async function copyDockerfile() {
+		copyTextToClipboard(dockerfileContents)
+			.then(success => {
+				if (success) {
+					console.log("Text copied successfully!");
+				} else {
+					console.log("Failed to copy text.");
+				}
+			});
+	}
 </script>
 
 <Dialog.Root>
@@ -50,7 +63,10 @@
 			</pre>
 		</ScrollArea>
 		<Dialog.Footer>
-
+			<Button onclick={copyDockerfile()} variant="default" class="dockerButton">
+				<Copy />
+				Copy Dockerfile
+			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
