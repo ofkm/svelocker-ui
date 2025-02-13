@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { version as currentVersion } from '$app/environment';
 </script>
 
 <div class="w-full border-b">
@@ -6,6 +7,15 @@
 		<div class="flex h-16 items-center">
 			<img src="/img/svelocker.png" class="mr-3 h-8 w-8" style="border-radius: 50%;" alt="Logo" />
 			<h1 class="text-lg font-medium poppins" data-testid="application-name">Svelocker UI</h1>
+		</div>
+		<div class="sm:flex items-center gap-4 hidden">
+				<a
+					href="https://github.com/kmendell/svelocker-ui"
+					class="duration-200 hover:text-blue-400 no-underline"
+					target={"_blank"}
+				>
+					<p>v{currentVersion}</p>
+				</a>
 		</div>
 	</div>
 </div>
