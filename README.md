@@ -1,6 +1,12 @@
 # <div align="center"><img src="https://github.com/user-attachments/assets/5a378b40-ce28-414d-a849-f31397425132" width="200"/><br />Svelocker</div>
 
-<div align="center"><h3>A Simple easy to use docker registry ui built with Typescript and SvelteKit.</h3></div>
+<div align="center"><h3>A Simple and Modern Docker Registry UI built with Typescript and SvelteKit.</h3>
+
+![image](https://github.com/user-attachments/assets/13696c67-4932-4507-9b39-4bc0a4b1aa24)
+</div>
+
+
+
 
 ## Features:
 
