@@ -10,16 +10,17 @@
 	export let data: PageData;
 	export let repoIndex: number;
 
-	getDockerTagsNew(env.PUBLIC_REGISTRY_URL, data.repos.repositories[repoIndex].name)
-		.then((repoImage) => {
-			tagsArray = repoImage.tags;
-		})
-		.catch((error) => console.error('Error fetching repo images:', error));
+	// getDockerTagsNew(env.PUBLIC_REGISTRY_URL, data.repos.repositories[repoIndex].name)
+	// 	.then((repoImage) => {
+	// 		tagsArray = repoImage.tags;
+	// 	})
+	// 	.catch((error) => console.error('Error fetching repo images:', error));
 
 	console.log(data.repos.repositories);
 </script>
 
-{#each tagsArray as tag}
+<!--{#each tagsArray as tag, index}-->
+{#each data.repos.repositories[repoIndex].images as tag}
 	{#if tag.name === 'latest'}
 		<MetadataDrawer tag={tag} repo={data.repos.repositories[repoIndex].name} isLatest={true} />
 	{:else}
