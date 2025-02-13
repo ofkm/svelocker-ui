@@ -3,7 +3,7 @@
 	import RepoImage from '$lib/components/docker-metadata/RepoImage.svelte';
 	import type { PageData } from '../../routes/$types';
 
-	let data: PageData = $props();
+	export let data: PageData;
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
