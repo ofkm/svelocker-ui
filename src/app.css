@@ -13,6 +13,11 @@ h3,
 	border-color: var(--color-blue-500) !important;
 }
 
+.latestBadge {
+	color: var(--color-emerald-500) !important;
+	border-color: var(--color-emerald-500) !important;
+}
+
 .badgeLinkLatest {
 	margin-right: 5px;
 	min-width: 40px;

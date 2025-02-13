@@ -7,6 +7,7 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import DockerfileDialog from '$lib/components/docker-metadata/ViewFileDialog.svelte';
 	import { convertTimeString } from '$lib/utils/time.ts';
+	import { Badge } from '$lib/components/ui/badge';
 
 	export let tag;
 	export let repo;
@@ -22,13 +23,18 @@
 	<Drawer.Content>
 		<div class="mx-auto w-full max-w-[85%]">
 			<Drawer.Header>
-				<Drawer.Title>{repo}:{tag.name}</Drawer.Title>
+				<Drawer.Title>{repo}:{tag.name}
+						{#if isLatest}
+							<span class="pl-3"><Badge class="latestBadge" variant="outline">Latest Version</Badge></span>
+						{/if}
+				</Drawer.Title>
 				<Drawer.Description>
 					{#if tag.metadata}
 						{tag.metadata.configDigest}
 					{:else}
 						No config Digest Found
 					{/if}
+					<Separator class="mt-3"/>
 				</Drawer.Description>
 			</Drawer.Header>
 			{#if tag.metadata}
