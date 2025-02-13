@@ -6,33 +6,37 @@
 	import { env } from '$env/dynamic/public'
 	import { copyTextToClipboard } from '$lib/utils/clipboard.ts';
 	import { Copy } from 'lucide-svelte';
+	import type { PageData } from '../../../routes/$types';
 
+	export let data: PageData;
 	export let image: string;
 	export let tag: string;
+	export let repoIndex: number;
+	export let tagIndex: number;
 
-	let dockerfileContents: string;
+	let dockerfileContents: string = data.repos.repositories[repoIndex].images[tagIndex].metadata.dockerFile;
 
-	function normalizeDockerfile(dockerfile: string): string {
-		// Split into lines and filter out empty lines
-		const lines = dockerfile.split("\n").filter(line => line.trim().length > 0);
+	// function normalizeDockerfile(dockerfile: string): string {
+	// 	// Split into lines and filter out empty lines
+	// 	const lines = dockerfile.split("\n").filter(line => line.trim().length > 0);
+	//
+	// 	if (lines.length === 0) return ""; // Return empty string if no content
+	//
+	// 	// Find the smallest leading whitespace indentation
+	// 	const minIndent = Math.min(
+	// 		...lines
+	// 			.map(line => line.match(/^(\s*)/)?.[1].length ?? 0)
+	// 	);
+	//
+	// 	// Remove the minimum indentation from each line
+	// 	return lines.map(line => line.slice(minIndent)).join("\n");
+	// }
 
-		if (lines.length === 0) return ""; // Return empty string if no content
-
-		// Find the smallest leading whitespace indentation
-		const minIndent = Math.min(
-			...lines
-				.map(line => line.match(/^(\s*)/)?.[1].length ?? 0)
-		);
-
-		// Remove the minimum indentation from each line
-		return lines.map(line => line.slice(minIndent)).join("\n");
-	}
-
-	fetchDockerfile(env.PUBLIC_REGISTRY_URL, image, tag)
-		.then((dockerfile) => {
-			dockerfileContents = normalizeDockerfile(dockerfile);
-		})
-		.catch((error) => console.error('Error fetching repo images:', error));
+	// fetchDockerfile(env.PUBLIC_REGISTRY_URL, image, tag)
+	// 	.then((dockerfile) => {
+	// 		dockerfileContents = normalizeDockerfile(dockerfile);
+	// 	})
+	// 	.catch((error) => console.error('Error fetching repo images:', error));
 
 	async function copyDockerfile() {
 		copyTextToClipboard(dockerfileContents)

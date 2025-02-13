@@ -8,7 +8,11 @@
 	import DockerfileDialog from '$lib/components/docker-metadata/ViewFileDialog.svelte';
 	import { convertTimeString } from '$lib/utils/time.ts';
 	import { Badge } from '$lib/components/ui/badge';
+	import type { PageData } from '../../../routes/$types';
 
+	export let data: PageData;
+	export let repoIndex: number;
+	export let tagIndex: number;
 	export let tag;
 	export let repo;
 	export let isLatest: boolean;
@@ -72,7 +76,7 @@
 			<Drawer.Footer>
 				<div class="grid gap-4 py-4">
 					<div class="grid grid-col-2 grid-rows-1 grid-flow-col gap-4 items-center">
-						<DockerfileDialog image={repo} tag={tag.name}/>
+						<DockerfileDialog repoIndex={repoIndex} tagIndex={tagIndex} data={data} image={repo} tag={tag.name}/>
 						<Drawer.Close disabled aria-label="Deleting Tags is not Implemented yet." class="{buttonVariants({ variant: 'destructive' })}">
 							Delete Tag
 						</Drawer.Close>

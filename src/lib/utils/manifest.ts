@@ -123,13 +123,22 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 
 		const config = await configResponse.json();
 
+		// Extract Dockerfile commands from history
+		const history = config.history || [];
+		const dockerfileCommands = history
+			.map((entry: any) => entry.created_by)
+			.filter((command: string) => command && !command.includes("#(nop)")) // Remove metadata commands
+			.map((command: string) => command.replace("/bin/sh -c ", "")) // Clean up the commands
+			.join("\n");
+
 		// Extract important metadata
 		const metadata = {
 			created: config.created, // Creation timestamp
 			os: config.os, // OS type
 			architecture: config.architecture, // CPU architecture
 			author: config.author, // Image author (if available)
-			history: config.history?.map((entry: any) => entry.created_by), // Commands used
+			// history: config.history?.map((entry: any) => entry.created_by),
+			dockerFile: dockerfileCommands,
 			configDigest: configDigest
 		};
 
