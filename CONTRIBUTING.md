@@ -1,10 +1,6 @@
 # Contributing
 
-I am happy that you want to contribute toSvelocker and help to make it better! All contributions are welcome, including issues, suggestions, pull requests and more.
-
 ## Getting started
-
-You've found a bug, have suggestion or something else, just create an issue on GitHub and we can get in touch.
 
 ## Submit a Pull Request
 
@@ -40,14 +36,3 @@ The frontend is built with [SvelteKit](https://kit.svelte.dev) and written in Ty
 2. Install the dependencies with `npm install`
 3. Start the frontend with `npm run dev`
 
-You're all set!
-
-### Testing
-
-We are using [Playwright](https://playwright.dev) for end-to-end testing.
-
-The tests can be run like this:
-
-1. Start the backend normally
-2. Start the frontend in production mode with `npm run build && node --env-file=.env build/index.js`
-3. Run the tests with `npm run test`
