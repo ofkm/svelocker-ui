@@ -8,7 +8,6 @@
 ### Bug Fixes
 
 * page overflow-y, and cursor pointer mismatch ([c061ac8](https://github.com/kmendell/svelocker-ui/commit/c061ac8937236a8f79125522e3b4da61756c8b9b))
-## [0.11.1](https://github.com/kmendell/svelocker-ui/compare/v0.11.0...v0.11.1) (2025-02-12)
 
 ## [0.11.1](https://github.com/kmendell/svelocker-ui/compare/v0.11.0...v0.11.1) (2025-02-12)
 
