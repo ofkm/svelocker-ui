@@ -1,40 +1,3 @@
-export async function fetchDockerManifest(url: string) {
-	try {
-		const response = await fetch(url, {
-			headers: {
-				Accept: 'application/vnd.docker.distribution.manifest.v2+json'
-			}
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! Status: ${response.status}`);
-		}
-
-		const manifest = await response.json();
-
-		console.log('Docker Manifest:', manifest);
-
-		// Extracting key details
-		const schemaVersion = manifest.schemaVersion;
-		const mediaType = manifest.mediaType;
-		const configDigest = manifest.config?.digest;
-		const layers = manifest.layers?.map((layer: any) => ({
-			mediaType: layer.mediaType,
-			size: layer.size,
-			digest: layer.digest
-		}));
-
-		return {
-			schemaVersion,
-			mediaType,
-			configDigest,
-			layers
-		};
-	} catch (error) {
-		console.error('Error fetching manifest:', error);
-	}
-}
-
 export async function fetchDockerfile(registryUrl: string, repo: string, tag: string) {
 	try {
 		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
@@ -81,11 +44,6 @@ export async function fetchDockerfile(registryUrl: string, repo: string, tag: st
 	}
 }
 
-// Example usage
-// fetchDockerfile("https://kmcr.cc", "ofkm/caddy", "latest")
-// 	.then(dockerfile => console.log("Reconstructed Dockerfile:\n", dockerfile))
-// 	.catch(error => console.error("Fetch error:", error));
-
 export async function fetchDockerMetadata(registryUrl: string, repo: string, tag: string) {
 	try {
 		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
@@ -123,6 +81,9 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 
 		const config = await configResponse.json();
 
+		const author = config.author || config.config?.Labels?.["org.opencontainers.image.authors"] || "Unknown";
+
+
 		const exposedPorts = config.config?.ExposedPorts
 			? Object.keys(config.config.ExposedPorts)
 			: [];
@@ -140,8 +101,7 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			created: config.created, // Creation timestamp
 			os: config.os, // OS type
 			architecture: config.architecture, // CPU architecture
-			author: config.author, // Image author (if available)
-			// history: config.history?.map((entry: any) => entry.created_by),
+			author: author,
 			dockerFile: dockerfileCommands,
 			configDigest: configDigest,
 			exposedPorts: exposedPorts,
