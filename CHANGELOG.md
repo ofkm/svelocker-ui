@@ -1,3 +1,8 @@
+## [0.14.1](https://github.com/kmendell/svelocker-ui/compare/v0.14.0...v0.14.1) (2025-02-13)
+
+### Bug Fixes
+
+* use server-side running for docker tags ([ac1ba90](https://github.com/kmendell/svelocker-ui/commit/ac1ba90bc625167f0dd5f72eb08174d951fb63e2))
 ## [0.14.0](https://github.com/kmendell/svelocker-ui/compare/v0.13.0...v0.14.0) (2025-02-13)
 
 ### Features
