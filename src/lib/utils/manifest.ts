@@ -123,6 +123,10 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 
 		const config = await configResponse.json();
 
+		const exposedPorts = config.config?.ExposedPorts
+			? Object.keys(config.config.ExposedPorts)
+			: [];
+
 		// Extract Dockerfile commands from history
 		const history = config.history || [];
 		const dockerfileCommands = history
@@ -139,7 +143,8 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			author: config.author, // Image author (if available)
 			// history: config.history?.map((entry: any) => entry.created_by),
 			dockerFile: dockerfileCommands,
-			configDigest: configDigest
+			configDigest: configDigest,
+			exposedPorts: exposedPorts
 		};
 
 		return metadata;

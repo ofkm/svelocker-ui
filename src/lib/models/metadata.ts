@@ -5,4 +5,5 @@ export type ImageMetadata = {
 	author?: string;
 	dockerFile: string;
 	configDigest: string;
+	exposedPorts: string[];
 };
