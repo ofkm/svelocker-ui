@@ -73,7 +73,7 @@
 				<div class="grid gap-4 py-4">
 					<div class="grid grid-col-2 grid-rows-1 grid-flow-col gap-4 items-center">
 						<DockerfileDialog image={repo} tag={tag.name}/>
-						<Drawer.Close class="{buttonVariants({ variant: 'destructive' })}">
+						<Drawer.Close disabled aria-label="Deleting Tags is not Implemented yet." class="{buttonVariants({ variant: 'destructive' })}">
 							Delete Tag
 						</Drawer.Close>
 					</div>
