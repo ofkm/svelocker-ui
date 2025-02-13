@@ -6,6 +6,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import DockerfileDialog from '$lib/components/docker-metadata/ViewFileDialog.svelte';
+	import { convertTimeString } from '$lib/utils/time.ts';
 
 	export let tag;
 	export let repo;
@@ -49,7 +50,7 @@
 							<Label for="created" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
 								<CalendarCog class="w-5 h-5" /> Created
 							</Label>
-							<p class="text-sm font-semibold pb-2" id="created">{tag.metadata.created}</p>
+							<p class="text-sm font-semibold pb-2" id="created">{convertTimeString(tag.metadata.created)}</p>
 						</div>
 						<div>
 							{#if tag.metadata.author}
