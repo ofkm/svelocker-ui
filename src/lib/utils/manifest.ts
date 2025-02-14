@@ -9,13 +9,13 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 					'application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json'
 			}
 		});
-
 		if (!manifestResponse.ok) {
 			throw new Error(`Failed to fetch manifest: ${manifestResponse.status}`);
 		}
 
 		const manifest = await manifestResponse.json();
 		const configDigest = manifest.config?.digest;
+		const contentDigest = manifestResponse.headers.get("docker-content-digest");
 
 		if (!configDigest) {
 			throw new Error('Config digest not found in manifest.');
@@ -63,7 +63,8 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			totalSize: formatSize(totalSize),
 			workDir: config.config.WorkingDir,
 			command: cmd,
-			description: description
+			description: description,
+			contentDigest: contentDigest
 		};
 	} catch (error) {
 		console.error('Error fetching metadata:', error);

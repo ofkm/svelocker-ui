@@ -10,4 +10,5 @@ export type ImageMetadata = {
 	workDir: string;
 	command: string;
 	description: string;
+	contentDigest: string;
 };

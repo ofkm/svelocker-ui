@@ -20,13 +20,17 @@
 	export let repo;
 	export let isLatest: boolean;
 
-	async function deleteTag(name: string, tag: string) {
-		deleteDockerManifest(env.PUBLIC_REGISTRY_URL, name, tag).then(success => {
+	async function deleteTag(name: string, tag: string, configDigest: string) {
+		deleteDockerManifest(env.PUBLIC_REGISTRY_URL, name, tag, configDigest).then(success => {
 			if (success) {
-				toast.success("Docker Tag Deleted Successfully");
+				toast.success("Docker Tag Deleted Successfully", {
+					description: "Run `registry garbage-collect config.yml` on your registry"
+				});
 				setTimeout(() => location.reload(), 5000);
 			} else {
-				toast.error("Error Deleting Docker Tag")
+				toast.error("Error Deleting Docker Tag", {
+					description: "Check your Registry configuration."
+				});
 				console.log("Failed to copy text.");
 			}
 		});
@@ -114,11 +118,7 @@
 				<div class="grid gap-4 py-4">
 					<div class="grid grid-col-2 grid-rows-1 grid-flow-col gap-4 items-center">
 						<DockerfileDialog repoIndex={repoIndex} tagIndex={tagIndex} data={data} image={repo} tag={tag.name}/>
-<!--						<Button variant="destructive" onclick={deleteTag(repo, tag.name)}>Delete Tag</Button>-->
-						<Button variant="destructive">Delete Tag</Button>
-<!--						<Drawer.Close  class="{buttonVariants({ variant: 'destructive' })}">-->
-<!--							Delete Tag-->
-<!--						</Drawer.Close>-->
+						<Button onclick={() => deleteTag(repo, tag.name, tag.metadata.contentDigest)} class="drawer-content" variant="destructive">Delete Tag</Button>
 					</div>
 				</div>
 			</Drawer.Footer>
