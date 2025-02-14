@@ -16,12 +16,16 @@ export async function getDockerTagsNew(registryUrl: string, repo: string): Promi
 	try {
 		data = await response.json();
 
-		tags = await Promise.all(
-			data.tags.map(async (tag) => {
-				const metadata = await fetchDockerMetadata(registryUrl, repo, tag);
-				return { name: tag, metadata };
-			})
-		);
+		if (data.tags) {
+			tags = await Promise.all(
+				data.tags.map(async (tag) => {
+					const metadata = await fetchDockerMetadata(registryUrl, repo, tag);
+					return { name: tag, metadata };
+				})
+			);
+		}
+
+
 	} catch (error) {
 		console.error('Error fetching repo images:', error);
 		return {
