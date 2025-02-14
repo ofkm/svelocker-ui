@@ -5,6 +5,7 @@
 	import { copyTextToClipboard } from '$lib/utils/clipboard.ts';
 	import { Copy } from 'lucide-svelte';
 	import type { PageData } from '../../../routes/$types';
+	import { toast } from "svelte-sonner";
 
 	export let data: PageData;
 	export let image: string;
@@ -19,6 +20,7 @@
 			.then(success => {
 				if (success) {
 					console.log("Text copied successfully!");
+					toast.success("Dockerfile Copied successfully");
 				} else {
 					console.log("Failed to copy text.");
 				}
