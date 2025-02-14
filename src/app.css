@@ -67,7 +67,8 @@ h3,
 
 		--radius: 0.5rem;
 
-		overflow: hidden;
+		overflow: auto;
+
 	}
 
 	.dark {

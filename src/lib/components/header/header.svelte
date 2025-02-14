@@ -2,8 +2,8 @@
 	import { version as currentVersion } from '$app/environment';
 </script>
 
-<div class="w-full border-b">
-	<div class="mx-auto flex w-full items-center justify-between px-4 md:px-10">
+<header class="w-full border-b flex">
+	<div class="flex w-full items-center justify-between px-4 md:px-10">
 		<div class="flex h-16 items-center">
 			<img src="/img/svelocker.png" class="mr-3 h-8 w-8" style="border-radius: 50%;" alt="Logo" />
 			<h1 class="text-lg font-medium poppins" data-testid="application-name">Svelocker UI</h1>
@@ -18,4 +18,4 @@
 				</a>
 		</div>
 	</div>
-</div>
+</header>

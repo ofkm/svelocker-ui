@@ -1,19 +1,74 @@
 <script lang="ts">
 	import Repo from '$lib/components/repo.svelte';
+	import { writable, derived } from "svelte/store";
+	import * as Pagination from "$lib/components/ui/pagination/index.js";
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	// Constants
+	const ITEMS_PER_PAGE = 10;
+	let currentPage = $state(writable(1)); // 🔹 Use `const`, not `let`
+	const totalPages = Math.ceil(data.repos.repositories.length / ITEMS_PER_PAGE);
+
+	// Compute paginated data
+	const paginatedData = derived(currentPage, ($currentPage) =>
+		data.repos.repositories.slice(($currentPage - 1) * ITEMS_PER_PAGE, $currentPage * ITEMS_PER_PAGE)
+	);
+
+	// Functions to update pages safely
+	function prevPage() {
+		currentPage.update(n => Math.max(1, n - 1));
+	}
+
+	function nextPage() {
+		currentPage.update(n => Math.min(totalPages, n + 1));
+	}
+
+	function goToPage(page: number) {
+		if (page >= 1 && page <= totalPages) {
+			currentPage.set(page);
+		}
+	}
 </script>
 
 <svelte:head>
 	<title>Svelocker UI</title>
 </svelte:head>
 
-<div class="flex min-h-screen max-h-screen w-full flex-col justify-between bg-slate-900/80">
+<div class="flex min-h-screen w-full flex-col justify-between bg-slate-900/80 overflow-hidden">
 	{#if data.repos.repositories.length > 0}
-		<div class="grid grid-cols-1 gap-4 p-10">
-			<Repo data={data} />
+		<!-- Repo List -->
+		<div class="grid grid-cols-1 gap-4">
+			<Repo filteredData={$paginatedData} data={data} />
 		</div>
+
+		<!-- Pagination Component -->
+		<Pagination.Root count={data.repos.repositories.length} perPage={ITEMS_PER_PAGE} class="">
+			{#snippet children({ pages })}
+				<Pagination.Content>
+					<Pagination.Item>
+						<Pagination.PrevButton on:click={prevPage} />
+					</Pagination.Item>
+					{#each pages as page (page.key)}
+						{#if page.type === "ellipsis"}
+							<Pagination.Item>
+								<Pagination.Ellipsis />
+							</Pagination.Item>
+						{:else}
+							<Pagination.Item isVisible={$currentPage === page.value}>
+								<Pagination.Link {page} isActive={$currentPage === page.value} on:click={() => goToPage(page.value)}>
+									{page.value}
+								</Pagination.Link>
+							</Pagination.Item>
+						{/if}
+					{/each}
+					<Pagination.Item>
+						<Pagination.NextButton on:click={nextPage} />
+					</Pagination.Item>
+				</Pagination.Content>
+			{/snippet}
+		</Pagination.Root>
 	{:else}
 		<div class="grid grid-cols-1 gap-4 p-10">
 			<h2 class="text-lg poppins">Could not pull registry data...</h2>
