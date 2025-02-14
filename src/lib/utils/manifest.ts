@@ -83,6 +83,7 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 
 		const author = config.author || config.config?.Labels?.["org.opencontainers.image.authors"] || "Unknown";
 
+		const cmd = config.config?.Cmd ? config.config.Cmd.join(" ") : "Unknown Command";
 
 		const exposedPorts = config.config?.ExposedPorts
 			? Object.keys(config.config.ExposedPorts)
@@ -105,7 +106,9 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			dockerFile: dockerfileCommands,
 			configDigest: configDigest,
 			exposedPorts: exposedPorts,
-			totalSize: formatSize(totalSize)
+			totalSize: formatSize(totalSize),
+			workDir: config.config.WorkingDir,
+			command: cmd
 		};
 
 		return metadata;
@@ -123,8 +126,3 @@ function formatSize(bytes: number): string {
 	}
 	return `${bytes.toFixed(2)} ${units[i]}`;
 }
-
-// Example usage
-// fetchDockerMetadata("https://kmcr.cc", "ofkm/caddy", "latest")
-// 	.then(data => console.log("Extracted Metadata:", data))
-// 	.catch(error => console.error("Fetch error:", error));

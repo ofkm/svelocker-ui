@@ -7,4 +7,6 @@ export type ImageMetadata = {
 	configDigest: string;
 	exposedPorts: string[];
 	totalSize: string;
+	workDir: string;
+	command: string;
 };

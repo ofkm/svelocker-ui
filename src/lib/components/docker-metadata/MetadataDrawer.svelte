@@ -1,7 +1,7 @@
 <script lang="ts">
 
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { AppWindowMac, CalendarCog, CircuitBoard, UserPen, EthernetPort, Scaling } from 'lucide-svelte';
+	import { AppWindowMac, CalendarCog, CircuitBoard, UserPen, EthernetPort, Scaling, Terminal, FolderCode } from 'lucide-svelte';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Label } from '$lib/components/ui/label';
 	import * as Drawer from '$lib/components/ui/drawer';
@@ -43,7 +43,7 @@
 			</Drawer.Header>
 			{#if tag.metadata}
 				<div class="pl-4 grid gap-4 py-4">
-					<div class="grid col-auto grid-rows-3 grid-flow-col gap-4 items-center">
+					<div class="grid col-auto grid-rows-4 grid-flow-col gap-4 items-center">
 						<div class="">
 							<Label for="os" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
 								<AppWindowMac class="w-5 h-5" /> OS
@@ -63,6 +63,12 @@
 							<p class="text-sm font-semibold pb-2" id="created">{convertTimeString(tag.metadata.created)}</p>
 						</div>
 						<div>
+							<Label for="author" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
+								<UserPen class="w-5 h-5" /> Author
+							</Label>
+							<p class="text-sm font-semibold pb-2" id="author">{tag.metadata.author}</p>
+						</div>
+						<div>
 							<Label for="exposedPorts" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
 								<EthernetPort class="w-5 h-5" /> Exposed Ports
 							</Label>
@@ -75,10 +81,16 @@
 							<p class="text-sm font-semibold pb-2" id="totalSize">{tag.metadata.totalSize}</p>
 						</div>
 						<div>
-								<Label for="author" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
-									<UserPen class="w-5 h-5" /> Author
-								</Label>
-								<p class="text-sm font-semibold pb-2" id="author">{tag.metadata.author}</p>
+							<Label for="workingDirectory" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
+								<FolderCode class="w-5 h-5" /> Working Directory
+							</Label>
+							<p class="text-sm font-semibold pb-2" id="workingDirectory">{tag.metadata.workDir}</p>
+						</div>
+						<div>
+							<Label for="command" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
+								<Terminal class="w-5 h-5" /> Command
+							</Label>
+							<p class="text-sm font-semibold pb-2" id="command">{tag.metadata.command}</p>
 						</div>
 					</div>
 				</div>
