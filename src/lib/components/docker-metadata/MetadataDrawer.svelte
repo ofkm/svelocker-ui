@@ -30,8 +30,7 @@
 			} else {
 				toast.error("Error Deleting Docker Tag", {
 					description: "Check your Registry configuration."
-				});
-				console.log("Failed to copy text.");
+				});;
 			}
 		});
 	}
