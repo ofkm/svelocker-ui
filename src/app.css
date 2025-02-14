@@ -33,6 +33,7 @@ h3,
 	color: var(--color-emerald-500);
 	border-color: var(--color-emerald-500);
 	font-family: 'Poppins' sans-serif;
+	float: left;
 }
 
 .badgeLink {
