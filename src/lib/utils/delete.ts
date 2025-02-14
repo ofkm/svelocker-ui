@@ -1,6 +1,7 @@
 export async function deleteDockerManifest(registryUrl: string, repo: string, tag: string) {
 	try {
 		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
+		console.log(manifestUrl)
 
 		// Set up the request headers
 		const headers = {
