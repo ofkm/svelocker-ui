@@ -1,3 +1,17 @@
+## [0.16.0](https://github.com/kmendell/svelocker-ui/compare/v0.15.0...v0.16.0) (2025-02-14)
+
+### Features
+
+* add description to metadata ([f7b45e0](https://github.com/kmendell/svelocker-ui/commit/f7b45e01101d6314cec5b6834d684960e2b9fa42))
+* add pagination ([be3966c](https://github.com/kmendell/svelocker-ui/commit/be3966c72456c5430c3ce419275800d928899c8c))
+
+### Bug Fixes
+
+* float latest tag left ([ea8e0db](https://github.com/kmendell/svelocker-ui/commit/ea8e0db20e1f9955e0c26d285e1a116fb7119f1a))
+* make all tag buttons equal size ([8b37fb5](https://github.com/kmendell/svelocker-ui/commit/8b37fb5c1f95bd0b3e1ab87e75500674b2969814))
+* use roboto font globally ([8994cb7](https://github.com/kmendell/svelocker-ui/commit/8994cb75edd5edff16187feee9d0b0fc11f857d8))
+* version text hover ([b24898e](https://github.com/kmendell/svelocker-ui/commit/b24898e748ba53a3b4aaa7dc855569cb509c768b))
+* void return type on copy ([8296b81](https://github.com/kmendell/svelocker-ui/commit/8296b81e6699dd279d722573f8125c9da0c8d9e1))
 ## [0.15.0](https://github.com/kmendell/svelocker-ui/compare/v0.14.2...v0.15.0) (2025-02-14)
 
 ### Features
