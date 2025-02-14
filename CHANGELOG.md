@@ -1,3 +1,14 @@
+## [0.15.0](https://github.com/kmendell/svelocker-ui/compare/v0.14.2...v0.15.0) (2025-02-14)
+
+### Features
+
+* add container size to drawer ([ddb791b](https://github.com/kmendell/svelocker-ui/commit/ddb791b0732cf4078754d29861892b98a74f4d90))
+* add exposed ports in metadata drawer ([ac6508f](https://github.com/kmendell/svelocker-ui/commit/ac6508f2dfd5f12e2b012d89f0f60f25d6ed16b3))
+* add workDirectory and command to drawer ([e3041aa](https://github.com/kmendell/svelocker-ui/commit/e3041aa134ac679add1cea0f1349b3f310e77501))
+
+### Bug Fixes
+
+* show author by specific labels ([41d1b1a](https://github.com/kmendell/svelocker-ui/commit/41d1b1a970d2c632537518826c1bd8a716ea9d04))
 ## [0.14.2](https://github.com/kmendell/svelocker-ui/compare/v0.14.1...v0.14.2) (2025-02-13)
 
 ### Bug Fixes
