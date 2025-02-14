@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Repo from '$lib/components/repo.svelte';
+	import RepoCard from '$lib/components/RepoCard.svelte';
 	import { writable, derived } from "svelte/store";
 	import * as Pagination from "$lib/components/ui/pagination/index.js";
 	import type { PageProps } from './$types';
@@ -38,9 +38,9 @@
 
 <div class="flex-1 w-full flex-col justify-between bg-slate-900/70">
 	{#if data.repos.repositories.length > 0}
-		<!-- Repo List -->
+		<!-- RepoCard List -->
 		<div class="grid grid-cols-1 gap-4">
-			<Repo filteredData={$paginatedData} data={data} />
+			<RepoCard filteredData={$paginatedData} data={data} />
 		</div>
 
 		<!-- Pagination Component -->
