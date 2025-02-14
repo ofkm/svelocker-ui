@@ -9,4 +9,5 @@ export type ImageMetadata = {
 	totalSize: string;
 	workDir: string;
 	command: string;
+	description: string;
 };

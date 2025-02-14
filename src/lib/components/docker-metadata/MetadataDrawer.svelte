@@ -29,12 +29,12 @@
 			<Drawer.Header>
 				<Drawer.Title>{repo}:{tag.name}
 						{#if isLatest}
-							<span class="pl-3"><Badge class="latestBadge" variant="outline">Latest Version</Badge></span>
+							<span class="pl-3"><Badge class="latestBadge font-light" variant="outline">Latest Version</Badge></span>
 						{/if}
 				</Drawer.Title>
 				<Drawer.Description>
 					{#if tag.metadata}
-						{tag.metadata.configDigest}
+						<span class="text-foreground mx-auto">{tag.metadata.description}</span><br />{tag.metadata.configDigest}
 					{:else}
 						No config Digest Found
 					{/if}

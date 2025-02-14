@@ -37,6 +37,8 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 
 		const cmd = config.config?.Cmd ? config.config.Cmd.join(" ") : "Unknown Command";
 
+		const description = config.config?.Labels?.["org.opencontainers.image.description"] || "No description found";
+
 		const exposedPorts = config.config?.ExposedPorts
 			? Object.keys(config.config.ExposedPorts)
 			: [];
@@ -60,7 +62,8 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			exposedPorts: exposedPorts,
 			totalSize: formatSize(totalSize),
 			workDir: config.config.WorkingDir,
-			command: cmd
+			command: cmd,
+			description: description
 		};
 	} catch (error) {
 		console.error('Error fetching metadata:', error);
