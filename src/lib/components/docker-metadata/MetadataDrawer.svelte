@@ -24,13 +24,13 @@
 		deleteDockerManifest(env.PUBLIC_REGISTRY_URL, name, tag, configDigest).then(success => {
 			if (success) {
 				toast.success("Docker Tag Deleted Successfully", {
-					description: "Run `registry garbage-collect config.yml` on your registry"
+					description: "Run `registry garbage-collect /etc/docker/registry/config.yml` to cleanup."
 				});
 				setTimeout(() => location.reload(), 5000);
 			} else {
 				toast.error("Error Deleting Docker Tag", {
 					description: "Check your Registry configuration."
-				});;
+				});
 			}
 		});
 	}
