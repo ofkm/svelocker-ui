@@ -8,30 +8,6 @@ interface RegistryRepos {
 	repositories: RegistryRepo[];
 }
 
-
-// TODO :- Fix Function for new Model Types, Include getting metadata and tags in this function
-export async function getRegistryRepos(url: string): Promise<RegistryRepos> {
-	try {
-		const response = await fetch(url);
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		const data: { repositories: string[] } = await response.json();
-
-
-
-		return {
-			repositories: data.repositories.map((repo) => ({ name: repo })),
-		};
-	} catch (error) {
-		// Handle errors here
-		console.error(error);
-		throw error;
-	}
-}
-
 export async function getRegistryReposNew(url: string): Promise<RegistryRepos> {
 	try {
 		const response = await fetch(url);

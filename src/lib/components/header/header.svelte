@@ -14,7 +14,7 @@
 					class="duration-200 hover:text-blue-400 no-underline"
 					target={"_blank"}
 				>
-					<p>v{currentVersion}</p>
+					<p class="text-muted-foreground">v{currentVersion}</p>
 				</a>
 		</div>
 	</div>

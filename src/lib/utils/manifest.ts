@@ -1,49 +1,3 @@
-export async function fetchDockerfile(registryUrl: string, repo: string, tag: string) {
-	try {
-		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
-
-		// Fetch the manifest JSON
-		const manifestResponse = await fetch(manifestUrl, {
-			headers: { "Accept": "application/vnd.docker.distribution.manifest.v2+json" },
-		});
-
-		if (!manifestResponse.ok) {
-			throw new Error(`Failed to fetch manifest: ${manifestResponse.status}`);
-		}
-
-		const manifest = await manifestResponse.json();
-		const configDigest = manifest.config?.digest;
-
-		if (!configDigest) {
-			throw new Error("Config digest not found in manifest.");
-		}
-
-		console.log("Config Digest:", configDigest);
-
-		// Fetch the image config JSON
-		const configUrl = `${registryUrl}/v2/${repo}/blobs/${configDigest}`;
-		const configResponse = await fetch(configUrl);
-
-		if (!configResponse.ok) {
-			throw new Error(`Failed to fetch config JSON: ${configResponse.status}`);
-		}
-
-		const config = await configResponse.json();
-
-		// Extract Dockerfile commands from history
-		const history = config.history || [];
-		const dockerfileCommands = history
-			.map((entry: any) => entry.created_by)
-			.filter((command: string) => command && !command.includes("#(nop)")) // Remove metadata commands
-			.map((command: string) => command.replace("/bin/sh -c ", "")) // Clean up the commands
-			.join("\n");
-
-		return dockerfileCommands;
-	} catch (error) {
-		console.error("Error fetching Dockerfile:", error);
-	}
-}
-
 export async function fetchDockerMetadata(registryUrl: string, repo: string, tag: string) {
 	try {
 		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
@@ -55,8 +9,6 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 					'application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json'
 			}
 		});
-
-		// const manifestResponse = await fetch(manifestUrl, requestInit);
 
 		if (!manifestResponse.ok) {
 			throw new Error(`Failed to fetch manifest: ${manifestResponse.status}`);
@@ -81,7 +33,7 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 
 		const config = await configResponse.json();
 
-		const author = config.author || config.config?.Labels?.["org.opencontainers.image.authors"] || "Unknown";
+		const author = config.config?.Labels?.["org.opencontainers.image.authors"] || config.config?.Labels?.["org.opencontainers.image.vendor"] || "Unknown";
 
 		const cmd = config.config?.Cmd ? config.config.Cmd.join(" ") : "Unknown Command";
 
@@ -98,7 +50,7 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			.join("\n");
 
 		// Extract important metadata
-		const metadata = {
+		return {
 			created: config.created, // Creation timestamp
 			os: config.os, // OS type
 			architecture: config.architecture, // CPU architecture
@@ -110,8 +62,6 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			workDir: config.config.WorkingDir,
 			command: cmd
 		};
-
-		return metadata;
 	} catch (error) {
 		console.error('Error fetching metadata:', error);
 	}
