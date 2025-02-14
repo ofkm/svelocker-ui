@@ -3,6 +3,7 @@
 	import { writable, derived } from "svelte/store";
 	import * as Pagination from "$lib/components/ui/pagination/index.js";
 	import type { PageProps } from './$types';
+	import { env } from '$env/dynamic/public'
 
 	let { data }: PageProps = $props();
 
@@ -38,6 +39,8 @@
 
 <div class="flex-1 w-full flex-col justify-between bg-slate-900/70">
 	{#if data.repos.repositories.length > 0}
+
+		<h2 class="text-white text-2xl pl-10 pt-10">Showing {data.repos.repositories.length} Images for {env.PUBLIC_REGISTRY_NAME}</h2>
 		<!-- RepoCard List -->
 		<div class="grid grid-cols-1 gap-4">
 			<RepoCard filteredData={$paginatedData} data={data} />

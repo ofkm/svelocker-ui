@@ -25,6 +25,7 @@ Modify the env file to fit your setup:
 
 ```env
 PUBLIC_REGISTRY_URL=https://yourregistry.com
+PUBLIC_REGISTRY_NAME=My Docker Registry
 ```
 
 ```yaml

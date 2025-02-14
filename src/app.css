@@ -6,7 +6,11 @@ h1,
 h2,
 h3,
 .poppins {
-	font-family: 'Poppins' sans-serif;
+	font-family: "Roboto", serif;
+	font-optical-sizing: auto;
+	font-weight: 100;
+	font-style: normal;
+	font-variation-settings: "wdth" 100;
 }
 
 .roboto-font {
