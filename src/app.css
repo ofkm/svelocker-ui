@@ -18,6 +18,14 @@ h3,
 	border-color: var(--color-emerald-500) !important;
 }
 
+.pagination-footer {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	padding-bottom: 1em; /* add some space at the top */
+}
+
 .badgeLinkLatest {
 	margin-right: 5px;
 	min-width: 40px;
@@ -66,8 +74,6 @@ h3,
 		--ring: 240 4.9% 83.9%;
 
 		--radius: 0.5rem;
-
-		overflow: auto;
 
 	}
 

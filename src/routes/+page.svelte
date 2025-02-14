@@ -36,7 +36,7 @@
 	<title>Svelocker UI</title>
 </svelte:head>
 
-<div class="flex min-h-screen w-full flex-col justify-between bg-slate-900/80 overflow-hidden">
+<div class="flex-1 w-full flex-col justify-between bg-slate-900/80">
 	{#if data.repos.repositories.length > 0}
 		<!-- Repo List -->
 		<div class="grid grid-cols-1 gap-4">
@@ -44,7 +44,7 @@
 		</div>
 
 		<!-- Pagination Component -->
-		<Pagination.Root count={data.repos.repositories.length} perPage={ITEMS_PER_PAGE} class="">
+		<Pagination.Root count={data.repos.repositories.length} perPage={ITEMS_PER_PAGE} class="sticky-bottom-0 z-10 pagination-footer">
 			{#snippet children({ pages })}
 				<Pagination.Content>
 					<Pagination.Item>
