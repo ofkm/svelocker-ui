@@ -1,3 +1,4 @@
+## [0.16.1](https://github.com/kmendell/svelocker-ui/compare/v0.16.0...v0.16.1) (2025-02-14)
 ## [0.16.0](https://github.com/kmendell/svelocker-ui/compare/v0.15.0...v0.16.0) (2025-02-14)
 
 ### Features
