@@ -1,3 +1,4 @@
+## [0.14.3](https://github.com/kmendell/svelocker-ui/compare/v0.14.2...v0.14.3) (2025-02-14)
 ## [0.14.2](https://github.com/kmendell/svelocker-ui/compare/v0.14.1...v0.14.2) (2025-02-13)
 
 ### Bug Fixes
