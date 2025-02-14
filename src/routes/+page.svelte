@@ -36,7 +36,7 @@
 	<title>Svelocker UI</title>
 </svelte:head>
 
-<div class="flex-1 w-full flex-col justify-between bg-slate-900/80">
+<div class="flex-1 w-full flex-col justify-between bg-slate-900/70">
 	{#if data.repos.repositories.length > 0}
 		<!-- Repo List -->
 		<div class="grid grid-cols-1 gap-4">
