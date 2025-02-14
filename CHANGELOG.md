@@ -1,3 +1,8 @@
+## [0.16.2](https://github.com/kmendell/svelocker-ui/compare/v0.16.1...v0.16.2) (2025-02-14)
+
+### Bug Fixes
+
+* background color ([b1914b5](https://github.com/kmendell/svelocker-ui/commit/b1914b535551e1accaa213c59393637752694c49))
 ## [0.16.1](https://github.com/kmendell/svelocker-ui/compare/v0.16.0...v0.16.1) (2025-02-14)
 ## [0.16.0](https://github.com/kmendell/svelocker-ui/compare/v0.15.0...v0.16.0) (2025-02-14)
 
