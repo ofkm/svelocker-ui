@@ -20,7 +20,7 @@
 
 <Drawer.Root>
 	<Drawer.Trigger
-		class="{buttonVariants({ variant: 'outline' })} {isLatest ? 'badgeLinkLatest text-center border-solid' : 'badgeLink text-center border-solid'}"
+		class="{buttonVariants({ variant: 'outline' })} {isLatest ? 'badgeLinkLatest text-center border-solid w-20' : 'badgeLink text-center border-solid w-20'}"
 	>
 		{tag.name}
 	</Drawer.Trigger>
