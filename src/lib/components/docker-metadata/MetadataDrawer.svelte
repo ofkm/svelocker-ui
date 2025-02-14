@@ -9,6 +9,9 @@
 	import { convertTimeString } from '$lib/utils/time.ts';
 	import { Badge } from '$lib/components/ui/badge';
 	import type { PageData } from '../../../routes/$types';
+	import { toast } from 'svelte-sonner';
+	import { deleteDockerManifest } from '$lib/utils/delete.ts';
+	import { env } from '$env/dynamic/public'
 
 	export let data: PageData;
 	export let repoIndex: number;
@@ -16,6 +19,18 @@
 	export let tag;
 	export let repo;
 	export let isLatest: boolean;
+
+	async function deleteTag(name: string, tag: string) {
+		deleteDockerManifest(env.PUBLIC_REGISTRY_URL, name, tag).then(success => {
+			if (success) {
+				toast.success("Docker Tag Deleted Successfully");
+				setTimeout(() => location.reload(), 5000);
+			} else {
+				toast.error("Error Deleting Docker Tag")
+				console.log("Failed to copy text.");
+			}
+		});
+	}
 </script>
 
 <Drawer.Root>
@@ -99,9 +114,10 @@
 				<div class="grid gap-4 py-4">
 					<div class="grid grid-col-2 grid-rows-1 grid-flow-col gap-4 items-center">
 						<DockerfileDialog repoIndex={repoIndex} tagIndex={tagIndex} data={data} image={repo} tag={tag.name}/>
-						<Drawer.Close disabled aria-label="Deleting Tags is not Implemented yet." class="{buttonVariants({ variant: 'destructive' })}">
-							Delete Tag
-						</Drawer.Close>
+						<Button variant="destructive" onclick={deleteTag(repo, tag.name)}>Delete Tag</Button>
+<!--						<Drawer.Close  class="{buttonVariants({ variant: 'destructive' })}">-->
+<!--							Delete Tag-->
+<!--						</Drawer.Close>-->
 					</div>
 				</div>
 			</Drawer.Footer>
