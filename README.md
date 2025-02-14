@@ -40,7 +40,7 @@ services:
 
 Access Svelocker UI on http://<docker-ip>:3000
 
-**Note if your registry is secured by HTTPS then Svelock need to be secured by HTTPS as well.**
+**Note if your registry is secured by HTTPS then Svelocker UI need to be secured by HTTPS as well.**
 
 The Registry Container will need to be configured to allow Queries from Svelocker UI, Set the Environment Variables below replacing `https://svelocker.example.com` the hostname Svelocker will be running on.
 
