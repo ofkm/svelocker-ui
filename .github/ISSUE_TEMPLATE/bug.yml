@@ -1,0 +1,13 @@
+name: Bug Report
+description: "Submit a Bug Report"
+title: "Bug: "
+labels: [bug]
+body:
+  - type: textarea
+    id: bug-description
+    validations:
+      required: true
+    attributes:
+      label: "Bug description"
+      description: "Description of the bug at hand. Include and logs as well."
+      placeholder: "..."
