@@ -9,6 +9,14 @@ h3,
 	font-family: 'Poppins' sans-serif;
 }
 
+.roboto-font {
+	font-family: "Roboto", serif;
+	font-optical-sizing: auto;
+	font-weight: 100;
+	font-style: normal;
+	font-variation-settings: "wdth" 100;
+}
+
 .dockerButton {
 	border-color: var(--color-blue-500) !important;
 }
@@ -16,6 +24,7 @@ h3,
 .latestBadge {
 	color: var(--color-emerald-500) !important;
 	border-color: var(--color-emerald-500) !important;
+
 }
 
 .pagination-footer {
@@ -32,7 +41,6 @@ h3,
 	min-height: 25px;
 	color: var(--color-emerald-500);
 	border-color: var(--color-emerald-500);
-	font-family: 'Poppins' sans-serif;
 	float: left;
 }
 
@@ -40,7 +48,6 @@ h3,
 	margin-right: 5px;
 	min-width: 40px;
 	min-height: 25px;
-	font-family: 'Poppins' sans-serif;
 }
 
 @layer base {
@@ -75,6 +82,15 @@ h3,
 		--ring: 240 4.9% 83.9%;
 
 		--radius: 0.5rem;
+
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+
+		font-family: "Roboto", serif;
+		font-optical-sizing: auto;
+		font-weight: 100;
+		font-style: normal;
+		font-variation-settings: "wdth" 100;
 
 	}
 
