@@ -81,10 +81,58 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
 }
 
 # Extract the changelog content for the latest release
-$CHANGELOG = Select-String -Path CHANGELOG.md -Pattern "^## " -Context 0,100 | ForEach-Object { $_.Context.PostContext } | Out-String
-
+# $CHANGELOG = Select-String -Path CHANGELOG.md -Pattern "^## " -Context 0,100 | ForEach-Object { $_.Context.PostContext } | Out-String
 # Write the changelog to notes.txt
-$CHANGELOG | Set-Content notes.txt
+# $CHANGELOG | Set-Content notes.txt
+
+# Extract the changelog content for the latest release
+$CHANGELOG = Get-Content CHANGELOG.md
+
+# Find all version headers
+$versionHeaders = $CHANGELOG | Where-Object { $_ -match "^## \[" }
+
+# Check if any headers were found
+if ($versionHeaders.Count -gt 0) {
+    # Get the index of the latest version header
+    $latestHeaderIndex = $CHANGELOG.IndexOf($versionHeaders[0])
+    Write-Host "Latest header found at index: $latestHeaderIndex"
+
+    # Find the next header after the latest
+    $nextHeaderIndex = -1
+    if ($versionHeaders.Count -gt 1) {
+        $nextHeaderIndex = $CHANGELOG.IndexOf($versionHeaders[1]) # This will be -1 if there is no next header
+    }
+    Write-Host "Next header found at index: $nextHeaderIndex"
+
+    # If no next header is found, extract until the end of the file
+    if ($nextHeaderIndex -eq -1) {
+        $latestReleaseNotes = $CHANGELOG[$latestHeaderIndex..($CHANGELOG.Count - 1)]
+    } else {
+        # Extract lines between the latest version header and the next header
+        $latestReleaseNotes = $CHANGELOG[$latestHeaderIndex..($nextHeaderIndex - 1)]
+    }
+
+    # Convert the array of lines back to a single string
+    $CHANGELOG = $latestReleaseNotes -join "`n"
+
+    # Debug output to check what is being written
+    # Write-Host "Extracted changelog content:"
+    # Write-Host $CHANGELOG
+
+    # Write the changelog to notes.txt
+    $CHANGELOG | Set-Content notes.txt
+
+    if ([string]::IsNullOrWhiteSpace($CHANGELOG)) {
+        Write-Host "Error: Could not extract changelog for version $NEW_VERSION."
+        exit 1
+    } else {
+        Write-Host "Changelog written to notes.txt successfully."
+    }
+} else {
+    Write-Host "Error: No version headers found in CHANGELOG.md."
+    exit 1
+}
+
 
 if ([string]::IsNullOrWhiteSpace($CHANGELOG)) {
     Write-Host "Error: Could not extract changelog for version $NEW_VERSION."
