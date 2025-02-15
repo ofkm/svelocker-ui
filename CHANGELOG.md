@@ -1,3 +1,10 @@
+## [0.18.2](https://github.com/kmendell/svelocker-ui/compare/v0.18.1...v0.18.2) (2025-02-15)
+
+### Bug Fixes
+
+* copy dockerfile button border missing ([0e90831](https://github.com/kmendell/svelocker-ui/commit/0e9083102cf5161bc2418f1a8a2ab82ab14d08ed))
+* make sure light/dark mode both work using mode watcher ([5b0a3b9](https://github.com/kmendell/svelocker-ui/commit/5b0a3b901ef08f460bb574fe3ca1a8eabea244f1))
+* text mismatch when only 1 tag was found ([6af5c6a](https://github.com/kmendell/svelocker-ui/commit/6af5c6a41b9bef9030bbf76c21d719a2eab1af38))
 ## [0.18.1](https://github.com/kmendell/svelocker-ui/compare/v0.18.0...v0.18.1) (2025-02-15)
 
 ### Bug Fixes
