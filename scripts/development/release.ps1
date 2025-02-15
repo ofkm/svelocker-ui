@@ -83,6 +83,9 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
 # Extract the changelog content for the latest release
 $CHANGELOG = Select-String -Path CHANGELOG.md -Pattern "^## " -Context 0,100 | ForEach-Object { $_.Context.PostContext } | Out-String
 
+# Write the changelog to notes.txt
+$CHANGELOG | Set-Content notes.txt
+
 if ([string]::IsNullOrWhiteSpace($CHANGELOG)) {
     Write-Host "Error: Could not extract changelog for version $NEW_VERSION."
     exit 1
@@ -90,7 +93,7 @@ if ([string]::IsNullOrWhiteSpace($CHANGELOG)) {
 
 # Create the release on GitHub
 Write-Host "Creating GitHub release..."
-gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes "$CHANGELOG"
+gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes-file .\notes.txt
 
 if ($?) {
     Write-Host "GitHub release created successfully."
