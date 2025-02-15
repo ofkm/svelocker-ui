@@ -37,10 +37,10 @@
 	<title>Svelocker UI</title>
 </svelte:head>
 
-<div class="flex-1 w-full flex-col justify-between bg-slate-900/70">
+<div class="flex-1 w-full flex-col justify-between">
 	{#if data.repos.repositories.length > 0}
 
-		<h2 class="text-white text-2xl pl-10 pt-10">Found {data.repos.repositories.length} Images for {env.PUBLIC_REGISTRY_NAME}</h2>
+		<h2 class="text-2xl pl-10 pt-10">Found {data.repos.repositories.length} Images for {env.PUBLIC_REGISTRY_NAME}</h2>
 		<!-- RepoCard List -->
 		<div class="grid grid-cols-1 gap-4" style="margin-bottom: 2em;">
 			<RepoCard filteredData={$paginatedData} />

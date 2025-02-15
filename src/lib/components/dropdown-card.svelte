@@ -47,7 +47,7 @@
 </script>
 
 <Card.Root>
-	<Card.Header class="cursor-pointer rounded-lg bg-gray-950" onclick={toggleExpanded}>
+	<Card.Header class="cursor-pointer rounded-lg" onclick={toggleExpanded}>
 		<div class="flex items-center justify-between">
 			<div>
 				<Card.Title>{title}</Card.Title>
@@ -67,7 +67,7 @@
 	</Card.Header>
 	{#if expanded}
 		<div transition:slide={{ duration: 200 }}>
-			<Card.Content class="bg-gray-950">
+			<Card.Content class="">
 				{@render children()}
 			</Card.Content>
 		</div>
