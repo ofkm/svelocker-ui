@@ -1,3 +1,8 @@
+## [0.17.2](https://github.com/kmendell/svelocker-ui/compare/v0.17.1...v0.17.2) (2025-02-15)
+
+### Bug Fixes
+
+* delete image reponse return code ([fcd54ae](https://github.com/kmendell/svelocker-ui/commit/fcd54ae7c6a791647fce84f67152b8c05f8b5061))
 ## [0.17.1](https://github.com/kmendell/svelocker-ui/compare/v0.17.0...v0.17.1) (2025-02-15)
 
 ### Features
