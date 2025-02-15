@@ -40,7 +40,7 @@
 <div class="flex-1 w-full flex-col justify-between bg-slate-900/70">
 	{#if data.repos.repositories.length > 0}
 
-		<h2 class="text-white text-2xl pl-10 pt-10">Showing {data.repos.repositories.length} Images for {env.PUBLIC_REGISTRY_NAME}</h2>
+		<h2 class="text-white text-2xl pl-10 pt-10">Found {data.repos.repositories.length} Images for {env.PUBLIC_REGISTRY_NAME}</h2>
 		<!-- RepoCard List -->
 		<div class="grid grid-cols-1 gap-4">
 			<RepoCard filteredData={$paginatedData} data={data} />
@@ -51,7 +51,7 @@
 			{#snippet children({ pages })}
 				<Pagination.Content>
 					<Pagination.Item>
-						<Pagination.PrevButton on:click={prevPage} />
+						<Pagination.PrevButton onclick={prevPage} />
 					</Pagination.Item>
 					{#each pages as page (page.key)}
 						{#if page.type === "ellipsis"}
@@ -60,14 +60,14 @@
 							</Pagination.Item>
 						{:else}
 							<Pagination.Item isVisible={$currentPage === page.value}>
-								<Pagination.Link {page} isActive={$currentPage === page.value} on:click={() => goToPage(page.value)}>
+								<Pagination.Link {page} isActive={$currentPage === page.value} onclick={() => goToPage(page.value)}>
 									{page.value}
 								</Pagination.Link>
 							</Pagination.Item>
 						{/if}
 					{/each}
 					<Pagination.Item>
-						<Pagination.NextButton on:click={nextPage} />
+						<Pagination.NextButton onclick={nextPage} />
 					</Pagination.Item>
 				</Pagination.Content>
 			{/snippet}
