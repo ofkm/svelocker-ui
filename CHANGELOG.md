@@ -1,3 +1,15 @@
+## [0.18.1](https://github.com/kmendell/svelocker-ui/compare/v0.18.0...v0.18.1) (2025-02-15)
+
+### Bug Fixes
+
+* change font and toast messages in dockerfile dialog ([09c83e4](https://github.com/kmendell/svelocker-ui/commit/09c83e4dc8ba85071312486f317c476ce88c447c))
+* change header text to 'found' ([6732df8](https://github.com/kmendell/svelocker-ui/commit/6732df8164e19a39ff46906dfc7cc19f4f3df743))
+* change repo api call to axios ([397eb92](https://github.com/kmendell/svelocker-ui/commit/397eb92dc1b9b470ffad09f39158dfd99e112b98))
+* chnage make items per page to 5 ([fd788b7](https://github.com/kmendell/svelocker-ui/commit/fd788b7b95bc7d1c78da46edf2cbcaeb953ba329))
+* latest tag button cause margin issues if theres only one tag ([75c991e](https://github.com/kmendell/svelocker-ui/commit/75c991ecc8ccde6d3cf4baf74c61be59930c6ce9))
+* optional channing for dockerFileContents ([7e0e7c8](https://github.com/kmendell/svelocker-ui/commit/7e0e7c8a57fccb9af489537748640f410baafc6b))
+* pagenation grabbing the wrong index for tags/images ([dd24fe7](https://github.com/kmendell/svelocker-ui/commit/dd24fe7a170be1b3458006b9aa59b5a831e9f111))
+* remove PageData from obselte pages, and use filteredData ([267b461](https://github.com/kmendell/svelocker-ui/commit/267b461c228ccd3af73a2316f38a63197beb281c))
 ## [0.18.0](https://github.com/kmendell/svelocker-ui/compare/v0.17.2...v0.18.0) (2025-02-15)
 
 ### Features
