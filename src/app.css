@@ -4,8 +4,7 @@
 
 h1,
 h2,
-h3,
-.poppins {
+h3 {
 	font-family: "Roboto", serif;
 	font-optical-sizing: auto;
 	font-weight: 100;
@@ -98,8 +97,6 @@ h3,
 
 	}
 
-	.dark {
-	}
 }
 
 @layer base {
