@@ -11,4 +11,5 @@ export type ImageMetadata = {
 	command: string;
 	description: string;
 	contentDigest: string;
+	entrypoint: string;
 };

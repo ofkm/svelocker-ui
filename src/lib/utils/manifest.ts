@@ -44,6 +44,7 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 
         const author = config.config?.Labels?.["org.opencontainers.image.authors"] || config.config?.Labels?.["org.opencontainers.image.vendor"] || "Unknown";
         const cmd = config.config?.Cmd ? config.config.Cmd.join(" ") : "Unknown Command";
+		const entrypoint = config.config?.Entrypoint ? config.config.Entrypoint.join(" ") : "Unknown Entrypoint";
         const description = config.config?.Labels?.["org.opencontainers.image.description"] || "No description found";
         const exposedPorts = config.config?.ExposedPorts ? Object.keys(config.config.ExposedPorts) : [];
 
@@ -60,7 +61,8 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
             workDir: config.config.WorkingDir,
             command: cmd,
             description: description,
-            contentDigest: contentDigest
+            contentDigest: contentDigest,
+			entrypoint: entrypoint
         };
     } catch (error) {
         console.error(`Error fetching metadata for ${repo}:${tag}:`);

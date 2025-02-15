@@ -24,9 +24,9 @@
 		deleteDockerManifest(env.PUBLIC_REGISTRY_URL, name, tag, configDigest).then(success => {
 			if (success) {
 				toast.success("Docker Tag Deleted Successfully", {
-					description: "Run `registry garbage-collect /etc/docker/registry/config.yml` to cleanup."
+					description: "Run `registry garbage-collect /etc/docker/registry/config.yml` to cleanup. Refreshing..."
 				});
-				setTimeout(() => location.reload(), 5000);
+				setTimeout(() => location.reload(), 2000);
 			} else {
 				toast.error("Error Deleting Docker Tag", {
 					description: "Check your Registry configuration."
@@ -109,6 +109,12 @@
 								<Terminal class="w-5 h-5" /> Command
 							</Label>
 							<p class="text-sm font-semibold pb-2" id="command">{tag.metadata.command}</p>
+						</div>
+						<div>
+							<Label for="entrypoint" class="font-light text-muted-foreground flex items-center gap-2 pb-2">
+								<Terminal class="w-5 h-5" /> Entrypoint
+							</Label>
+							<p class="text-sm font-semibold pb-2" id="entrypoint">{tag.metadata.entrypoint}</p>
 						</div>
 					</div>
 				</div>
