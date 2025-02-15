@@ -12,7 +12,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 	{#each filteredData as repo, index}
-		<CollapsibleCard id={repo.name} title={repo.name}>
+		<CollapsibleCard id={repo.name} title={repo.name} description="{repo.images.length.toString()} Tags Found">
 			<RepoImage repoIndex={index} data={data}/>
 		</CollapsibleCard>
 	{/each}
