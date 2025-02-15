@@ -44,7 +44,13 @@ h3 {
 	min-height: 25px;
 	color: var(--color-emerald-500);
 	border-color: var(--color-emerald-500);
-	/* float: left; */
+	float: left;
+}
+
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
 }
 
 .badgeLink {

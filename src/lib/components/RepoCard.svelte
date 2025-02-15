@@ -14,6 +14,7 @@
 	{#each filteredData as repo, index}
 		<CollapsibleCard id={repo.name} title={repo.name} description="{repo.images.length.toString()} Tags Found">
 			<RepoImage repoIndex={index} filteredData={filteredData} data={data}/>
+			<div class="clearfix"></div>
 		</CollapsibleCard>
 	{/each}
 </div>
