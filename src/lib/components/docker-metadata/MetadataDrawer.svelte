@@ -10,7 +10,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import type { PageData } from '../../../routes/$types';
 	import { toast } from 'svelte-sonner';
-	import { deleteDockerManifest } from '$lib/utils/delete.ts';
+	import { deleteDockerManifestAxios } from '$lib/utils/delete.ts';
 	import { env } from '$env/dynamic/public'
 
 	export let data: PageData;
@@ -21,7 +21,7 @@
 	export let isLatest: boolean;
 
 	async function deleteTag(name: string, tag: string, configDigest: string) {
-		deleteDockerManifest(env.PUBLIC_REGISTRY_URL, name, tag, configDigest).then(success => {
+		deleteDockerManifestAxios(env.PUBLIC_REGISTRY_URL, name, tag, configDigest).then(success => {
 			if (success) {
 				toast.success("Docker Tag Deleted Successfully", {
 					description: "Run `registry garbage-collect /etc/docker/registry/config.yml` to cleanup. Refreshing..."
@@ -38,8 +38,7 @@
 
 <Drawer.Root>
 	<Drawer.Trigger
-		class="{buttonVariants({ variant: 'outline' })} {isLatest ? 'badgeLinkLatest text-center border-solid w-20' : 'badgeLink text-center border-solid w-20'}"
-	>
+		class="{buttonVariants({ variant: 'outline' })} {isLatest ? 'badgeLinkLatest text-center border-solid w-20' : 'badgeLink text-center border-solid w-20'}">
 		{tag.name}
 	</Drawer.Trigger>
 	<Drawer.Content>
