@@ -4,16 +4,16 @@
 	import { ScrollArea } from "$lib/components/ui/scroll-area/index.js";
 	import { copyTextToClipboard } from '$lib/utils/clipboard.ts';
 	import { Copy } from 'lucide-svelte';
-	import type { PageData } from '../../../routes/$types';
 	import { toast } from "svelte-sonner";
+	import type { RegistryRepo } from '$lib/models/repo.ts';
 
-	export let data: PageData;
+	export let data: RegistryRepo[];
 	export let image: string;
 	export let tag: string;
 	export let repoIndex: number;
 	export let tagIndex: number;
 
-	let dockerfileContents: string = data.repos.repositories[repoIndex]?.images[tagIndex]?.metadata?.dockerFile ?? "Dockerfile Not Found";
+	let dockerfileContents: string = data[repoIndex].images[tagIndex]?.metadata?.dockerFile ?? "Dockerfile Not Found";
 
 	async function copyDockerfile() {
 		copyTextToClipboard(dockerfileContents)

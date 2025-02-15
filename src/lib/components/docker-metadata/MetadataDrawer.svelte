@@ -8,13 +8,13 @@
 	import DockerfileDialog from '$lib/components/docker-metadata/ViewFileDialog.svelte';
 	import { convertTimeString } from '$lib/utils/time.ts';
 	import { Badge } from '$lib/components/ui/badge';
-	import type { PageData } from '../../../routes/$types';
 	import { toast } from 'svelte-sonner';
 	import { deleteDockerManifestAxios } from '$lib/utils/delete.ts';
 	import { env } from '$env/dynamic/public'
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+	import type { RegistryRepo } from '$lib/models/repo.ts';
 
-	export let data: PageData;
+	export let data: RegistryRepo[];
 	export let repoIndex: number;
 	export let tagIndex: number;
 	export let tag;
@@ -123,7 +123,6 @@
 				<div class="grid gap-4 py-4">
 					<div class="grid grid-col-2 grid-rows-1 grid-flow-col gap-4 items-center">
 						<DockerfileDialog repoIndex={repoIndex} tagIndex={tagIndex} data={data} image={repo} tag={tag.name}/>
-						<!-- <Button  class="drawer-content" variant="destructive">Delete Tag</Button> -->
 						<AlertDialog.Root>
 							<AlertDialog.Trigger class={buttonVariants({ variant: "destructive" })}>
 								Delete Tag
