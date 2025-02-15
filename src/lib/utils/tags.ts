@@ -6,7 +6,7 @@ import { fetchDockerMetadataAxios } from '$lib/utils/manifest.ts';
 export async function getDockerTagsNew(registryUrl: string, repo: string): Promise<RepoImage> {
 
 	let tags: ImageTag[] = [];
-	let data: { name: string; tags: string[] } = [];
+	let data: { name: string; tags: string[] } = { name: '', tags: [] };
 
 	try {
 
