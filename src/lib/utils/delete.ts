@@ -42,7 +42,7 @@ export async function deleteDockerManifestAxios(registryUrl: string, repo: strin
         // Send a DELETE request to the manifest URL using Axios
         const response = await axios.delete(manifestUrl, { headers });
 
-        if (response.status !== 200) {
+        if (response.status !== 202) {
             throw new Error(`Failed to delete manifest: ${response.status}`);
         }
 
