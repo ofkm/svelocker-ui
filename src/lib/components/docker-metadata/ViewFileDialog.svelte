@@ -44,7 +44,7 @@
 			</pre>
 		</ScrollArea>
 		<Dialog.Footer>
-			<Button onclick={copyDockerfile} variant="default" class="dockerButton">
+			<Button onclick={copyDockerfile} variant="outline" class="dockerButton">
 				<Copy />
 				Copy Dockerfile
 			</Button>
