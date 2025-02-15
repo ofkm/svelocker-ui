@@ -12,6 +12,7 @@
 	import { toast } from 'svelte-sonner';
 	import { deleteDockerManifestAxios } from '$lib/utils/delete.ts';
 	import { env } from '$env/dynamic/public'
+	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 
 	export let data: PageData;
 	export let repoIndex: number;
@@ -26,7 +27,7 @@
 				toast.success("Docker Tag Deleted Successfully", {
 					description: "Run `registry garbage-collect /etc/docker/registry/config.yml` to cleanup. Refreshing..."
 				});
-				setTimeout(() => location.reload(), 2000);
+				setTimeout(() => location.reload(), 3000);
 			} else {
 				toast.error("Error Deleting Docker Tag", {
 					description: "Check your Registry configuration."
@@ -122,7 +123,24 @@
 				<div class="grid gap-4 py-4">
 					<div class="grid grid-col-2 grid-rows-1 grid-flow-col gap-4 items-center">
 						<DockerfileDialog repoIndex={repoIndex} tagIndex={tagIndex} data={data} image={repo} tag={tag.name}/>
-						<Button onclick={() => deleteTag(repo, tag.name, tag.metadata.contentDigest)} class="drawer-content" variant="destructive">Delete Tag</Button>
+						<!-- <Button  class="drawer-content" variant="destructive">Delete Tag</Button> -->
+						<AlertDialog.Root>
+							<AlertDialog.Trigger class={buttonVariants({ variant: "destructive" })}>
+								Delete Tag
+							</AlertDialog.Trigger>
+							<AlertDialog.Content>
+							  <AlertDialog.Header>
+								<AlertDialog.Title class="font-light text-md">Are you sure you want to delete the tag <span class="font-bold">{repo}:{tag.name}</span>?</AlertDialog.Title>
+								<AlertDialog.Description>
+								  This action cannot be undone. All tags with the same config digest will be deleted.
+								</AlertDialog.Description>
+							  </AlertDialog.Header>
+							  <AlertDialog.Footer>
+								<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+								<AlertDialog.Action onclick={() => deleteTag(repo, tag.name, tag.metadata.contentDigest)} class={buttonVariants({ variant: "destructive" })}>Delete</AlertDialog.Action>
+							  </AlertDialog.Footer>
+							</AlertDialog.Content>
+						  </AlertDialog.Root>
 					</div>
 				</div>
 			</Drawer.Footer>
