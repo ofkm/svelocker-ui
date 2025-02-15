@@ -1,3 +1,10 @@
+## [0.18.0](https://github.com/kmendell/svelocker-ui/compare/v0.17.2...v0.18.0) (2025-02-15)
+
+### Features
+
+* add confirm dialog before deleting image/tag ([0810eb2](https://github.com/kmendell/svelocker-ui/commit/0810eb2979f9e376ae75f9248f99469e08d52f8f))
+* add confirm dialog before deleting image/tag ([2add5ba](https://github.com/kmendell/svelocker-ui/commit/2add5ba63d527c2f612fee6a88e8e175ebafc3a3))
+* add tags count label ([8278cb5](https://github.com/kmendell/svelocker-ui/commit/8278cb554acd1f26740f25b981404dd4b89f7375))
 ## [0.17.2](https://github.com/kmendell/svelocker-ui/compare/v0.17.1...v0.17.2) (2025-02-15)
 
 ### Bug Fixes
