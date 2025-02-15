@@ -42,7 +42,7 @@
 
 		<h2 class="text-white text-2xl pl-10 pt-10">Found {data.repos.repositories.length} Images for {env.PUBLIC_REGISTRY_NAME}</h2>
 		<!-- RepoCard List -->
-		<div class="grid grid-cols-1 gap-4">
+		<div class="grid grid-cols-1 gap-4" style="margin-bottom: 2em;">
 			<RepoCard filteredData={$paginatedData} data={data} />
 		</div>
 

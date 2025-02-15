@@ -34,6 +34,7 @@ export async function getRegistryReposAxios(url: string): Promise<RegistryRepos>
         );
 
         // Combine all registryRepos into a single array;
+		console.log({ repositories: [...registryRepos] })
         return { repositories: [...registryRepos] };
     } catch (error) {
         console.error(error);
