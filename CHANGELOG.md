@@ -1,3 +1,14 @@
+## [0.17.1](https://github.com/kmendell/svelocker-ui/compare/v0.17.0...v0.17.1) (2025-02-15)
+
+### Features
+
+* add entrypoint to metadata ([8eb27a0](https://github.com/kmendell/svelocker-ui/commit/8eb27a0b9abbd8077bc609a0f4d70e15f091c4bf))
+
+### Bug Fixes
+
+* make sure data variable is initialized ([24b2be9](https://github.com/kmendell/svelocker-ui/commit/24b2be95c681e79207dcb1d374355a7d9c06be44))
+* move api calls to axios over fetch ([bd22c63](https://github.com/kmendell/svelocker-ui/commit/bd22c6397cde0a5c303db87d9d540193c6436f76))
+* move delete api call to axios ([992bffe](https://github.com/kmendell/svelocker-ui/commit/992bffef8cde35b19e373dc72528b3e415aa50bc))
 ## [0.17.0](https://github.com/kmendell/svelocker-ui/compare/v0.16.2...v0.17.0) (2025-02-14)
 
 ### Features
