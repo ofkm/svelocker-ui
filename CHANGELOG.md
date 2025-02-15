@@ -1,3 +1,15 @@
+## [0.17.0](https://github.com/kmendell/svelocker-ui/compare/v0.16.2...v0.17.0) (2025-02-14)
+
+### Features
+
+* add copy success toast message ([5191a30](https://github.com/kmendell/svelocker-ui/commit/5191a30c565c03085f82e102d40b5886fedc2b24))
+* add image deletion ([8a0e8f3](https://github.com/kmendell/svelocker-ui/commit/8a0e8f32c4f91fdcf5e0731035121efff0f9f122))
+* add title with repo name and image count ([54741aa](https://github.com/kmendell/svelocker-ui/commit/54741aa249d352eff97bccd223bb179104c189e7))
+
+### Bug Fixes
+
+* add checks for tags retrival ([bf2e252](https://github.com/kmendell/svelocker-ui/commit/bf2e25203d7c92c70bc3e32d1cd874ded2ea409f))
+* add more checks if resources are not found ([0310524](https://github.com/kmendell/svelocker-ui/commit/0310524f3da15046bfaff948f9111b7cd5de5ef3))
 ## [0.16.2](https://github.com/kmendell/svelocker-ui/compare/v0.16.1...v0.16.2) (2025-02-14)
 
 ### Bug Fixes
