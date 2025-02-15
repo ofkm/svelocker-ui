@@ -19,10 +19,9 @@
 		copyTextToClipboard(dockerfileContents)
 			.then(success => {
 				if (success) {
-					console.log("Text copied successfully!");
 					toast.success("Dockerfile Copied successfully");
 				} else {
-					console.log("Failed to copy text.");
+					toast.error("Failed to copy Dockerfile...")
 				}
 			});
 	}
@@ -35,8 +34,8 @@
 	<Dialog.Content class="h-[75%] w-[1000px] max-w-[80%]">
 		<Dialog.Header>
 			<Dialog.Title>Dockerfile</Dialog.Title>
-			<Dialog.Description>
-				Viewing Dockerfile for {image}:{tag}
+			<Dialog.Description class="font-light text-md">
+				Viewing Dockerfile for <span class="font-bold">{image}:{tag}</span>
 			</Dialog.Description>
 		</Dialog.Header>
 		<ScrollArea>
