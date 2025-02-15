@@ -8,7 +8,7 @@
 	let { data }: PageProps = $props();
 
 	// Constants
-	const ITEMS_PER_PAGE = 10;
+	const ITEMS_PER_PAGE = 5;
 	let currentPage = $state(writable(1)); // 🔹 Use `const`, not `let`
 	const totalPages = Math.ceil(data.repos.repositories.length / ITEMS_PER_PAGE);
 
