@@ -2,9 +2,9 @@ import axios from 'axios';
 import type { ImageMetadata } from '$lib/models/metadata.ts';
 
 export async function fetchDockerMetadataAxios(registryUrl: string, repo: string, tag: string): Promise<ImageMetadata | undefined> {
-    try {
-        const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
+    const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
 
+    try {
         // Fetch the manifest JSON with Axios
         const manifestResponse = await axios.get(manifestUrl, {
             headers: {
@@ -12,24 +12,18 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
             }
         });
 
-
-
         const manifest = manifestResponse.data;
 
-		// Check if the manifest is of type OCI or Docker and handle accordingly
-		const isOciManifest = manifest.mediaType === 'application/vnd.oci.image.index.v1+json';
-		const contentDigest = manifestResponse.headers['docker-content-digest'];
+        // Check if the manifest is of type OCI or Docker and handle accordingly
+        const isOciManifest = manifest.mediaType === 'application/vnd.oci.image.index.v1+json';
+        const contentDigest = manifestResponse.headers['docker-content-digest'];
 
-		if (isOciManifest) {
-			// It was built withput using --format docker 
-			//docker buildx build --platform linux/amd64 --format docker -t BUILD-NAME .
-		}
-
+        if (isOciManifest) {
+            // Handle OCI manifest if necessary
+        }
 
         const configDigest = manifest.config?.digest;
-        
 
-		
         if (!configDigest) {
             throw new Error('Config digest not found in manifest.');
         }
@@ -44,7 +38,7 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 
         const author = config.config?.Labels?.["org.opencontainers.image.authors"] || config.config?.Labels?.["org.opencontainers.image.vendor"] || "Unknown";
         const cmd = config.config?.Cmd ? config.config.Cmd.join(" ") : "Unknown Command";
-		const entrypoint = config.config?.Entrypoint ? config.config.Entrypoint.join(" ") : "Unknown Entrypoint";
+        const entrypoint = config.config?.Entrypoint ? config.config.Entrypoint.join(" ") : "Unknown Entrypoint";
         const description = config.config?.Labels?.["org.opencontainers.image.description"] || "No description found";
         const exposedPorts = config.config?.ExposedPorts ? Object.keys(config.config.ExposedPorts) : [];
 
@@ -62,10 +56,11 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
             command: cmd,
             description: description,
             contentDigest: contentDigest,
-			entrypoint: entrypoint
+            entrypoint: entrypoint
         };
     } catch (error) {
-        console.error(`Error fetching metadata for ${repo}:${tag}:`);
+        console.error(`Error fetching metadata for ${repo}:${tag}: ${error instanceof Error ? error.message : error}`);
+        return undefined; // Return undefined in case of an error
     }
 }
 
