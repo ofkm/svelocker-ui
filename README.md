@@ -38,7 +38,7 @@ services:
       - 3000:3000
 ```
 
-Access Svelocker UI on http://<docker-ip>:3000
+Access Svelocker UI on http://dockerip:3000
 
 **Note if your registry is secured by HTTPS then Svelocker UI need to be secured by HTTPS as well.**
 
