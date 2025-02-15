@@ -1,25 +1,27 @@
-// {"name":"ofkm/caddy","tags":["latest","main","1.0.1","1.0","1","f84cee9"]}
-
+import axios from 'axios';
 import type { ImageTag } from '$lib/models/tag.ts';
 import type { RepoImage } from '$lib/models/image.ts';
-import { fetchDockerMetadata } from '$lib/utils/manifest.ts';
+import { fetchDockerMetadataAxios } from '$lib/utils/manifest.ts';
 
 export async function getDockerTagsNew(registryUrl: string, repo: string): Promise<RepoImage> {
 
 	let tags: ImageTag[] = [];
 	let data: { name: string; tags: string[] } = [];
 
-	// Fetch the list of tags
-	const response = await fetch(`${registryUrl}/v2/${repo}/tags/list`);
-	if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
 	try {
-		data = await response.json();
+
+		const response = await axios.get(`${registryUrl}/v2/${repo}/tags/list`, {
+			headers: {
+				Accept: 'application/json'
+			}
+		});
+		
+		data = await response.data;
 
 		if (data.tags) {
 			tags = await Promise.all(
 				data.tags.map(async (tag) => {
-					const metadata = await fetchDockerMetadata(registryUrl, repo, tag);
+					const metadata = await fetchDockerMetadataAxios(registryUrl, repo, tag);
 					return { name: tag, metadata };
 				})
 			);
@@ -33,8 +35,6 @@ export async function getDockerTagsNew(registryUrl: string, repo: string): Promi
 			tags: []
 		};
 	}
-
-	// Fetch metadata for each tag
 
 	return {
 		name: data.name,

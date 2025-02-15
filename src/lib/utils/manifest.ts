@@ -1,74 +1,70 @@
-export async function fetchDockerMetadata(registryUrl: string, repo: string, tag: string) {
-	try {
-		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
+import axios from 'axios';
+import type { ImageMetadata } from '$lib/models/metadata.ts';
 
-		// Fetch the manifest JSON
-		const manifestResponse = await fetch(manifestUrl, {
-			headers: {
-				Accept:
-					'application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json'
-			}
-		});
-		if (!manifestResponse.ok) {
-			throw new Error(`Failed to fetch manifest: ${manifestResponse.status}`);
+export async function fetchDockerMetadataAxios(registryUrl: string, repo: string, tag: string): Promise<ImageMetadata | undefined> {
+    try {
+        const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
+
+        // Fetch the manifest JSON with Axios
+        const manifestResponse = await axios.get(manifestUrl, {
+            headers: {
+                Accept: 'application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.oci.index.manifest.v1+json'
+            }
+        });
+
+
+
+        const manifest = manifestResponse.data;
+
+		// Check if the manifest is of type OCI or Docker and handle accordingly
+		const isOciManifest = manifest.mediaType === 'application/vnd.oci.image.index.v1+json';
+		const contentDigest = manifestResponse.headers['docker-content-digest'];
+
+		if (isOciManifest) {
+			// It was built withput using --format docker 
+			//docker buildx build --platform linux/amd64 --format docker -t BUILD-NAME .
 		}
 
-		const manifest = await manifestResponse.json();
-		const configDigest = manifest.config?.digest;
-		const contentDigest = manifestResponse.headers.get("docker-content-digest");
 
-		if (!configDigest) {
-			throw new Error('Config digest not found in manifest.');
-		}
+        const configDigest = manifest.config?.digest;
+        
 
-		const totalSize = manifest.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
+		
+        if (!configDigest) {
+            throw new Error('Config digest not found in manifest.');
+        }
 
-		// Fetch the image config JSON
-		const configUrl = `${registryUrl}/v2/${repo}/blobs/${configDigest}`;
-		const configResponse = await fetch(configUrl);
+        const totalSize = manifest.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
 
-		if (!configResponse.ok) {
-			throw new Error(`Failed to fetch config JSON: ${configResponse.status}`);
-		}
+        // Fetch the image config JSON
+        const configUrl = `${registryUrl}/v2/${repo}/blobs/${configDigest}`;
+        const configResponse = await axios.get(configUrl);
 
-		const config = await configResponse.json();
+        const config = configResponse.data;
 
-		const author = config.config?.Labels?.["org.opencontainers.image.authors"] || config.config?.Labels?.["org.opencontainers.image.vendor"] || "Unknown";
+        const author = config.config?.Labels?.["org.opencontainers.image.authors"] || config.config?.Labels?.["org.opencontainers.image.vendor"] || "Unknown";
+        const cmd = config.config?.Cmd ? config.config.Cmd.join(" ") : "Unknown Command";
+        const description = config.config?.Labels?.["org.opencontainers.image.description"] || "No description found";
+        const exposedPorts = config.config?.ExposedPorts ? Object.keys(config.config.ExposedPorts) : [];
 
-		const cmd = config.config?.Cmd ? config.config.Cmd.join(" ") : "Unknown Command";
-
-		const description = config.config?.Labels?.["org.opencontainers.image.description"] || "No description found";
-
-		const exposedPorts = config.config?.ExposedPorts
-			? Object.keys(config.config.ExposedPorts)
-			: [];
-
-		// Extract Dockerfile commands from history
-		const history = config.history || [];
-		const dockerfileCommands = history
-			.map((entry: any) => entry.created_by)
-			.filter((command: string) => command && !command.includes("#(nop)")) // Remove metadata commands
-			.map((command: string) => command.replace("/bin/sh -c ", "")) // Clean up the commands
-			.join("\n");
-
-		// Extract important metadata
-		return {
-			created: config.created, // Creation timestamp
-			os: config.os, // OS type
-			architecture: config.architecture, // CPU architecture
-			author: author,
-			dockerFile: dockerfileCommands,
-			configDigest: configDigest,
-			exposedPorts: exposedPorts,
-			totalSize: formatSize(totalSize),
-			workDir: config.config.WorkingDir,
-			command: cmd,
-			description: description,
-			contentDigest: contentDigest
-		};
-	} catch (error) {
-		console.error('Error fetching metadata:', error);
-	}
+        // Extract important metadata
+        return {
+            created: config.created, // Creation timestamp
+            os: config.os, // OS type
+            architecture: config.architecture, // CPU architecture
+            author: author,
+            dockerFile: config.history?.map((entry: any) => entry.created_by).join("\n") || "No Dockerfile found",
+            configDigest: configDigest,
+            exposedPorts: exposedPorts,
+            totalSize: formatSize(totalSize),
+            workDir: config.config.WorkingDir,
+            command: cmd,
+            description: description,
+            contentDigest: contentDigest
+        };
+    } catch (error) {
+        console.error(`Error fetching metadata for ${repo}:${tag}:`);
+    }
 }
 
 function formatSize(bytes: number): string {
