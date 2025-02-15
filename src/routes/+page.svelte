@@ -47,7 +47,7 @@
 		</div>
 
 		<!-- Pagination Component -->
-		<Pagination.Root count={data.repos.repositories.length} perPage={ITEMS_PER_PAGE} class="sticky-bottom-0 z-10 pagination-footer">
+		<Pagination.Root count={data.repos.repositories.length} perPage={ITEMS_PER_PAGE} class="sticky-bottom-0 z-10 pagination-footer ">
 			{#snippet children({ pages })}
 				<Pagination.Content>
 					<Pagination.Item>
