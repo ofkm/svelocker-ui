@@ -13,7 +13,7 @@
 	export let repoIndex: number;
 	export let tagIndex: number;
 
-	let dockerfileContents: string = data.repos.repositories[repoIndex].images[tagIndex].metadata ? data.repos.repositories[repoIndex].images[tagIndex].metadata.dockerFile : "Dockerfile Not Found";
+	let dockerfileContents: string = data.repos.repositories[repoIndex]?.images[tagIndex]?.metadata?.dockerFile ?? "Dockerfile Not Found";
 
 	async function copyDockerfile() {
 		copyTextToClipboard(dockerfileContents)
