@@ -57,10 +57,6 @@
 				</pre>
 			</div>
 		</ScrollArea>
-		<!-- <ScrollArea class="rounded-md border">
-			<pre
-				class="whitespace-pre-wrap p-4 bg-slate-800 backdrop-blur-md text-white rounded-md">{dockerfileContents}</pre>
-		</ScrollArea> -->
 		<Dialog.Footer>
 			<Button onclick={copyDockerfile} variant="outline" class="dockerButton">
 				<Copy />
