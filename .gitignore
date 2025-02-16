@@ -1,6 +1,8 @@
 # JetBrains
 **/.idea
 
+src/routes/*.old
+
 node_modules
 
 # Output
