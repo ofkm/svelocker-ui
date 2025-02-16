@@ -13,12 +13,7 @@
 	const totalPages = Math.ceil(data.repos.repositories.length / ITEMS_PER_PAGE);
 
 	// Compute paginated data
-	const paginatedData = derived(currentPage, ($currentPage) =>
-		data.repos.repositories.slice(
-			($currentPage - 1) * ITEMS_PER_PAGE,
-			$currentPage * ITEMS_PER_PAGE
-		)
-	);
+	const paginatedData = derived(currentPage, ($currentPage) => data.repos.repositories.slice(($currentPage - 1) * ITEMS_PER_PAGE, $currentPage * ITEMS_PER_PAGE));
 
 	// Functions to update pages safely
 	function prevPage() {
@@ -51,11 +46,7 @@
 		</div>
 
 		<!-- Pagination Component -->
-		<Pagination.Root
-			count={data.repos.repositories.length}
-			perPage={ITEMS_PER_PAGE}
-			class="sticky-bottom-0 z-10 pagination-footer "
-		>
+		<Pagination.Root count={data.repos.repositories.length} perPage={ITEMS_PER_PAGE} class="sticky-bottom-0 z-10 pagination-footer ">
 			{#snippet children({ pages })}
 				<Pagination.Content>
 					<Pagination.Item>
@@ -68,11 +59,7 @@
 							</Pagination.Item>
 						{:else}
 							<Pagination.Item>
-								<Pagination.Link
-									{page}
-									isActive={$currentPage === page.value}
-									onclick={() => goToPage(page.value)}
-								>
+								<Pagination.Link {page} isActive={$currentPage === page.value} onclick={() => goToPage(page.value)}>
 									{page.value}
 								</Pagination.Link>
 							</Pagination.Item>
