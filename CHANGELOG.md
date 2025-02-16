@@ -1,3 +1,14 @@
+## [0.19.0](https://github.com/kmendell/svelocker-ui/compare/v0.18.3...v0.19.0) (2025-02-16)
+
+### Features
+
+* add line numbers to dockerfile contents ([706a042](https://github.com/kmendell/svelocker-ui/commit/706a042f5d0fc315450937d6969b6014b929f453))
+
+### Bug Fixes
+
+* header text not following css rules ([56f736e](https://github.com/kmendell/svelocker-ui/commit/56f736edec5cb1fcab9373178f5e7b6b2968f54e))
+* latest version badge spacing wrong ([71d4d0b](https://github.com/kmendell/svelocker-ui/commit/71d4d0b3d8658b5c307a605629cb920392195733))
+* version text hard to read ([3223182](https://github.com/kmendell/svelocker-ui/commit/322318216c91e27177e2b8c85227468205194ae4))
 ## [0.18.3](https://github.com/kmendell/svelocker-ui/compare/v0.18.2...v0.18.3) (2025-02-16)
 
 ### Bug Fixes
