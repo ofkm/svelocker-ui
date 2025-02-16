@@ -5,6 +5,8 @@
 ![image](https://github.com/user-attachments/assets/13696c67-4932-4507-9b39-4bc0a4b1aa24)
 </div>
 
+> This project is currently in development and items, themes, and features may change or not be available.
+
 ## Features:
 
 - Simple and Modern
