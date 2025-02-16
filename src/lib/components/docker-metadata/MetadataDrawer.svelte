@@ -61,7 +61,10 @@
 					>{repo}:{tag.name}
 					{#if isLatest}
 						<span class="pl-3"
-							><Badge class="latestBadge font-light" variant="outline">Latest Version</Badge></span
+							><Badge
+								class="latestBadge font-light w-[80px] items-center justify-center"
+								variant="outline">Latest Version</Badge
+							></span
 						>
 					{/if}
 				</Drawer.Title>
