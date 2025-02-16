@@ -45,7 +45,7 @@
 	<title>Svelocker UI</title>
 </svelte:head>
 
-<div class="flex-1 w-full flex-col justify-between">
+<div class="flex-1 w-full flex-col justify-between bg-muted/50">
 	{#if $repositories.length > 0}
 		<div class="flex justify-between items-center px-10 pt-10">
 			<h2 class="text-2xl">
