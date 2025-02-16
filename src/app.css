@@ -12,6 +12,27 @@ h3 {
 	font-variation-settings: "wdth" 100;
 }
 
+pre {
+	margin: 0;
+	tab-size: 0;
+	font-family: "Roboto", serif;
+	line-height: 1;
+}
+
+code {
+	font-family: inherit;
+	white-space: pre;
+}
+span {
+	margin: 0;
+	padding: 0;
+}
+
+/* Ensure line height matches between numbers and code */
+.leading-6 {
+	line-height: 1.5rem;
+}
+
 .roboto-font {
 	font-family: "Roboto", serif;
 	font-optical-sizing: auto;
