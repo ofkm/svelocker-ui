@@ -1,9 +1,9 @@
 <script lang="ts">
 	import RepoCard from '$lib/components/RepoCard.svelte';
-	import { writable, derived } from "svelte/store";
-	import * as Pagination from "$lib/components/ui/pagination/index.js";
+	import { writable, derived } from 'svelte/store';
+	import * as Pagination from '$lib/components/ui/pagination/index.js';
 	import type { PageProps } from './$types';
-	import { env } from '$env/dynamic/public'
+	import { env } from '$env/dynamic/public';
 
 	let { data }: PageProps = $props();
 
@@ -14,16 +14,19 @@
 
 	// Compute paginated data
 	const paginatedData = derived(currentPage, ($currentPage) =>
-		data.repos.repositories.slice(($currentPage - 1) * ITEMS_PER_PAGE, $currentPage * ITEMS_PER_PAGE)
+		data.repos.repositories.slice(
+			($currentPage - 1) * ITEMS_PER_PAGE,
+			$currentPage * ITEMS_PER_PAGE
+		)
 	);
 
 	// Functions to update pages safely
 	function prevPage() {
-		currentPage.update(n => Math.max(1, n - 1));
+		currentPage.update((n) => Math.max(1, n - 1));
 	}
 
 	function nextPage() {
-		currentPage.update(n => Math.min(totalPages, n + 1));
+		currentPage.update((n) => Math.min(totalPages, n + 1));
 	}
 
 	function goToPage(page: number) {
@@ -39,28 +42,37 @@
 
 <div class="flex-1 w-full flex-col justify-between">
 	{#if data.repos.repositories.length > 0}
-
-		<h2 class="text-2xl pl-10 pt-10">Found {data.repos.repositories.length} Images for {env.PUBLIC_REGISTRY_NAME}</h2>
+		<h2 class="text-2xl pl-10 pt-10">
+			Found {data.repos.repositories.length} Images for {env.PUBLIC_REGISTRY_NAME}
+		</h2>
 		<!-- RepoCard List -->
 		<div class="grid grid-cols-1 gap-4" style="margin-bottom: 2em;">
 			<RepoCard filteredData={$paginatedData} />
 		</div>
 
 		<!-- Pagination Component -->
-		<Pagination.Root count={data.repos.repositories.length} perPage={ITEMS_PER_PAGE} class="sticky-bottom-0 z-10 pagination-footer ">
+		<Pagination.Root
+			count={data.repos.repositories.length}
+			perPage={ITEMS_PER_PAGE}
+			class="sticky-bottom-0 z-10 pagination-footer "
+		>
 			{#snippet children({ pages })}
 				<Pagination.Content>
 					<Pagination.Item>
 						<Pagination.PrevButton onclick={prevPage} />
 					</Pagination.Item>
 					{#each pages as page (page.key)}
-						{#if page.type === "ellipsis"}
+						{#if page.type === 'ellipsis'}
 							<Pagination.Item>
 								<Pagination.Ellipsis />
 							</Pagination.Item>
 						{:else}
-							<Pagination.Item isVisible={$currentPage === page.value}>
-								<Pagination.Link {page} isActive={$currentPage === page.value} onclick={() => goToPage(page.value)}>
+							<Pagination.Item>
+								<Pagination.Link
+									{page}
+									isActive={$currentPage === page.value}
+									onclick={() => goToPage(page.value)}
+								>
 									{page.value}
 								</Pagination.Link>
 							</Pagination.Item>

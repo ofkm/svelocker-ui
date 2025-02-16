@@ -9,13 +9,13 @@
 			<h1 class="text-lg font-medium poppins" data-testid="application-name">Svelocker UI</h1>
 		</div>
 		<div class="sm:flex items-center gap-4 hidden">
-				<a
-					href="https://github.com/kmendell/svelocker-ui"
-					class="duration-200 text-muted-foreground hover:text-blue-400 no-underline"
-					target={"_blank"}
-				>
-					<p class="">v{currentVersion}</p>
-				</a>
+			<a
+				href="https://github.com/kmendell/svelocker-ui"
+				class="duration-200 text-muted-foreground hover:text-blue-400 no-underline"
+				target={'_blank'}
+			>
+				<p class="">v{currentVersion}</p>
+			</a>
 		</div>
 	</div>
 </header>
