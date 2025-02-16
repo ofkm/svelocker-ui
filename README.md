@@ -3,6 +3,7 @@
 <div align="center"><h3>A Simple and Modern Docker Registry UI built with Typescript and SvelteKit.</h3>
 
 ![image](https://github.com/user-attachments/assets/13696c67-4932-4507-9b39-4bc0a4b1aa24)
+
 </div>
 
 > This project is currently in development and items, themes, and features may change or not be available.
@@ -56,6 +57,9 @@ REGISTRY_HTTP_HEADERS_Access-Control-Expose-Headers: '[Docker-Content-Digest]'
 
 You can replace the Access-Control-Allow-Origin line to this `REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '["*"]'` lto allow traffic from all origins but this is not recommended.
 
+# Additional Information
+
+- All the API Calls to the Registry happen Server-Side, the only exceptions to this are the `Copy Dockerfile` and `Delete Tag/Image` functions. This is intentional due to the data being handled by those requests.
 
 # Shoutouts
 
