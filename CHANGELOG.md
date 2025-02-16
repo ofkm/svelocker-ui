@@ -1,3 +1,8 @@
+## [0.18.3](https://github.com/kmendell/svelocker-ui/compare/v0.18.2...v0.18.3) (2025-02-16)
+
+### Bug Fixes
+
+* dockerfile pre tag indentations ([e5b59d5](https://github.com/kmendell/svelocker-ui/commit/e5b59d5024dbf2e63554a15c5d875b8f156cc0b6))
 ## [0.18.2](https://github.com/kmendell/svelocker-ui/compare/v0.18.1...v0.18.2) (2025-02-15)
 
 ### Bug Fixes
