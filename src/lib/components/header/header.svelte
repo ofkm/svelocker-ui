@@ -11,7 +11,7 @@
 		<div class="sm:flex items-center gap-4 hidden">
 			<a
 				href="https://github.com/kmendell/svelocker-ui"
-				class="duration-200 text-muted-foreground hover:text-blue-400 no-underline"
+				class="duration-200 font-bold text-muted-foreground hover:text-blue-400 no-underline"
 				target={'_blank'}
 			>
 				<p class="">v{currentVersion}</p>
