@@ -1,3 +1,12 @@
+## [0.20.0](https://github.com/kmendell/svelocker-ui/compare/v0.19.0...v0.20.0) (2025-02-17)
+
+### Features
+
+* add searching for repos/images ([d2488b1](https://github.com/kmendell/svelocker-ui/commit/d2488b1cd685612887e04df9e5dc2bd577794a8d))
+
+### Bug Fixes
+
+* switch background color to musted variant ([48a99ac](https://github.com/kmendell/svelocker-ui/commit/48a99ac7a240581e1111ab4085ed27176c749d44))
 ## [0.19.0](https://github.com/kmendell/svelocker-ui/compare/v0.18.3...v0.19.0) (2025-02-16)
 
 ### Features
