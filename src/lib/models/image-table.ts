@@ -7,7 +7,7 @@ export const columns: ColumnDef<RepoImage>[] = [
 		header: 'Image Name'
 	},
 	{
-		accessorKey: 'fullname',
+		accessorKey: 'fullName',
 		header: 'Full Name'
 	}
 ];

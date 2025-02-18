@@ -21,7 +21,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 	{#each Object.entries(groupedData) as [repoName, repos]}
-		<CollapsibleCard id={repoName} title={repoName} description={`${repos.length} ${repos.length > 1 ? 'Images' : 'Image'} Found`}>
+		<CollapsibleCard id={repoName} title={repoName} description={`${repos[0].images.length} ${repos.length > 1 ? 'Images' : 'Image'} Found`}>
 			{#each repos as repo, index}
 				<RepoImage repoIndex={index} filteredData={[repo]} />
 			{/each}
