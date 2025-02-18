@@ -14,33 +14,75 @@ function getNamespace(fullName: string): string {
 export async function getRegistryReposAxios(url: string): Promise<RegistryRepos> {
 	try {
 		const response = await axios.get(url);
-
-		// Parse the JSON data
 		const { repositories } = response.data as { repositories: string[] };
 
-		// Fetch Docker tags for each repository and map results to RegistryRepo objects
-		const registryRepos = await Promise.all(
-			repositories.map(async (repo) => {
-				try {
-					const repoImage = await getDockerTagsNew(env.PUBLIC_REGISTRY_URL, repo);
-					return {
-						name: getNamespace(repoImage.name),
-						images: repoImage.tags
-					};
-				} catch (error) {
-					console.error(`Error fetching tags for ${repo}:`, error);
-					return {
-						name: repo,
-						images: []
-					};
+		// First, group repositories by namespace
+		const namespaceGroups = repositories.reduce(
+			(acc, repo) => {
+				const namespace = getNamespace(repo);
+				if (!acc[namespace]) {
+					acc[namespace] = [];
 				}
+				acc[namespace].push(repo);
+				return acc;
+			},
+			{} as Record<string, string[]>
+		);
+
+		// Create RegistryRepo objects for each namespace
+		const registryRepos = await Promise.all(
+			Object.entries(namespaceGroups).map(async ([namespace, repos]) => {
+				const images = await Promise.all(
+					repos.map(async (repo) => {
+						try {
+							const repoImage = await getDockerTagsNew(env.PUBLIC_REGISTRY_URL, repo);
+							return {
+								name: repo.split('/')[1],
+								fullName: repo,
+								tags: repoImage.tags
+							};
+						} catch (error) {
+							console.error(`Error fetching tags for ${repo}:`, error);
+							return {
+								name: repo.split('/')[1],
+								fullName: repo,
+								tags: []
+							};
+						}
+					})
+				);
+
+				return {
+					name: namespace,
+					images: images
+				};
 			})
 		);
 
-		// Combine all registryRepos into a single array;
-		return { repositories: [...registryRepos] };
+		return { repositories: registryRepos };
 	} catch (error) {
 		console.error(error);
 		throw error;
 	}
 }
+
+// This new function should be in this structure:
+// {
+//     repositories: [
+//         {
+//             name: "ofkm",
+//             images: [
+//                 {
+//                     name: "imagetest",
+//                     fullName: "ofkm/imagetest",
+//                     tags: [...]
+//                 },
+//                 {
+//                     name: "imagename",
+//                     fullName: "ofkm/imagename",
+//                     tags: [...]
+//                 }
+//             ]
+//         }
+//     ]
+// }

@@ -6,14 +6,15 @@
 	export let filteredData: RegistryRepo[];
 </script>
 
-{#if filteredData[repoIndex].images.length > 0 }
+<!-- TODO Implement Table here, and rewrite image/tag logic -->
+{#if filteredData[repoIndex].images.length > 0}
 	{#each filteredData[repoIndex].images as tag, tagIndex}
 		{#if tag.name === 'latest'}
-			<MetadataDrawer tag={tag} repo={filteredData[repoIndex].name} repoIndex={repoIndex} tagIndex={tagIndex} isLatest={true} data={filteredData} />
+			<MetadataDrawer {tag} repo={filteredData[repoIndex].name} {repoIndex} {tagIndex} isLatest={true} data={filteredData} />
 		{:else}
-			<MetadataDrawer tag={tag} repo={filteredData[repoIndex].name} repoIndex={repoIndex} tagIndex={tagIndex} isLatest={false} data={filteredData} />
+			<MetadataDrawer {tag} repo={filteredData[repoIndex].name} {repoIndex} {tagIndex} isLatest={false} data={filteredData} />
 		{/if}
 	{/each}
 {:else}
-		<p class="text-lg font-light">No Tags Found.</p>
+	<p class="text-lg font-light">No Tags Found.</p>
 {/if}
