@@ -62,7 +62,7 @@
 					</h2>
 					<div class="relative w-[250px]">
 						<Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-						<Input type="search" placeholder="Search repositories/images..." class="pl-8" bind:value={$searchQuery} />
+						<Input type="search" placeholder="Search repositories..." class="pl-8" bind:value={$searchQuery} />
 					</div>
 				</div>
 				{#if $filteredData.length > 0}
