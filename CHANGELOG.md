@@ -1,3 +1,9 @@
+## [0.20.1](https://github.com/kmendell/svelocker-ui/compare/v0.20.0...v0.20.1) (2025-02-18)
+
+### Bug Fixes
+
+* add github icon next to version label ([189275d](https://github.com/kmendell/svelocker-ui/commit/189275d90fe62f06ca7a8204c0f1471382a8c088))
+* load the ui even if registry is not reachable ([4a75aa5](https://github.com/kmendell/svelocker-ui/commit/4a75aa5eb2d82613a77dda74b71aeb6d2652fdd9))
 ## [0.20.0](https://github.com/kmendell/svelocker-ui/compare/v0.19.0...v0.20.0) (2025-02-17)
 
 ### Features
