@@ -14,6 +14,7 @@ export const columns: ColumnDef<RepoImage>[] = [
 	},
 	{
 		id: 'actions',
+		header: 'Tags',
 		cell: ({ row }) => {
 			// You can pass whatever you need from `row.original` to the component
 			return renderComponent(TagDropdownActions, { tags: row.original.tags });

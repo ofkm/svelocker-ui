@@ -19,10 +19,9 @@
 	<DropdownMenu.Content>
 		<DropdownMenu.Group>
 			<DropdownMenu.GroupHeading>Tags</DropdownMenu.GroupHeading>
-			<DropdownMenu.Item onclick={() => navigator.clipboard.writeText(tags[0].name)}>Copy payment ID</DropdownMenu.Item>
+			{#each tags as tag}
+				<DropdownMenu.Item>{tag.name}</DropdownMenu.Item>
+			{/each}
 		</DropdownMenu.Group>
-		<DropdownMenu.Separator />
-		<DropdownMenu.Item>Tag 1</DropdownMenu.Item>
-		<DropdownMenu.Item>Tag 2</DropdownMenu.Item>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
