@@ -3,7 +3,13 @@ import type { ColumnDef } from '@tanstack/table-core';
 import { renderComponent } from '$lib/components/ui/data-table/index.js';
 import TagDropdownActions from '$lib/components/image-table/tag-dropdown-actions.svelte';
 
-export const columns: ColumnDef<RepoImage>[] = [
+// Extend RepoImage type to include the new properties
+type ExtendedRepoImage = RepoImage & {
+	repo: string;
+	repoIndex: number;
+};
+
+export const columns: ColumnDef<ExtendedRepoImage>[] = [
 	{
 		accessorKey: 'name',
 		header: 'Image Name'

@@ -9,20 +9,48 @@
 	export let repoIndex: number;
 	export let filteredData: RegistryRepo[];
 
+	// const table = createSvelteTable({
+	// 	get data() {
+	// 		return filteredData[repoIndex].images || [];
+	// 	},
+	// 	columns,
+	// 	getCoreRowModel: getCoreRowModel()
+	// });
+
 	const table = createSvelteTable({
 		get data() {
-			return filteredData[repoIndex].images || [];
+			const images = filteredData[repoIndex].images || [];
+			// Add repo and repoIndex to each image
+			return images.map((image) => ({
+				...image,
+				repo: filteredData[repoIndex].name,
+				repoIndex
+			}));
 		},
 		columns,
 		getCoreRowModel: getCoreRowModel()
 	});
 
 	// Watch for changes in filteredData
+	// $: {
+	// 	if (filteredData) {
+	// 		table.setOptions((prev) => ({
+	// 			...prev,
+	// 			data: filteredData[repoIndex].images || []
+	// 		}));
+	// 	}
+	// }
+
 	$: {
 		if (filteredData) {
 			table.setOptions((prev) => ({
 				...prev,
-				data: filteredData[repoIndex].images || []
+				data:
+					filteredData[repoIndex].images.map((image) => ({
+						...image,
+						repo: filteredData[repoIndex].name,
+						repoIndex
+					})) || []
 			}));
 		}
 	}
