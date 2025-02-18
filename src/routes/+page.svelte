@@ -58,7 +58,7 @@
 			{#if $repositories.length > 0}
 				<div class="flex justify-between items-center px-10 pt-10">
 					<h2 class="text-2xl">
-						Found {$filteredData.length} Images in {env.PUBLIC_REGISTRY_NAME}
+						Found {$filteredData.length} Repositories in {env.PUBLIC_REGISTRY_NAME}
 					</h2>
 					<div class="relative w-[250px]">
 						<Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
