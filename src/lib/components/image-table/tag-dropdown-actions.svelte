@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Ellipsis from 'lucide-svelte/icons/ellipsis';
+	import { Tag } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import type { ImageTag } from '$lib/models/tag.ts';
@@ -12,7 +12,7 @@
 		{#snippet child({ props })}
 			<Button {...props} variant="ghost" size="icon" class="relative size-8 p-0">
 				<span class="sr-only">Open menu</span>
-				<Ellipsis />
+				<Tag />
 			</Button>
 		{/snippet}
 	</DropdownMenu.Trigger>
