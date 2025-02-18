@@ -4,10 +4,21 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import type { ImageTag } from '$lib/models/tag.ts';
 	import { derived } from 'svelte/store';
-
 	import { readable } from 'svelte/store';
+	import MetadataDrawer from '$lib/components/docker-metadata/MetadataDrawer.svelte';
 
-	let { tags }: { tags: ImageTag[] } = $props();
+	// let { tags }: { tags: ImageTag[] } = $props();
+	let {
+		tags,
+		repo,
+		repoIndex,
+		data
+	}: {
+		tags: ImageTag[];
+		repo: string;
+		repoIndex: number;
+		data: any;
+	} = $props();
 	const tagsStore = readable(tags);
 
 	// Sort tags reactively to keep 'latest' at the top
@@ -33,8 +44,14 @@
 		<DropdownMenu.Group>
 			<DropdownMenu.GroupHeading>Tags</DropdownMenu.GroupHeading>
 			<DropdownMenu.Separator />
-			{#each $sortedTags as tag}
-				<DropdownMenu.Item class="font-bold">{tag.name}</DropdownMenu.Item>
+			{#each $sortedTags as tag, tagIndex}
+				<DropdownMenu.Item class="font-bold">
+					<MetadataDrawer {tag} {repo} {repoIndex} {tagIndex} {data} isLatest={tag.name === 'latest'} let:trigger>
+						<div {...trigger}>
+							{tag.name}
+						</div>
+					</MetadataDrawer>
+				</DropdownMenu.Item>
 			{/each}
 		</DropdownMenu.Group>
 	</DropdownMenu.Content>
