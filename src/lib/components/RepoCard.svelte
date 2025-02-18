@@ -8,7 +8,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 	{#each filteredData as repo, index}
-		<CollapsibleCard id={repo.name} title={repo.name} description={repo.images.length > 1 ? repo.images.length.toString() + ' Tags Found' : repo.images.length.toString() + ' Tag Found'}>
+		<CollapsibleCard id={repo.name} title={repo.name} description={repo.images.length > 1 ? repo.images.length.toString() + ' Images Found' : repo.images.length.toString() + ' Image Found'}>
 			<RepoImage repoIndex={index} {filteredData} />
 			<div class="clearfix"></div>
 		</CollapsibleCard>
