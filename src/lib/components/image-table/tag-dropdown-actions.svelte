@@ -2,9 +2,9 @@
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import type { RepoImage } from '$lib/models/image.ts';
+	import type { ImageTag } from '$lib/models/tag.ts';
 
-	let { tags }: { tags: RepoImage[] } = $props();
+	let { tags }: { tags: ImageTag[] } = $props();
 </script>
 
 <DropdownMenu.Root>
