@@ -53,7 +53,6 @@
 		</div>
 	{/if}
 
-	<!-- Rest of your existing template code -->
 	{#if data.repos}
 		<div class="flex-1 w-full flex-col justify-between">
 			{#if $repositories.length > 0}
