@@ -2,6 +2,7 @@ import type { RepoImage } from '$lib/models/image.ts';
 import type { ColumnDef } from '@tanstack/table-core';
 import { renderComponent } from '$lib/components/ui/data-table/index.js';
 import TagDropdownActions from '$lib/components/image-table/tag-dropdown-actions.svelte';
+import ImageDropdownActions from '$lib/components/image-table/image-actions-dropdown.svelte';
 
 // Extend RepoImage type to include the new properties
 type ExtendedRepoImage = RepoImage & {
@@ -19,7 +20,7 @@ export const columns: ColumnDef<ExtendedRepoImage>[] = [
 		header: 'Full Name'
 	},
 	{
-		id: 'actions',
+		id: 'tags',
 		header: 'Tags',
 		cell: ({ row }) => {
 			// You can pass whatever you need from `row.original` to the component
@@ -27,8 +28,22 @@ export const columns: ColumnDef<ExtendedRepoImage>[] = [
 				tags: row.original.tags,
 				repo: row.original.repo,
 				repoIndex: row.original.repoIndex,
-				data: row.original
+				data: row.original,
+				imageFullName: row.original.fullName
 			});
 		}
 	}
+	// {
+	// 	id: 'actions',
+	// 	header: 'Actions',
+	// 	cell: ({ row }) => {
+	// 		// You can pass whatever you need from `row.original` to the component
+	// 		return renderComponent(ImageDropdownActions, {
+	// 			repo: row.original.repo,
+	// 			repoIndex: row.original.repoIndex,
+	// 			data: row.original
+	// 		});
+	// 		// return renderComponent(ImageDropdownActions, { id: row.original.name });
+	// 	}
+	// }
 ];
