@@ -3,7 +3,7 @@
 	import { writable, derived } from 'svelte/store';
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
 	import { Input } from '$lib/components/ui/input';
-	import { Search } from 'lucide-svelte';
+	import { Search, AlertCircle } from 'lucide-svelte';
 	import type { PageProps } from './$types';
 	import { env } from '$env/dynamic/public';
 
@@ -45,60 +45,72 @@
 	<title>Svelocker UI</title>
 </svelte:head>
 
-<div class="flex-1 w-full flex-col justify-between bg-muted/50">
-	{#if $repositories.length > 0}
-		<div class="flex justify-between items-center px-10 pt-10">
-			<h2 class="text-2xl">
-				Found {$filteredData.length} Images in {env.PUBLIC_REGISTRY_NAME}
-			</h2>
-			<div class="relative w-[250px]">
-				<Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-				<Input type="search" placeholder="Search repositories/images..." class="pl-8" bind:value={$searchQuery} />
-			</div>
+<div class="mx-auto py-6 flex-1 w-full flex-col bg-muted/50">
+	{#if data.error}
+		<div class="flex items-center ml-10 mr-10 gap-2 p-4 border rounded-lg bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-800">
+			<AlertCircle size={20} class="text-red-600 dark:text-red-400" />
+			<p class="text-red-600 dark:text-red-400 font-medium">Unable to connect to registry at {env.PUBLIC_REGISTRY_URL}. Please check your connection and registry status.</p>
 		</div>
-		{#if $filteredData.length > 0}
-			<!-- RepoCard List -->
-			<div class="grid grid-cols-1 gap-4" style="margin-bottom: 2em;">
-				<RepoCard filteredData={$paginatedData} />
-			</div>
+	{/if}
 
-			<!-- Pagination Component -->
-			<Pagination.Root count={$filteredData.length} perPage={ITEMS_PER_PAGE} class="sticky-bottom-0 z-10 pagination-footer ">
-				{#snippet children({ pages })}
-					<Pagination.Content>
-						<Pagination.Item>
-							<Pagination.PrevButton onclick={prevPage} />
-						</Pagination.Item>
-						{#each pages as page (page.key)}
-							{#if page.type === 'ellipsis'}
-								<Pagination.Item>
-									<Pagination.Ellipsis />
-								</Pagination.Item>
-							{:else}
-								<Pagination.Item>
-									<Pagination.Link {page} isActive={$currentPage === page.value} onclick={() => goToPage(page.value)}>
-										{page.value}
-									</Pagination.Link>
-								</Pagination.Item>
-							{/if}
-						{/each}
-						<Pagination.Item>
-							<Pagination.NextButton onclick={nextPage} />
-						</Pagination.Item>
-					</Pagination.Content>
-				{/snippet}
-			</Pagination.Root>
-		{:else}
-			<div class="grid place-items-center h-[50vh]">
-				<div class="text-center">
-					<h3 class="text-xl text-muted-foreground">No matches found matching "{$searchQuery}"</h3>
-					<p class="text-sm text-muted-foreground mt-2">Try adjusting your search terms</p>
+	<!-- Rest of your existing template code -->
+	{#if data.repos}
+		<div class="flex-1 w-full flex-col justify-between">
+			{#if $repositories.length > 0}
+				<div class="flex justify-between items-center px-10 pt-10">
+					<h2 class="text-2xl">
+						Found {$filteredData.length} Images in {env.PUBLIC_REGISTRY_NAME}
+					</h2>
+					<div class="relative w-[250px]">
+						<Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+						<Input type="search" placeholder="Search repositories/images..." class="pl-8" bind:value={$searchQuery} />
+					</div>
 				</div>
-			</div>
-		{/if}
-	{:else}
-		<div class="grid grid-cols-1 gap-4 p-10">
-			<h2 class="text-lg poppins">Could not pull registry data...</h2>
+				{#if $filteredData.length > 0}
+					<!-- RepoCard List -->
+					<div class="grid grid-cols-1 gap-4" style="margin-bottom: 2em;">
+						<RepoCard filteredData={$paginatedData} />
+					</div>
+
+					<!-- Pagination Component -->
+					<Pagination.Root count={$filteredData.length} perPage={ITEMS_PER_PAGE} class="sticky-bottom-0 z-10 pagination-footer ">
+						{#snippet children({ pages })}
+							<Pagination.Content>
+								<Pagination.Item>
+									<Pagination.PrevButton onclick={prevPage} />
+								</Pagination.Item>
+								{#each pages as page (page.key)}
+									{#if page.type === 'ellipsis'}
+										<Pagination.Item>
+											<Pagination.Ellipsis />
+										</Pagination.Item>
+									{:else}
+										<Pagination.Item>
+											<Pagination.Link {page} isActive={$currentPage === page.value} onclick={() => goToPage(page.value)}>
+												{page.value}
+											</Pagination.Link>
+										</Pagination.Item>
+									{/if}
+								{/each}
+								<Pagination.Item>
+									<Pagination.NextButton onclick={nextPage} />
+								</Pagination.Item>
+							</Pagination.Content>
+						{/snippet}
+					</Pagination.Root>
+				{:else}
+					<div class="grid place-items-center h-[50vh]">
+						<div class="text-center">
+							<h3 class="text-xl text-muted-foreground">No matches found matching "{$searchQuery}"</h3>
+							<p class="text-sm text-muted-foreground mt-2">Try adjusting your search terms</p>
+						</div>
+					</div>
+				{/if}
+			{:else}
+				<div class="grid grid-cols-1 gap-4 p-10">
+					<h2 class="text-lg poppins">Could not pull registry data...</h2>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
