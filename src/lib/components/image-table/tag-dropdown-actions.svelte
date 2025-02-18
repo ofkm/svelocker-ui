@@ -32,6 +32,7 @@
 	<DropdownMenu.Content>
 		<DropdownMenu.Group>
 			<DropdownMenu.GroupHeading>Tags</DropdownMenu.GroupHeading>
+			<DropdownMenu.Separator />
 			{#each $sortedTags as tag}
 				<DropdownMenu.Item class="font-bold">{tag.name}</DropdownMenu.Item>
 			{/each}
