@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 
 	// Find the repository
 	const repoIndex = repos.repositories.findIndex((r) => r.name === repoName);
-	if (repoIndex === -1) throw new Error(`Repository ${repoName} not found`);
+	if (repoIndex === -1) {
 
 	const repo = repos.repositories[repoIndex];
 
