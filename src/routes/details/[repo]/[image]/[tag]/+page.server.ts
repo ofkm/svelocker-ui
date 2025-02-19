@@ -8,17 +8,17 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 
 	// Find the repository
 	const repoIndex = repos.repositories.findIndex((r) => r.name === repoName);
-	if (repoIndex === -1) {
+	if (repoIndex === -1) throw new Error(`Repository ${repoName} not found`);
 
 	const repo = repos.repositories[repoIndex];
 
 	// Find the image that matches both repo and image name
 	const image = repo.images.find((img) => img.name === imageName);
-	if (!image) {
+	if (!image) throw new Error(`Image ${imageName} not found in ${repoName}`);
 
 	// Find the tag within the image's tags array
 	const tagIndex = image.tags.findIndex((t) => t.name === tagName);
-	if (tagIndex === -1) {
+	if (tagIndex === -1) throw new Error(`Tag ${tagName} not found in ${imageName}`);
 
 	return {
 		repositories: repos.repositories,
