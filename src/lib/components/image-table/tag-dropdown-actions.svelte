@@ -5,7 +5,6 @@
 	import type { ImageTag } from '$lib/models/tag.ts';
 	import { derived } from 'svelte/store';
 	import { readable } from 'svelte/store';
-	import MetadataDrawer from '$lib/components/docker-metadata/MetadataDrawer.svelte';
 	import type { RegistryRepo } from '$lib/models/repo';
 
 	// let { tags }: { tags: ImageTag[] } = $props();
