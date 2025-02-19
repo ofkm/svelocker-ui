@@ -43,16 +43,10 @@
 			}
 		});
 	}
-
-	async function handleDeleteImage() {
-		// TODO: Implement image deletion
-		toast.error('Delete functionality not yet implemented');
-	}
 </script>
 
 <div class="mx-auto w-full max-w-[95%] p-8">
 	<div class="space-y-8">
-		<!-- Breadcrumb with better spacing -->
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item>
@@ -75,7 +69,6 @@
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
 
-		<!-- Header section with better spacing -->
 		<div class="grid grid-cols-2 gap-8">
 			<!-- Left side: Metadata -->
 			<div class="space-y-8">

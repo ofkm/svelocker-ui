@@ -24,8 +24,6 @@ export const columns: ColumnDef<ExtendedRepoImage>[] = [
 		cell: ({ row }) => {
 			return renderComponent(TagDropdownActions, {
 				tags: row.original.tags,
-				repo: row.original.repo,
-				repoIndex: row.original.repoIndex,
 				data: row.original,
 				imageFullName: row.original.fullName
 			});

@@ -28,12 +28,4 @@
 			<div class="clearfix"></div>
 		</CollapsibleCard>
 	{/each}
-
-	<!-- Old Version -->
-	<!-- {#each filteredData as repo, index}
-		<CollapsibleCard id={repo.name} title={repo.name} description={repo.images.length > 1 ? repo.images.length.toString() + ' Images Found' : repo.images.length.toString() + ' Image Found'}>
-			<RepoImage repoIndex={index} {filteredData} />
-			<div class="clearfix"></div>
-		</CollapsibleCard>
-	{/each} -->
 </div>
