@@ -48,3 +48,6 @@ yarn-debug.log*
 yarn-error.log*
 
 notes.txt
+
+svelockerui.db
+svelockerui.db-journal

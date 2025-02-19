@@ -1,6 +1,7 @@
 import { getRegistryReposAxios } from '$lib/utils/repos.ts';
 import { env } from '$env/dynamic/public';
 import type { RegistryRepo } from '$lib/models/repo';
+import { RegistryCache } from '$lib/services/db';
 
 export async function load({ url }) {
 	// Mock data for tests based on URL parameter
@@ -101,18 +102,47 @@ export async function load({ url }) {
 		}
 	}
 
-	console.log('attempting to fetch from registry - THIS SHOULD NOT HAPPEN IN PLAYWRIGHT');
 	try {
-		const repos = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
+		// Get fresh data from registry
+		const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
+
+		// Sync to cache
+		await RegistryCache.syncFromRegistry(registryData.repositories);
+
+		// Return cached data
 		return {
-			repos: repos,
-			error: null
+			repos: {
+				repositories: RegistryCache.getRepositories()
+			}
 		};
 	} catch (error) {
-		console.error('Failed to connect to registry:', error);
-		return {
-			repos: { repositories: [] },
-			error: 'Failed to connect to registry'
-		};
+		console.error('Failed to fetch registry data:', error);
+
+		// Try to return cached data on failure
+		try {
+			return {
+				repos: {
+					repositories: RegistryCache.getRepositories()
+				}
+			};
+		} catch (cacheError) {
+			return {
+				error: true
+			};
+		}
 	}
+
+	// try {
+	// 	const repos = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
+	// 	return {
+	// 		repos: repos,
+	// 		error: null
+	// 	};
+	// } catch (error) {
+	// 	console.error('Failed to connect to registry:', error);
+	// 	return {
+	// 		repos: { repositories: [] },
+	// 		error: 'Failed to connect to registry'
+	// 	};
+	// }
 }

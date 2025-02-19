@@ -6,6 +6,7 @@
 	import { Search, AlertCircle } from 'lucide-svelte';
 	import type { PageProps } from './$types';
 	import { env } from '$env/dynamic/public';
+	import SyncButton from '$lib/components/SyncButton.svelte';
 
 	let { data }: PageProps = $props();
 	const searchQuery = writable('');
@@ -60,9 +61,12 @@
 					<h2 class="text-2xl">
 						Found {$filteredData.length} Repositories in {env.PUBLIC_REGISTRY_NAME}
 					</h2>
-					<div class="relative w-[250px]">
-						<Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-						<Input type="search" placeholder="Search repositories..." class="pl-8" bind:value={$searchQuery} />
+					<div class="flex items-center gap-4">
+						<SyncButton />
+						<div class="relative w-[250px]">
+							<Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+							<Input type="search" placeholder="Search repositories..." class="pl-8" bind:value={$searchQuery} />
+						</div>
 					</div>
 				</div>
 				{#if $filteredData.length > 0}
