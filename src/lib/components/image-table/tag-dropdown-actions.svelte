@@ -32,17 +32,17 @@
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger>
-		<Button variant="ghost" size="icon" class="relative size-8 p-0">
+		<Button data-testid="tag-button" variant="ghost" size="icon" class="relative size-8 p-0">
 			<span class="sr-only">Open menu</span>
 			<Tag />
 		</Button>
 	</DropdownMenu.Trigger>
-	<DropdownMenu.Content>
+	<DropdownMenu.Content data-testid="dropdown-content">
 		<DropdownMenu.Group>
 			<DropdownMenu.GroupHeading class="font-bold flex items-center justify-center">Tags</DropdownMenu.GroupHeading>
 			<DropdownMenu.Separator />
 			{#each $sortedTags as tag}
-				<DropdownMenu.Item class="font-bold flex items-center justify-center ">
+				<DropdownMenu.Item role="menuitem" class="font-bold flex items-center justify-center ">
 					<a href="/details/{imageFullName}/{tag.name}" class={tag.name === 'latest' ? 'text-green-400' : ''}>
 						{tag.name}
 					</a>
