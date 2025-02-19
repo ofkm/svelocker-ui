@@ -2,16 +2,6 @@
 
 @config '../tailwind.config.ts';
 
-h1,
-h2,
-h3 {
-	font-family: 'Roboto', serif;
-	font-optical-sizing: auto;
-	font-weight: 100;
-	font-style: normal;
-	font-variation-settings: 'wdth' 100;
-}
-
 pre {
 	margin: 0;
 	tab-size: 0;
