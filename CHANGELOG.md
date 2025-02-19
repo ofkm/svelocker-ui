@@ -1,3 +1,8 @@
+## [0.21.0](https://github.com/kmendell/svelocker-ui/compare/v0.20.1...v0.21.0) (2025-02-19)
+
+### Features
+
+* image/repo ui/ux refresh ([#33](https://github.com/kmendell/svelocker-ui/issues/33)) ([d63ed72](https://github.com/kmendell/svelocker-ui/commit/d63ed7208b92f40a305bbd16bc98e556459bec19))
 ## [0.20.1](https://github.com/kmendell/svelocker-ui/compare/v0.20.0...v0.20.1) (2025-02-18)
 
 ### Bug Fixes
