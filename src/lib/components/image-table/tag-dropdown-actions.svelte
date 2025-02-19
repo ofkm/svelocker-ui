@@ -10,19 +10,14 @@
 	// let { tags }: { tags: ImageTag[] } = $props();
 	let {
 		tags,
-		repo,
-		repoIndex,
 		data,
 		imageFullName
 	}: {
 		tags: ImageTag[];
-		repo: string;
-		repoIndex: number;
 		data: RegistryRepo[];
 		imageFullName: string;
 	} = $props();
 
-	const dataStore = readable(data);
 	const tagsStore = readable(tags);
 
 	// Sort tags reactively to keep 'latest' at the top
@@ -33,18 +28,10 @@
 			return a.name.localeCompare(b.name);
 		});
 	});
-
-	let isDropdownOpen = false;
-
-	function handleTriggerClick(event: MouseEvent) {
-		event.stopPropagation();
-		console.log('clicked');
-		isDropdownOpen = !isDropdownOpen;
-	}
 </script>
 
 <DropdownMenu.Root>
-	<DropdownMenu.Trigger onclick={handleTriggerClick}>
+	<DropdownMenu.Trigger>
 		<Button variant="ghost" size="icon" class="relative size-8 p-0">
 			<span class="sr-only">Open menu</span>
 			<Tag />
@@ -52,11 +39,11 @@
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content>
 		<DropdownMenu.Group>
-			<DropdownMenu.GroupHeading>Tags</DropdownMenu.GroupHeading>
+			<DropdownMenu.GroupHeading class="font-bold flex items-center justify-center">Tags</DropdownMenu.GroupHeading>
 			<DropdownMenu.Separator />
 			{#each $sortedTags as tag}
 				<DropdownMenu.Item class="font-bold flex items-center justify-center ">
-					<a href="/details/{imageFullName}/{tag.name}" class="">
+					<a href="/details/{imageFullName}/{tag.name}" class={tag.name === 'latest' ? 'text-green-400' : ''}>
 						{tag.name}
 					</a>
 				</DropdownMenu.Item>

@@ -22,7 +22,6 @@ export const columns: ColumnDef<ExtendedRepoImage>[] = [
 		id: 'tags',
 		header: 'Tags',
 		cell: ({ row }) => {
-			// You can pass whatever you need from `row.original` to the component
 			return renderComponent(TagDropdownActions, {
 				tags: row.original.tags,
 				repo: row.original.repo,
