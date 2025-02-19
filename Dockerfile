@@ -17,4 +17,5 @@ COPY --from=builder /app/static ./static
 
 EXPOSE 3000
 LABEL org.opencontainers.image.authors="kmendell"
+LABEL org.opencontainers.image.description="A Simple and Modern Docker Registry UI for use with Distribution/Registry"
 CMD ["node", "build"]

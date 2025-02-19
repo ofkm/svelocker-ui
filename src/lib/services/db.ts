@@ -1,8 +1,10 @@
 // src/lib/services/db.ts
 import Database from 'better-sqlite3';
 import type { RegistryRepo } from '$lib/models/repo';
+import { env } from '$env/dynamic/private';
 
-const db = new Database('svelockerui.db');
+const dbPath = env.DB_PATH || 'svelockerui.db';
+const db = new Database(dbPath);
 
 // Initialize tables with new tag_metadata table
 db.exec(`
