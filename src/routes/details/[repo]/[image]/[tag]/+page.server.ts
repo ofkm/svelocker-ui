@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 
 	// Find the image that matches both repo and image name
 	const image = repo.images.find((img) => img.name === imageName);
-	if (!image) throw new Error(`Image ${imageName} not found in ${repoName}`);
+	if (!image) {
 
 	// Find the tag within the image's tags array
 	const tagIndex = image.tags.findIndex((t) => t.name === tagName);
