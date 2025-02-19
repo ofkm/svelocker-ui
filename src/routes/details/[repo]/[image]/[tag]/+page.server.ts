@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 
 	// Find the tag within the image's tags array
 	const tagIndex = image.tags.findIndex((t) => t.name === tagName);
-	if (tagIndex === -1) throw new Error(`Tag ${tagName} not found in ${imageName}`);
+	if (tagIndex === -1) {
 
 	return {
 		repositories: repos.repositories,
