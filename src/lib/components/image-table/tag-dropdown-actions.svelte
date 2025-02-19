@@ -55,9 +55,11 @@
 		<DropdownMenu.Group>
 			<DropdownMenu.GroupHeading>Tags</DropdownMenu.GroupHeading>
 			<DropdownMenu.Separator />
-			{#each $sortedTags as tag, tagIndex}
+			{#each $sortedTags as tag}
 				<DropdownMenu.Item class="font-bold flex items-center justify-center ">
-					<MetadataDrawer {tag} {repo} {repoIndex} {imageFullName} {tagIndex} data={$dataStore} isLatest={tag.name === 'latest'} />
+					<a href="/details/{imageFullName}/{tag.name}" class="">
+						{tag.name}
+					</a>
 				</DropdownMenu.Item>
 			{/each}
 		</DropdownMenu.Group>

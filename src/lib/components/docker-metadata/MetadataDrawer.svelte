@@ -53,6 +53,10 @@
 			}
 		});
 	}
+
+	// Dockerfile Dialog
+	let dialogOpen = false;
+	//End dockerfile
 </script>
 
 <Drawer.Root open={isOpen} onOpenChange={handleClose}>
@@ -92,11 +96,12 @@
 					</div>
 				</div>
 			{/if}
-			<!-- <Drawer.Footer>
+			<Drawer.Footer>
 				<div class="grid gap-4 py-4">
 					<div class="grid grid-col-2 grid-rows-1 grid-flow-col gap-4 items-center">
-						<DockerfileDialog {repoIndex} {tagIndex} data={safeData} image={repo} tag={tag?.name} />
-						<AlertDialog.Root>
+						<Button variant="outline" class="dockerButtong" on:click={() => (dialogOpen = true)}>View Dockerfile</Button>
+						<DockerfileDialog bind:open={dialogOpen} {repoIndex} {tagIndex} data={safeData} image={repo} tag={tag?.name} />
+						<!-- <AlertDialog.Root>
 							<AlertDialog.Trigger class={buttonVariants({ variant: 'destructive' })}>Delete Tag</AlertDialog.Trigger>
 							<AlertDialog.Content>
 								<AlertDialog.Header>
@@ -108,10 +113,10 @@
 									<AlertDialog.Action onclick={() => deleteTag(repo, tag.name, tag.metadata.contentDigest)} class={buttonVariants({ variant: 'destructive' })}>Delete</AlertDialog.Action>
 								</AlertDialog.Footer>
 							</AlertDialog.Content>
-						</AlertDialog.Root>
+						</AlertDialog.Root> -->
 					</div>
 				</div>
-			</Drawer.Footer> -->
+			</Drawer.Footer>
 		</div>
 	</Drawer.Content>
 </Drawer.Root>
