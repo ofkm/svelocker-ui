@@ -2,14 +2,6 @@
 
 <div align="center"><h3>A Simple and Modern Docker Registry UI built with Typescript and SvelteKit.</h3>
 
-![image](https://github.com/user-attachments/assets/13696c67-4932-4507-9b39-4bc0a4b1aa24)
-
-![image](https://github.com/user-attachments/assets/dbb90c4b-626b-4bc5-bb31-ecf09417359d)
-
-![image](https://github.com/user-attachments/assets/55d54918-c49b-47cd-b760-868e44df6b75)
-
-
-
 </div>
 
 > This project is currently in development and items, themes, and features may change or not be available.
@@ -20,6 +12,7 @@
 - Easy Setup
 - Connects to Local Registries using the official [distribution/registry](https://hub.docker.com/_/registry) container image.
 - Delete Image Tags from the UI
+- SQLite Cache Layer for registry data
 
 ## Get Started
 
@@ -35,6 +28,7 @@ Modify the env file to fit your setup:
 ```env
 PUBLIC_REGISTRY_URL=https://yourregistry.com
 PUBLIC_REGISTRY_NAME=My Docker Registry
+DB_PATH=data/svelockerui.db
 ```
 
 ```yaml
@@ -45,6 +39,8 @@ services:
     env_file: .env
     ports:
       - 3000:3000
+    volumes:
+      - ./data:/app/data
 ```
 
 Access Svelocker UI on http://dockerip:3000

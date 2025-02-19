@@ -136,17 +136,17 @@
 					</Button>
 				</div>
 				<div class="relative">
-					<pre class="flex text-sm font-mono">
+					<pre class="flex text-sm font-mono leading-relaxed">
 						<!-- Line numbers -->
-						<div class="py-4 pl-2 pr-4 text-gray-400 select-none border-r border-gray-700 bg-[#1e1e1e] w-[4rem]">
+						<div class="py-1 pl-2 pr-4 text-gray-400 select-none border-r border-gray-700 bg-[#1e1e1e] w-[4rem]">
 							{#each currentTag.metadata.dockerFile.split('\n') as _, i}
-								<div class="text-right min-h-[28px] flex items-center justify-end px-2">{i + 1}</div>
+								<div class="text-right max-h-[1px] flex items-center justify-end px-2">{i + 1}</div>
 							{/each}
 						</div>
 						<!-- Code content -->
-						<div class="py-4 px-6 bg-[#1e1e1e] w-full overflow-x-auto">
+						<div class="py-1 px-6 bg-[#1e1e1e] w-full overflow-x-auto">
 							{#each currentTag.metadata.dockerFile.split('\n') as line}
-								<div class="min-h-[28px] flex items-center">
+								<div class="max-h-[1px] flex items-center">
 									<span>{line}</span>
 								</div>
 							{/each}
