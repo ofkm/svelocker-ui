@@ -6,7 +6,7 @@ dotenv.config({ path: '.env.test' });
 
 export default defineConfig({
 	testDir: './tests/e2e',
-	outputDir: 'tests/',
+	outputDir: './tests/.tests-output',
 	webServer: {
 		command: 'npm run build && npm run preview',
 		port: 3000,
@@ -22,6 +22,6 @@ export default defineConfig({
 	},
 	reporter: [
 		['list'], // Use the 'list' reporter
-		['html', { outputFolder: 'tests/.test-report' }] // Specify the HTML report output directory
+		['html', { outputFolder: './tests/.test-report' }] // Specify the HTML report output directory
 	]
 });
