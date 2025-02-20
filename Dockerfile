@@ -13,6 +13,8 @@ WORKDIR /app
 
 # Create data directory
 RUN mkdir -p /app/data && chown node:node /app/data
+COPY ./scripts/docker/entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 COPY --from=builder /app/build ./build
 COPY package*.json ./
@@ -29,4 +31,5 @@ LABEL org.opencontainers.image.description="A Simple and Modern Docker Registry 
 # Add volume for persistent data
 VOLUME ["/app/data"]
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["node", "build"]
