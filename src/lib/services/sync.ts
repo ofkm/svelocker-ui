@@ -7,16 +7,26 @@ export class RegistrySyncService {
 	private static instance: RegistrySyncService;
 	private cronJob: cron.ScheduledTask;
 
+	private logWithTimestamp(message: string): void {
+		const timestamp = new Date().toISOString();
+		console.log(`[${timestamp}] ${message}`);
+	}
+
+	private logErrorWithTimestamp(message: string, error: any): void {
+		const timestamp = new Date().toISOString();
+		console.error(`[${timestamp}] ${message}`, error);
+	}
+
 	private constructor() {
 		// Run every 5 minutes by default
 		this.cronJob = cron.schedule('*/5 * * * *', async () => {
 			try {
-				console.log('Starting registry sync...');
+				this.logWithTimestamp('Starting registry sync...');
 				const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
 				await RegistryCache.syncFromRegistry(registryData.repositories);
-				console.log('Registry sync completed successfully');
+				this.logWithTimestamp('Registry sync completed successfully');
 			} catch (error) {
-				console.error('Registry sync failed:', error);
+				this.logErrorWithTimestamp('Registry sync failed:', error);
 			}
 		});
 	}
@@ -30,22 +40,22 @@ export class RegistrySyncService {
 
 	public start(): void {
 		this.cronJob.start();
-		console.log('Registry sync service started');
+		this.logWithTimestamp('Registry sync service started');
 	}
 
 	public stop(): void {
 		this.cronJob.stop();
-		console.log('Registry sync service stopped');
+		this.logWithTimestamp('Registry sync service stopped');
 	}
 
 	public async syncNow(): Promise<void> {
 		try {
-			console.log('Starting manual registry sync...');
+			this.logWithTimestamp('Starting manual registry sync...');
 			const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
 			await RegistryCache.syncFromRegistry(registryData.repositories);
-			console.log('Manual registry sync completed successfully');
+			this.logWithTimestamp('Manual registry sync completed successfully');
 		} catch (error) {
-			console.error('Manual registry sync failed:', error);
+			this.logErrorWithTimestamp('Manual registry sync failed:', error);
 			throw error;
 		}
 	}
