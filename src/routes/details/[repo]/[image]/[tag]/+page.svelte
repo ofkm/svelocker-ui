@@ -14,6 +14,7 @@
 	import { deleteDockerManifestAxios } from '$lib/utils/delete.ts';
 	import { env } from '$env/dynamic/public';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 
@@ -29,13 +30,13 @@
 
 	$: currentTag = data.tag.tags[data.tagIndex];
 
-	async function deleteTag(name: string, tag: string, configDigest: string) {
-		deleteDockerManifestAxios(env.PUBLIC_REGISTRY_URL, name, tag, configDigest).then((success) => {
+	async function deleteTag(name: string, configDigest: string) {
+		deleteDockerManifestAxios(env.PUBLIC_REGISTRY_URL, name, configDigest).then((success) => {
 			if (success) {
 				toast.success('Docker Tag Deleted Successfully', {
 					description: 'Run `registry garbage-collect /etc/docker/registry/config.yml` to cleanup. Refreshing...'
 				});
-				setTimeout(() => location.reload(), 3000);
+				setTimeout(() => goto('/'), 3000);
 			} else {
 				toast.error('Error Deleting Docker Tag', {
 					description: 'Check your Registry configuration.'
@@ -87,11 +88,11 @@
 							<AlertDialog.Content>
 								<AlertDialog.Header>
 									<AlertDialog.Title class="font-light text-md">Are you sure you want to delete the tag <span class="font-bold">{data.imageFullName}:{currentTag.name}</span>?</AlertDialog.Title>
-									<AlertDialog.Description>This action cannot be undone. All tags with the same config digest will be deleted.</AlertDialog.Description>
+									<AlertDialog.Description>This action cannot be undone. <span class="font-bold">All tags with the same config digest will be deleted.</span></AlertDialog.Description>
 								</AlertDialog.Header>
 								<AlertDialog.Footer>
 									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-									<AlertDialog.Action onclick={() => deleteTag(data.repo, currentTag.name, currentTag.metadata.contentDigest)} class={buttonVariants({ variant: 'destructive' })}>Delete</AlertDialog.Action>
+									<AlertDialog.Action onclick={() => deleteTag(data.imageFullName, currentTag.metadata.contentDigest)} class={buttonVariants({ variant: 'destructive' })}>Delete</AlertDialog.Action>
 								</AlertDialog.Footer>
 							</AlertDialog.Content>
 						</AlertDialog.Root>
