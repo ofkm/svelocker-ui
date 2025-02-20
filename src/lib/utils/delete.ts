@@ -8,8 +8,6 @@ export async function deleteDockerManifestAxios(registryUrl: string, repo: strin
 		// Set up the request headers
 		const headers = {
 			Accept: 'application/json, application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json'
-			// 'Docker-Content-Digest': configDigest, // Provide the config digest if available, otherwise leave empty
-			// 'Authorization': `Bearer YOUR_TOKEN` // Replace with your token or remove if not required
 		};
 
 		// Send a DELETE request to the manifest URL using Axios
@@ -19,8 +17,18 @@ export async function deleteDockerManifestAxios(registryUrl: string, repo: strin
 			throw new Error(`Failed to delete manifest: ${response.status}`);
 		}
 
-		console.log('Successfully deleted manifest.');
-		return true;
+		try {
+			const response = await fetch('/api/sync', { method: 'POST' });
+			if (!response.ok) {
+				throw new Error('Sync failed');
+			} else {
+				console.log('Successfully synced.');
+				console.log('Successfully deleted manifest.');
+				return true;
+			}
+		} catch (error) {
+			console.error('Failed to sync:', error);
+		}
 	} catch (error) {
 		console.error('Error deleting manifest:', error);
 		return false;
