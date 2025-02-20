@@ -99,7 +99,7 @@
 					{#if currentTag.metadata}
 						<div class="space-y-2">
 							<p class="text-lg text-muted-foreground">{currentTag.metadata.description}</p>
-							<p class="text-sm text-muted-foreground font-mono">{currentTag.metadata.configDigest}</p>
+							<p class="text-sm text-muted-foreground font-mono">{currentTag.digest}</p>
 						</div>
 					{/if}
 				</div>
