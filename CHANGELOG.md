@@ -1,3 +1,17 @@
+## [0.22.0](https://github.com/kmendell/svelocker-ui/compare/v0.21.0...v0.22.0) (2025-02-20)
+
+### Features
+
+* add sqlite db cache ([#38](https://github.com/kmendell/svelocker-ui/issues/38)) ([3cd944b](https://github.com/kmendell/svelocker-ui/commit/3cd944b762b0a94145ef4c0a06736545be4c2108))
+
+### Bug Fixes
+
+* add registry sync after tag is deleted ([4bc75a2](https://github.com/kmendell/svelocker-ui/commit/4bc75a22e903fa89ab1091c3a00b698a83098235))
+* database path if not defined ([f9a40d2](https://github.com/kmendell/svelocker-ui/commit/f9a40d237d97d3d7276a64c531bdcd847061117e))
+* delete logic after switch to new db cache ([6338147](https://github.com/kmendell/svelocker-ui/commit/63381471e4606949afa5d3f58e57c5559d2202f7))
+* dockerfile database volume auto create ([f078d90](https://github.com/kmendell/svelocker-ui/commit/f078d900007d3f2438264f2115cea66386ca5984))
+* pull fresh data after tag is deleted ([cbbb18f](https://github.com/kmendell/svelocker-ui/commit/cbbb18f28266b07d663151295249fbb930b0d98a))
+* update default database path if not defined ([3971386](https://github.com/kmendell/svelocker-ui/commit/397138649c50415de15b002a852286a5c8e0dc45))
 ## [0.21.0](https://github.com/kmendell/svelocker-ui/compare/v0.20.1...v0.21.0) (2025-02-19)
 
 ### Features
