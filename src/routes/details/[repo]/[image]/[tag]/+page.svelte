@@ -14,7 +14,6 @@
 	import { deleteDockerManifestAxios } from '$lib/utils/delete.ts';
 	import { env } from '$env/dynamic/public';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
-	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 
@@ -36,7 +35,7 @@
 				toast.success('Docker Tag Deleted Successfully', {
 					description: 'Run `registry garbage-collect /etc/docker/registry/config.yml` to cleanup. Refreshing...'
 				});
-				setTimeout(() => goto('/'), 3000);
+				setTimeout(() => (window.location.href = '/'), 3000);
 			} else {
 				toast.error('Error Deleting Docker Tag', {
 					description: 'Check your Registry configuration.'
