@@ -2,6 +2,14 @@
 
 <div align="center"><h3>A Simple and Modern Docker Registry UI built with Typescript and SvelteKit.</h3>
 
+### Main List View:
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/09478366-68ed-43e2-8298-e9feacf50c1c" />
+
+### Details View: 
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/8256f3df-eac2-4c03-a428-2bc222cf91af" />
+
+
+
 </div>
 
 > This project is currently in development and items, themes, and features may change or not be available.
