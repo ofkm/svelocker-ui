@@ -11,11 +11,13 @@
 	let {
 		tags,
 		data,
-		imageFullName
+		imageFullName,
+		imageName
 	}: {
 		tags: ImageTag[];
 		data: RegistryRepo[];
 		imageFullName: string;
+		imageName: string;
 	} = $props();
 
 	const tagsStore = readable(tags);

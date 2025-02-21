@@ -44,6 +44,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		repoIndex,
 		tagIndex,
 		imageFullName: `${repoName}/${imageName}`,
+		imageName: `${imageName}`,
 		isLatest: tagName === 'latest'
 	};
 };

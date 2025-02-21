@@ -101,6 +101,12 @@
 					<Slash class="h-4 w-4" />
 				</Breadcrumb.Separator>
 				<Breadcrumb.Item>
+					<Breadcrumb.Link href="/" class="text-muted-foreground hover:text-foreground">{data.imageName}</Breadcrumb.Link>
+				</Breadcrumb.Item>
+				<Breadcrumb.Separator>
+					<Slash class="h-4 w-4" />
+				</Breadcrumb.Separator>
+				<Breadcrumb.Item>
 					<Breadcrumb.Link class="text-foreground">{currentTag.name}</Breadcrumb.Link>
 				</Breadcrumb.Item>
 			</Breadcrumb.List>

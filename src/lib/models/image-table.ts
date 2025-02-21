@@ -25,7 +25,8 @@ export const columns: ColumnDef<ExtendedRepoImage>[] = [
 			return renderComponent(TagDropdownActions, {
 				tags: row.original.tags,
 				data: row.original,
-				imageFullName: row.original.fullName
+				imageFullName: row.original.fullName,
+				imageName: row.original.name
 			});
 		}
 	}
