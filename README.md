@@ -28,7 +28,7 @@ Modify the env file to fit your setup:
 ```env
 PUBLIC_REGISTRY_URL=https://yourregistry.com
 PUBLIC_REGISTRY_NAME=My Docker Registry
-DB_PATH=data/svelockerui.db
+DB_PATH=data/svelockerui.db #This is the location inside the container.
 ```
 
 ```yaml
@@ -61,7 +61,7 @@ You can replace the Access-Control-Allow-Origin line to this `REGISTRY_HTTP_HEAD
 
 # Additional Information
 
-- All the API Calls to the Registry happen Server-Side, the only exceptions to this are the `Copy Dockerfile` and `Delete Tag/Image` functions. This is intentional due to the data being handled by those requests.
+- All the API Calls to the Registry happen Server-Side, the only exceptions to this are the `Copy Dockerfile`.
 
 # Shoutouts
 
