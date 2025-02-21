@@ -1,7 +1,7 @@
 type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
 export class Logger {
-	private static instance: Logger;
+	private static instances: Map<string, Logger> = new Map();
 	private serviceName: string;
 	private readonly logLevels: LogLevel[] = ['DEBUG', 'INFO', 'WARN', 'ERROR'];
 
@@ -10,10 +10,10 @@ export class Logger {
 	}
 
 	public static getInstance(serviceName: string): Logger {
-		if (!Logger.instance) {
-			Logger.instance = new Logger(serviceName);
+		if (!this.instances.has(serviceName)) {
+			this.instances.set(serviceName, new Logger(serviceName));
 		}
-		return Logger.instance;
+		return this.instances.get(serviceName)!;
 	}
 
 	private formatTimestamp(): string {

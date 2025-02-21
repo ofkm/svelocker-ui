@@ -43,6 +43,43 @@
 			}
 		});
 	}
+
+	async function deleteTagBackend(name: string, configDigest: string) {
+		try {
+			const response = await fetch('/api/manifest/delete', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					registryUrl: env.PUBLIC_REGISTRY_URL,
+					repo: name,
+					contentDigest: configDigest
+				})
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to delete tag');
+			}
+
+			const result = await response.json();
+
+			if (result.success) {
+				toast.success('Docker Tag Deleted Successfully', {
+					description: 'Run `registry garbage-collect /etc/docker/registry/config.yml` to cleanup. Refreshing...'
+				});
+				setTimeout(() => (window.location.href = '/'), 3000);
+			} else {
+				toast.error('Error Deleting Docker Tag', {
+					description: result.error || 'Check your Registry configuration.'
+				});
+			}
+		} catch (error) {
+			toast.error('Error Deleting Docker Tag', {
+				description: error instanceof Error ? error.message : 'An unexpected error occurred'
+			});
+		}
+	}
 </script>
 
 <div class="mx-auto w-full max-w-[95%] p-8">
@@ -91,7 +128,7 @@
 								</AlertDialog.Header>
 								<AlertDialog.Footer>
 									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-									<AlertDialog.Action onclick={() => deleteTag(data.imageFullName, currentTag.metadata.contentDigest)} class={buttonVariants({ variant: 'destructive' })}>Delete</AlertDialog.Action>
+									<AlertDialog.Action onclick={() => deleteTagBackend(data.imageFullName, currentTag.metadata.contentDigest)} class={buttonVariants({ variant: 'destructive' })}>Delete</AlertDialog.Action>
 								</AlertDialog.Footer>
 							</AlertDialog.Content>
 						</AlertDialog.Root>

@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { Logger } from '$lib/services/logger';
 import { browser } from '$app/environment';
+import { env } from '$env/dynamic/public';
 
 export async function deleteDockerManifestAxios(registryUrl: string, repo: string, contentDigest: string) {
-	// Only create logger on server-side
-	const logger = !browser ? Logger.getInstance('DockerManifest') : null;
+	const logger = !browser ? Logger.getInstance('DeleteImageTag') : null;
 
 	try {
 		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${contentDigest}`;
@@ -23,9 +23,20 @@ export async function deleteDockerManifestAxios(registryUrl: string, repo: strin
 		}
 
 		try {
-			const syncResponse = await fetch('/api/sync', { method: 'POST' });
-			if (!syncResponse.ok) {
-				const error = 'Sync failed after manifest deletion';
+			// Ensure we have a valid sync URL
+			const baseUrl = browser ? '' : env.PUBLIC_API_URL;
+			const syncUrl = `${baseUrl}/api/sync`;
+
+			logger?.info(`Triggering sync at: ${syncUrl}`);
+
+			const syncResponse = await axios.post(syncUrl, null, {
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (syncResponse.status !== 200) {
+				const error = `Sync failed with status: ${syncResponse.status}`;
 				logger?.error(error);
 				throw new Error(error);
 			}
@@ -33,11 +44,25 @@ export async function deleteDockerManifestAxios(registryUrl: string, repo: strin
 			logger?.info(`Successfully deleted and synced manifest for ${repo}`);
 			return true;
 		} catch (error) {
-			logger?.error('Failed to sync after deletion:', error);
+			if (axios.isAxiosError(error)) {
+				logger?.error(`Failed to sync after deletion: ${error.message}`, {
+					status: error.response?.status,
+					data: error.response?.data
+				});
+			} else {
+				logger?.error('Failed to sync after deletion:', error);
+			}
 			throw error;
 		}
 	} catch (error) {
-		logger?.error('Error in delete operation:', error);
+		if (axios.isAxiosError(error)) {
+			logger?.error(`Error in delete operation: ${error.message}`, {
+				status: error.response?.status,
+				data: error.response?.data
+			});
+		} else {
+			logger?.error('Error in delete operation:', error);
+		}
 		return false;
 	}
 }

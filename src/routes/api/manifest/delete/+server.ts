@@ -4,7 +4,7 @@ import { Logger } from '$lib/services/logger';
 import { deleteDockerManifestAxios } from '$lib/utils/delete';
 
 export const POST: RequestHandler = async ({ request }) => {
-	const logger = Logger.getInstance('ManifestAPI');
+	const logger = Logger.getInstance('DeleteImageTag');
 
 	try {
 		const { registryUrl, repo, contentDigest } = await request.json();
@@ -15,13 +15,19 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		if (!result) {
 			logger.error(`Failed to delete manifest for ${repo}`);
-			return json({ success: false }, { status: 500 });
+			return json({ success: false, error: 'Failed to delete manifest' }, { status: 500 });
 		}
 
 		logger.info(`Successfully deleted manifest for ${repo}`);
 		return json({ success: true });
 	} catch (error) {
 		logger.error('Error processing delete request:', error);
-		return json({ success: false, error: 'Internal server error' }, { status: 500 });
+		return json(
+			{
+				success: false,
+				error: error instanceof Error ? error.message : 'Internal server error'
+			},
+			{ status: 500 }
+		);
 	}
 };
