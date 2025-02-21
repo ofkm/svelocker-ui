@@ -1,3 +1,13 @@
+## [0.22.1](https://github.com/kmendell/svelocker-ui/compare/v0.22.0...v0.22.1) (2025-02-21)
+
+### Bug Fixes
+
+* add timestamps to sync task log ([8eab5d6](https://github.com/kmendell/svelocker-ui/commit/8eab5d6e0200d5e964fbae3f139942b26ab616c2))
+* docker permission issues ([6c945d5](https://github.com/kmendell/svelocker-ui/commit/6c945d59baaac480a2674cae135430f19f2bc93c))
+* fix logger for registry sync ([5174efe](https://github.com/kmendell/svelocker-ui/commit/5174efeafec8898498236fe43beaf4d7560cd965))
+* public uri when deleting ([d4630fa](https://github.com/kmendell/svelocker-ui/commit/d4630fa43f515acaca2234ed7ba0b99899def6bf))
+* update loggin for details page ([2c752cc](https://github.com/kmendell/svelocker-ui/commit/2c752cc9eaddc63249f74c685dc8349948ebb7a1))
+* update logging, and backend delete api ([05460ca](https://github.com/kmendell/svelocker-ui/commit/05460ca9126aa16c60a1080e4fbb3b82211af711))
 ## [0.22.0](https://github.com/kmendell/svelocker-ui/compare/v0.21.0...v0.22.0) (2025-02-20)
 
 ### Features
