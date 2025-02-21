@@ -10,6 +10,12 @@ RUN npm run build
 
 # Stage 2: Production image
 FROM node:22-alpine
+
+# Delete default node user
+RUN deluser --remove-home node
+
+RUN apk add --no-cache su-exec
+
 WORKDIR /app
 
 # Create data directory
@@ -20,9 +26,6 @@ COPY --from=builder /app/build ./build
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY --from=builder /app/static ./static
-
-# Switch to non-root user
-USER node
 
 EXPOSE 3000
 LABEL org.opencontainers.image.authors="kmendell"
