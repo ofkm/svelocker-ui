@@ -29,6 +29,7 @@ Modify the env file to fit your setup:
 PUBLIC_REGISTRY_URL=https://yourregistry.com
 PUBLIC_REGISTRY_NAME=My Docker Registry
 DB_PATH=data/svelockerui.db #This is the location inside the container.
+PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ```yaml

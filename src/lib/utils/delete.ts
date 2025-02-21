@@ -24,7 +24,7 @@ export async function deleteDockerManifestAxios(registryUrl: string, repo: strin
 
 		try {
 			// Ensure we have a valid sync URL
-			const baseUrl = browser ? '' : env.PUBLIC_API_URL;
+			const baseUrl = browser ? window.location.origin : env.PUBLIC_API_URL || window.location.origin;
 			const syncUrl = `${baseUrl}/api/sync`;
 
 			logger?.info(`Triggering sync at: ${syncUrl}`);
