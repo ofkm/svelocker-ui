@@ -14,6 +14,17 @@ export class RegistrySyncService {
 
 	private constructor() {
 		this.logger = Logger.getInstance('RegistrySync');
+		// Run every 5 minutes by default
+		this.cronJob = cron.schedule('*/5 * * * *', async () => {
+			try {
+				this.logger.info('Starting registry sync...');
+				const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
+				await RegistryCache.syncFromRegistry(registryData.repositories);
+				this.logger.info('Registry sync completed successfully');
+			} catch (error) {
+				console.error('Registry sync failed:', error);
+			}
+		});
 	}
 
 	private async performSync(): Promise<void> {
@@ -45,21 +56,11 @@ export class RegistrySyncService {
 			this.logger.warn('Service already started, skipping...');
 			return;
 		}
-
-		// Remove the async arrow function and use a regular function
-		this.cronJob = cron.schedule('*/5 * * * *', () => {
-			// Only schedule next sync if not already syncing
-			if (!this.isSyncing) {
-				this.performSync().catch((error) => {
-					this.logger.error('Sync failed in cron job:', error);
-				});
-			} else {
-				this.logger.debug('Skipping scheduled sync - sync already in progress');
-			}
-		});
-
-		this.isStarted = true;
-		this.logger.info('Registry sync service started with schedule: */5 * * * *');
+		if (this.cronJob) {
+			this.cronJob.start();
+			this.isStarted = true;
+			this.logger.info('Registry sync service started with schedule: */5 * * * *');
+		}
 	}
 
 	public stop(): void {
