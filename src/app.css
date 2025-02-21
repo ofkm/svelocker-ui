@@ -5,7 +5,7 @@
 pre {
 	margin: 0;
 	tab-size: 0;
-	font-family: 'Roboto', serif;
+	font-family: 'Poppins', serif;
 	line-height: 1;
 }
 
@@ -18,17 +18,117 @@ span {
 	padding: 0;
 }
 
+.poppins-thin {
+	font-family: 'Poppins', serif;
+	font-weight: 100;
+	font-style: normal;
+}
+
+.poppins-extralight {
+	font-family: 'Poppins', serif;
+	font-weight: 200;
+	font-style: normal;
+}
+
+.poppins-light {
+	font-family: 'Poppins', serif;
+	font-weight: 300;
+	font-style: normal;
+}
+
+.poppins-regular {
+	font-family: 'Poppins', serif;
+	font-weight: 400;
+	font-style: normal;
+}
+
+.poppins-medium {
+	font-family: 'Poppins', serif;
+	font-weight: 500;
+	font-style: normal;
+}
+
+.poppins-semibold {
+	font-family: 'Poppins', serif;
+	font-weight: 600;
+	font-style: normal;
+}
+
+.poppins-bold {
+	font-family: 'Poppins', serif;
+	font-weight: 700;
+	font-style: normal;
+}
+
+.poppins-extrabold {
+	font-family: 'Poppins', serif;
+	font-weight: 800;
+	font-style: normal;
+}
+
+.poppins-black {
+	font-family: 'Poppins', serif;
+	font-weight: 900;
+	font-style: normal;
+}
+
+.poppins-thin-italic {
+	font-family: 'Poppins', serif;
+	font-weight: 100;
+	font-style: italic;
+}
+
+.poppins-extralight-italic {
+	font-family: 'Poppins', serif;
+	font-weight: 200;
+	font-style: italic;
+}
+
+.poppins-light-italic {
+	font-family: 'Poppins', serif;
+	font-weight: 300;
+	font-style: italic;
+}
+
+.poppins-regular-italic {
+	font-family: 'Poppins', serif;
+	font-weight: 400;
+	font-style: italic;
+}
+
+.poppins-medium-italic {
+	font-family: 'Poppins', serif;
+	font-weight: 500;
+	font-style: italic;
+}
+
+.poppins-semibold-italic {
+	font-family: 'Poppins', serif;
+	font-weight: 600;
+	font-style: italic;
+}
+
+.poppins-bold-italic {
+	font-family: 'Poppins', serif;
+	font-weight: 700;
+	font-style: italic;
+}
+
+.poppins-extrabold-italic {
+	font-family: 'Poppins', serif;
+	font-weight: 800;
+	font-style: italic;
+}
+
+.poppins-black-italic {
+	font-family: 'Poppins', serif;
+	font-weight: 900;
+	font-style: italic;
+}
+
 /* Ensure line height matches between numbers and code */
 .leading-6 {
 	line-height: 1.5rem;
-}
-
-.roboto-font {
-	font-family: 'Roboto', serif;
-	font-optical-sizing: auto;
-	font-weight: 100;
-	font-style: normal;
-	font-variation-settings: 'wdth' 100;
 }
 
 .dockerButton {
@@ -95,9 +195,9 @@ span {
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 
-		font-family: 'Roboto', serif;
 		font-optical-sizing: auto;
-		font-weight: 100;
+		font-family: 'Poppins', serif;
+		font-weight: 400;
 		font-style: normal;
 		font-variation-settings: 'wdth' 100;
 	}
