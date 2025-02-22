@@ -14,7 +14,7 @@ FROM node:22-alpine
 # Delete default node user
 RUN deluser --remove-home node
 
-RUN apk add --no-cache su-exec
+RUN apk add --no-cache su-exec curl
 
 WORKDIR /app
 
