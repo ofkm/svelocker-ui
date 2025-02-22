@@ -43,10 +43,13 @@ PUBLIC_API_URL=http://localhost:3000             # API endpoint
 DB_PATH=data/svelockerui.db                      # SQLite database path inside container
 
 # Docker API Configuration
-PRIVATE_DOCKER_API_VERSION=v1.41
-PRIVATE_DOCKER_HTTP_HOST=10.0.0.10
-PRIVATE_DOCKER_HTTP_PORT=2375
-PRIVATE_DOCKER_REGISTRY_CONTAINER=registry
+PRIVATE_DOCKER_API_VERSION=v1.41 #API Version of your docker host
+PRIVATE_DOCKER_HTTP_HOST=10.0.0.10 #The host ip of your docker host
+PRIVATE_DOCKER_HTTP_PORT=2375 #The port your docker host api is listening on
+PRIVATE_DOCKER_REGISTRY_CONTAINER=registry #Name of the registry container in docker
+
+# Feature Flags
+PUBLIC_ENABLE_GARBAGE_COLLECT=true
 ```
 
 ```yaml

@@ -2,6 +2,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Trash2, Loader2 } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
+	import { env } from '$env/dynamic/public';
 
 	let collecting = false;
 
@@ -37,12 +38,14 @@
 	}
 </script>
 
-<Button onclick={runGarbageCollect} disabled={collecting}>
-	{#if collecting}
-		<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-		<span>Collecting...</span>
-	{:else}
-		<Trash2 class="mr-2 h-4 w-4" />
-		<span>Garbage Collect</span>
-	{/if}
-</Button>
+{#if env.PUBLIC_ENABLE_GARBAGE_COLLECT === 'true'}
+	<Button onclick={runGarbageCollect} disabled={collecting}>
+		{#if collecting}
+			<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+			<span>Collecting...</span>
+		{:else}
+			<Trash2 class="mr-2 h-4 w-4" />
+			<span>Garbage Collect</span>
+		{/if}
+	</Button>
+{/if}
