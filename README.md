@@ -44,7 +44,7 @@ DB_PATH=data/svelockerui.db                      # SQLite database path inside c
 
 # Docker API Configuration
 PRIVATE_DOCKER_API_VERSION=v1.41 #API Version of your docker host
-PRIVATE_DOCKER_HTTP_HOST=10.0.0.10 #The host ip of your docker host
+PRIVATE_DOCKER_HTTP_HOST=10.0.0.10 #The host IP of your docker host
 PRIVATE_DOCKER_HTTP_PORT=2375 #The port your docker host api is listening on
 PRIVATE_DOCKER_REGISTRY_CONTAINER=registry #Name of the registry container in docker
 
