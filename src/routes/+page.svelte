@@ -7,6 +7,14 @@
 	import type { PageProps } from './$types';
 	import { env } from '$env/dynamic/public';
 	import SyncButton from '$lib/components/SyncButton.svelte';
+	import { onMount } from 'svelte';
+	import { checkRegistryHealth } from '$lib/utils/health';
+
+	let isHealthy = $state<boolean | undefined>(undefined);
+
+	onMount(async () => {
+		isHealthy = await checkRegistryHealth(env.PUBLIC_REGISTRY_URL);
+	});
 
 	let { data }: PageProps = $props();
 	const searchQuery = writable('');
@@ -57,10 +65,20 @@
 	{#if data.repos}
 		<div class="flex-1 w-full flex-col justify-between">
 			{#if $repositories.length > 0}
-				<div class="flex justify-between items-center px-10 pt-10">
-					<h2 class="text-2xl">
-						Found {$filteredData.length} Repositories in {env.PUBLIC_REGISTRY_NAME}
-					</h2>
+				<div class="flex justify-between items-start px-10 pt-10">
+					<div class="space-y-2">
+						<h2 class="text-2xl">
+							Found {$filteredData.length} Repositories in {env.PUBLIC_REGISTRY_NAME}
+						</h2>
+						{#if isHealthy !== undefined}
+							<div class="flex items-center gap-2">
+								<div class="w-2 h-2 rounded-full {isHealthy ? 'bg-green-500' : 'bg-red-500'}"></div>
+								<span class="text-sm text-muted-foreground">
+									Registry {isHealthy ? 'Healthy' : 'Unhealthy'}
+								</span>
+							</div>
+						{/if}
+					</div>
 					<div class="flex items-center gap-4">
 						<SyncButton />
 						<div class="relative w-[250px]">
