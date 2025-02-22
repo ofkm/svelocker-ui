@@ -55,6 +55,13 @@ services:
       - 3000:3000
     volumes:
       - ./data:/app/data
+    # Optional healthcheck
+    healthcheck:
+      test: 'curl -f http://localhost:3000/health'
+      interval: 1m30s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
 ```
 
 Access Svelocker UI on http://dockerip:3000
