@@ -71,12 +71,6 @@ git tag "v$NEW_VERSION"
 git push
 git push --tags
 
-# Check if GitHub CLI is installed
-#if ! command -v gh &>/dev/null; then
-#    echo "GitLab CLI (glab) is not installed. Please install it and authenticate using 'glab auth login --hostname git.kmcr.cc'."
-#    exit 1
-#fi
-
 if ! command -v gh &>/dev/null; then
     echo "GitHub CLI (gh) is not installed. Please install it and authenticate using 'gh auth login'."
     exit 1
@@ -91,12 +85,8 @@ if [ -z "$CHANGELOG" ]; then
     exit 1
 fi
 
-# Create the release on GitHub
-#echo "Creating GitLab release..."
-#glab release create "v$NEW_VERSION" --name "v$NEW_VERSION" --notes "$CHANGELOG"
-
 echo "Creating GitHub release..."
-gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes "$CHANGELOG"
+gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes "$CHANGELOG" --discussion-category "Announcements"
 
 if [ $? -eq 0 ]; then
     echo "GitLab release created successfully."
