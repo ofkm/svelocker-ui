@@ -1,3 +1,10 @@
+## [0.22.2](https://github.com/kmendell/svelocker-ui/compare/v0.22.1...v0.22.2) (2025-02-22)
+
+### Bug Fixes
+
+* basic-auth for registry if enabled ([ea2cfc6](https://github.com/kmendell/svelocker-ui/commit/ea2cfc6b16808985f2b65e293f0a01f0f923dae4))
+* change font from roboto to poppins ([c8936a2](https://github.com/kmendell/svelocker-ui/commit/c8936a229175a1d2b6cfc6c15d7145119ba00e0f))
+* image name not showing up on details page ([aef598d](https://github.com/kmendell/svelocker-ui/commit/aef598de4136a0e8b48a9bf9f6e183fea5bde986))
 ## [0.22.1](https://github.com/kmendell/svelocker-ui/compare/v0.22.0...v0.22.1) (2025-02-21)
 
 ### Bug Fixes
