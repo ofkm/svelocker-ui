@@ -1,19 +1,19 @@
 import axios from 'axios';
 import type { ImageMetadata } from '$lib/models/metadata.ts';
+import { env } from '$env/dynamic/public';
+import { Buffer } from 'buffer';
 
-export async function fetchDockerMetadataAxios(
-	registryUrl: string,
-	repo: string,
-	tag: string
-): Promise<ImageMetadata | undefined> {
+export async function fetchDockerMetadataAxios(registryUrl: string, repo: string, tag: string): Promise<ImageMetadata | undefined> {
 	const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
 
 	try {
+		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
+
 		// Fetch the manifest JSON with Axios
 		const manifestResponse = await axios.get(manifestUrl, {
 			headers: {
-				Accept:
-					'application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.oci.index.manifest.v1+json'
+				Authorization: `Basic ${auth}`,
+				Accept: 'application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.oci.index.manifest.v1+json'
 			}
 		});
 
@@ -34,34 +34,30 @@ export async function fetchDockerMetadataAxios(
 			throw new Error('Config digest not found in manifest.');
 		}
 
-		const totalSize =
-			manifest.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
+		const totalSize = manifest.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
 
 		// Fetch the image config JSON
 		const configUrl = `${registryUrl}/v2/${repo}/blobs/${configDigest}`;
 		let config;
 		try {
-			const configResponse = await axios.get(configUrl);
+			// const configResponse = await axios.get(configUrl);
+			const configResponse = await axios.get(configUrl, {
+				headers: {
+					Authorization: `Basic ${auth}`,
+					Accept: 'application/json'
+				}
+			});
 			config = configResponse.data;
 		} catch (error) {
-			throw new Error(
-				`Error fetching image config JSON: ${error instanceof Error ? error.message : error}`
-			);
+			throw new Error(`Error fetching image config JSON: ${error instanceof Error ? error.message : error}`);
 		}
 
-		const author =
-			config.config?.Labels?.['org.opencontainers.image.authors'] ||
-			config.config?.Labels?.['org.opencontainers.image.vendor'] ||
-			'Unknown';
+		const author = config.config?.Labels?.['org.opencontainers.image.authors'] || config.config?.Labels?.['org.opencontainers.image.vendor'] || 'Unknown';
 		const cmd = config.config?.Cmd ? config.config.Cmd.join(' ') : 'Unknown Command';
-		const entrypoint = config.config?.Entrypoint
-			? config.config.Entrypoint.join(' ')
-			: 'Unknown Entrypoint';
-		const description =
-			config.config?.Labels?.['org.opencontainers.image.description'] || 'No description found';
+		const entrypoint = config.config?.Entrypoint ? config.config.Entrypoint.join(' ') : 'Unknown Entrypoint';
+		const description = config.config?.Labels?.['org.opencontainers.image.description'] || 'No description found';
 		const exposedPorts = config.config?.ExposedPorts ? Object.keys(config.config.ExposedPorts) : [];
-		const dockerFile =
-			config.history?.map((entry: any) => entry.created_by).join('\n') || 'No Dockerfile found';
+		const dockerFile = config.history?.map((entry: any) => entry.created_by).join('\n') || 'No Dockerfile found';
 
 		// Extract important metadata
 		return {
@@ -80,9 +76,7 @@ export async function fetchDockerMetadataAxios(
 			entrypoint: entrypoint
 		};
 	} catch (error) {
-		console.error(
-			`Error fetching metadata for ${repo}:${tag}: ${error instanceof Error ? error.message : error}`
-		);
+		console.error(`Error fetching metadata for ${repo}:${tag}: ${error instanceof Error ? error.message : error}`);
 		return undefined; // Return undefined in case of an error
 	}
 }
