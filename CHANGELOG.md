@@ -1,3 +1,9 @@
+## [0.22.4](https://github.com/kmendell/svelocker-ui/compare/v0.22.3...v0.22.4) (2025-02-22)
+
+### Bug Fixes
+
+* add auth headers to delete endpoint ([ebabed1](https://github.com/kmendell/svelocker-ui/commit/ebabed137b77eb9d625d06a9a8f559c34d3274ed))
+* add curl to docker image for health check ([194e7b3](https://github.com/kmendell/svelocker-ui/commit/194e7b34e0acec153d8683defdb95ac029aa808f))
 ## [0.22.3](https://github.com/kmendell/svelocker-ui/compare/v0.22.2...v0.22.3) (2025-02-22)
 
 ### Features
