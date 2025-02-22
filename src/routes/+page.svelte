@@ -64,7 +64,9 @@
 					</h2>
 					<div class="flex items-center gap-4">
 						<SyncButton />
-						<GarbageCollectButton />
+						{#if env.PUBLIC_ENABLE_GARBAGE_COLLECT === 'true'}
+							<GarbageCollectButton />
+						{/if}
 						<div class="relative w-[250px]">
 							<Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 							<Input type="search" placeholder="Search repositories..." class="pl-8" bind:value={$searchQuery} />
