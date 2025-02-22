@@ -37,7 +37,7 @@ Modify the env file to fit your setup:
 # Registry Settings
 PUBLIC_REGISTRY_URL=https://registry.example.com # Registry URL
 PUBLIC_REGISTRY_NAME=My Docker Registry          # Display name
-PUBLIC_API_URL=http://localhost:3000             # API endpoint
+PUBLIC_API_URL=http://localhost:3000             # Public URL Svelocker will run on
 PUBLIC_REGISTRY_USERNAME=username                # Username for registry if basic auth is enabled
 PUBLIC_REGISTRY_PASSWORD=password                # Password for registry if basic auth is enabled
 
