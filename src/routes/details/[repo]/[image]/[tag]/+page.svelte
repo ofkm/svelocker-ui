@@ -29,21 +29,6 @@
 
 	$: currentTag = data.tag.tags[data.tagIndex];
 
-	async function deleteTag(name: string, configDigest: string) {
-		deleteDockerManifestAxios(env.PUBLIC_REGISTRY_URL, name, configDigest).then((success) => {
-			if (success) {
-				toast.success('Docker Tag Deleted Successfully', {
-					description: 'Run `registry garbage-collect /etc/docker/registry/config.yml` to cleanup. Refreshing...'
-				});
-				setTimeout(() => (window.location.href = '/'), 3000);
-			} else {
-				toast.error('Error Deleting Docker Tag', {
-					description: 'Check your Registry configuration.'
-				});
-			}
-		});
-	}
-
 	async function deleteTagBackend(name: string, configDigest: string) {
 		try {
 			const response = await fetch('/api/manifest/delete', {
