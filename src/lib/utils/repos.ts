@@ -2,6 +2,7 @@ import type { RegistryRepo } from '$lib/models/repo.ts';
 import { getDockerTagsNew } from '$lib/utils/tags.ts';
 import axios from 'axios';
 import { env } from '$env/dynamic/public';
+import { Buffer } from 'buffer';
 
 interface RegistryRepos {
 	repositories: RegistryRepo[];
@@ -13,7 +14,16 @@ function getNamespace(fullName: string): string {
 
 export async function getRegistryReposAxios(url: string): Promise<RegistryRepos> {
 	try {
-		const response = await axios.get(url);
+		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
+
+		// const response = await axios.get(url);
+
+		const response = await axios.get(url, {
+			headers: {
+				Authorization: `Basic ${auth}`,
+				Accept: 'application/json'
+			}
+		});
 		const { repositories } = response.data as { repositories: string[] };
 
 		// First, group repositories by namespace

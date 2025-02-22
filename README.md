@@ -38,6 +38,8 @@ Modify the env file to fit your setup:
 PUBLIC_REGISTRY_URL=https://registry.example.com # Registry URL
 PUBLIC_REGISTRY_NAME=My Docker Registry          # Display name
 PUBLIC_API_URL=http://localhost:3000             # API endpoint
+PUBLIC_REGISTRY_USERNAME=username                # Username for registry if basic auth is enabled
+PUBLIC_REGISTRY_PASSWORD=password                # Password for registry if basic auth is enabled
 
 # Database
 DB_PATH=data/svelockerui.db                      # SQLite database path inside container
