@@ -7,6 +7,7 @@
 	import type { PageProps } from './$types';
 	import { env } from '$env/dynamic/public';
 	import SyncButton from '$lib/components/SyncButton.svelte';
+	import GarbageCollectButton from '$lib/components/GarbageCollectButton.svelte';
 
 	let { data }: PageProps = $props();
 	const searchQuery = writable('');
@@ -63,6 +64,7 @@
 					</h2>
 					<div class="flex items-center gap-4">
 						<SyncButton />
+						<GarbageCollectButton />
 						<div class="relative w-[250px]">
 							<Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 							<Input type="search" placeholder="Search repositories..." class="pl-8" bind:value={$searchQuery} />

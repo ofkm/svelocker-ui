@@ -3,12 +3,12 @@
 <div align="center"><h3>A Simple and Modern Docker Registry UI built with Typescript and SvelteKit.</h3>
 
 ### Main List View:
+
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/09478366-68ed-43e2-8298-e9feacf50c1c" />
 
-### Details View: 
+### Details View:
+
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/8256f3df-eac2-4c03-a428-2bc222cf91af" />
-
-
 
 </div>
 
@@ -34,10 +34,19 @@
 Modify the env file to fit your setup:
 
 ```env
-PUBLIC_REGISTRY_URL=https://yourregistry.com
-PUBLIC_REGISTRY_NAME=My Docker Registry
-DB_PATH=data/svelockerui.db #This is the location inside the container.
-PUBLIC_APP_URL=http://localhost:3000
+# Registry Settings
+PUBLIC_REGISTRY_URL=https://registry.example.com # Registry URL
+PUBLIC_REGISTRY_NAME=My Docker Registry          # Display name
+PUBLIC_API_URL=http://localhost:3000             # API endpoint
+
+# Database
+DB_PATH=data/svelockerui.db                      # SQLite database path inside container
+
+# Docker API Configuration
+PRIVATE_DOCKER_API_VERSION=v1.41
+PRIVATE_DOCKER_HTTP_HOST=10.0.0.10
+PRIVATE_DOCKER_HTTP_PORT=2375
+PRIVATE_DOCKER_REGISTRY_CONTAINER=registry
 ```
 
 ```yaml
