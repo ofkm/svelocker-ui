@@ -1,3 +1,8 @@
+## [0.22.3](https://github.com/kmendell/svelocker-ui/compare/v0.22.2...v0.22.3) (2025-02-22)
+
+### Features
+
+* add docker healtheck endpoint ([#50](https://github.com/kmendell/svelocker-ui/issues/50)) ([bf62263](https://github.com/kmendell/svelocker-ui/commit/bf6226319e00c6c6da37717042cf16abcfabf8fe))
 ## [0.22.2](https://github.com/kmendell/svelocker-ui/compare/v0.22.1...v0.22.2) (2025-02-22)
 
 ### Bug Fixes
