@@ -33,12 +33,13 @@ export async function getDockerTagsNew(registryUrl: string, repo: string): Promi
 		console.error('Error fetching repo images:', error);
 		return {
 			name: data.name,
+			fullName: repo,
 			tags: []
 		};
 	}
-
 	return {
 		name: data.name,
+		fullName: repo,
 		tags
 	};
 }

@@ -9,6 +9,10 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 	const imageName = params.image;
 	const tagName = params.tag;
 
+	if (!repos) {
+		throw new Error('Repository data not available');
+	}
+
 	// Find the repository
 	const repoIndex = repos.repositories.findIndex((r) => r.name === repoName);
 	if (repoIndex === -1) {
@@ -28,7 +32,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 	}
 
 	// Find the tag within the image's tags array
-	const tagIndex = image.tags.findIndex((t) => t.name === tagName);
+	const tagIndex = image.tags.findIndex((t) => typeof t === 'object' && t.name === tagName);
 	if (tagIndex === -1) {
 		const error = `Tag ${tagName} not found in ${imageName}`;
 		logger.error(error);

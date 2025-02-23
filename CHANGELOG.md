@@ -1,3 +1,8 @@
+## [0.23.0](https://github.com/kmendell/svelocker-ui/compare/v0.22.4...v0.23.0) (2025-02-23)
+
+### Features
+
+* add registry health/api version check ([#53](https://github.com/kmendell/svelocker-ui/issues/53)) ([c6456ba](https://github.com/kmendell/svelocker-ui/commit/c6456ba7e7d988e576cd8bb7727ede768149462a))
 ## [0.22.4](https://github.com/kmendell/svelocker-ui/compare/v0.22.3...v0.22.4) (2025-02-22)
 
 ### Bug Fixes

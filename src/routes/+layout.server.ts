@@ -2,11 +2,24 @@ import { getRegistryReposAxios } from '$lib/utils/repos.ts';
 import { env } from '$env/dynamic/public';
 import type { RegistryRepo } from '$lib/models/repo';
 import { RegistryCache } from '$lib/services/db';
+import { Logger } from '$lib/services/logger';
+import { checkRegistryHealth } from '$lib/utils/health';
 
 export async function load({ url }) {
+	const logger = Logger.getInstance('LayoutServer');
+
 	// Mock data for tests based on URL parameter
 	if (process.env.PLAYWRIGHT === 'true') {
 		const mockType = url.searchParams.get('mock');
+		logger.debug('Using mock type:', mockType);
+
+		// Mock health status for tests
+		const mockHealthStatus = {
+			isHealthy: mockType !== 'error',
+			supportsV2: true,
+			needsAuth: false,
+			message: mockType === 'error' ? 'Failed to connect to registry' : 'Registry is healthy'
+		};
 
 		switch (mockType) {
 			case 'basic':
@@ -25,7 +38,8 @@ export async function load({ url }) {
 							}
 						]
 					},
-					error: null
+					error: null,
+					healthStatus: mockHealthStatus
 				};
 
 			case 'search':
@@ -49,7 +63,8 @@ export async function load({ url }) {
 							}
 						]
 					},
-					error: null
+					error: null,
+					healthStatus: mockHealthStatus
 				};
 
 			case 'pagination':
@@ -65,19 +80,22 @@ export async function load({ url }) {
 				}));
 				return {
 					repos: { repositories },
-					error: null
+					error: null,
+					healthStatus: mockHealthStatus
 				};
 
 			case 'error':
 				return {
 					repos: { repositories: [] },
-					error: 'Failed to connect to registry'
+					error: 'Failed to connect to registry',
+					healthStatus: mockHealthStatus
 				};
 
 			case 'empty':
 				return {
 					repos: { repositories: [] },
-					error: null
+					error: null,
+					healthStatus: mockHealthStatus
 				};
 
 			default:
@@ -97,37 +115,58 @@ export async function load({ url }) {
 							}
 						]
 					},
-					error: null
+					error: null,
+					healthStatus: mockHealthStatus
 				};
 		}
 	}
 
 	try {
+		// Check registry health first
+		logger.info(`Checking registry health at ${env.PUBLIC_REGISTRY_URL}`);
+		const healthStatus = await checkRegistryHealth(env.PUBLIC_REGISTRY_URL);
+
 		// Get fresh data from registry
+		logger.info('Fetching registry data');
 		const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
 
 		// Sync to cache
 		await RegistryCache.syncFromRegistry(registryData.repositories);
+		const repositories = RegistryCache.getRepositories();
 
-		// Return cached data
+		logger.info(`Successfully retrieved ${repositories.length} repositories`);
+
 		return {
-			repos: {
-				repositories: RegistryCache.getRepositories()
-			}
+			repos: { repositories },
+			healthStatus
 		};
 	} catch (error) {
-		console.error('Failed to fetch registry data:', error);
+		logger.error('Failed to fetch registry data:', error);
 
 		// Try to return cached data on failure
 		try {
+			const repositories = RegistryCache.getRepositories();
+			logger.info(`Falling back to cached data with ${repositories.length} repositories`);
+
 			return {
-				repos: {
-					repositories: RegistryCache.getRepositories()
+				repos: { repositories },
+				healthStatus: {
+					isHealthy: false,
+					supportsV2: false,
+					needsAuth: false,
+					message: 'Failed to connect to registry'
 				}
 			};
 		} catch (cacheError) {
+			logger.error('Cache retrieval failed:', cacheError);
 			return {
-				error: true
+				error: true,
+				healthStatus: {
+					isHealthy: false,
+					supportsV2: false,
+					needsAuth: false,
+					message: 'Failed to connect to registry and cache'
+				}
 			};
 		}
 	}

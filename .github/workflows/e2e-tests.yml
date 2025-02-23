@@ -1,16 +1,22 @@
 name: E2E Tests
-
 on:
   push:
-    paths:
-      - 'src/**'
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.github/**'
   pull_request:
-    paths:
-      - 'src/**'
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.github/**'
 
 jobs:
   e2e-tests:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code

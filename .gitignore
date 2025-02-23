@@ -5,6 +5,7 @@ src/routes/*.old
 
 test-results/*
 test-results
+tests/.*
 
 node_modules
 
