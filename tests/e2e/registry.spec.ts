@@ -8,7 +8,7 @@ test.describe('Docker Registry UI (Mocked)', () => {
 
 		// Check basic display
 		await expect(page.getByText('namespace1')).toBeVisible();
-		await expect(page.getByText('Found 1 Repositories in test-registry')).toBeVisible();
+		await expect(page.getByText('Found 1 Repository in test-registry')).toBeVisible();
 
 		// Click the repository and wait longer for animations
 		await page.getByText('namespace1').click();
@@ -18,16 +18,6 @@ test.describe('Docker Registry UI (Mocked)', () => {
 		const tagButton = page.getByTestId('tag-button');
 		await expect(tagButton).toBeVisible();
 		await tagButton.click();
-
-		// Wait for dropdown menu to be visible and stable
-		// const dropdown = page.getByTestId('dropdown-content');
-		// await expect(dropdown).toBeVisible();
-		// await page.waitForTimeout(500); // Wait for animation
-
-		// // Verify the dropdown header and tags
-		// await expect(page.getByText('Tags')).toBeVisible();
-		// await expect(page.getByRole('menuitem').filter({ hasText: 'latest' })).toBeVisible();
-		// await expect(page.getByRole('menuitem').filter({ hasText: 'v1.0.0' })).toBeVisible();
 	});
 
 	// Search test
