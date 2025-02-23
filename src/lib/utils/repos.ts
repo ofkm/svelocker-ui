@@ -75,24 +75,3 @@ export async function getRegistryReposAxios(url: string): Promise<RegistryRepos>
 		throw error;
 	}
 }
-
-// This new function should be in this structure:
-// {
-//     repositories: [
-//         {
-//             name: "ofkm",
-//             images: [
-//                 {
-//                     name: "imagetest",
-//                     fullName: "ofkm/imagetest",
-//                     tags: [...]
-//                 },
-//                 {
-//                     name: "imagename",
-//                     fullName: "ofkm/imagename",
-//                     tags: [...]
-//                 }
-//             ]
-//         }
-//     ]
-// }
