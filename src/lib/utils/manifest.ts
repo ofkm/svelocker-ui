@@ -2,14 +2,17 @@ import axios from 'axios';
 import type { ImageMetadata } from '$lib/models/metadata.ts';
 import { env } from '$env/dynamic/public';
 import { Buffer } from 'buffer';
+import { Logger } from '$lib/services/logger';
+import { calculateSha256, filterAttestationManifests } from '$lib/utils/oci-manifest';
+
+const logger = Logger.getInstance('ManifestUtils');
 
 export async function fetchDockerMetadataAxios(registryUrl: string, repo: string, tag: string): Promise<ImageMetadata | undefined> {
+	const logger = Logger.getInstance('ManifestUtils');
 	const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
 
 	try {
 		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
-
-		// Fetch the manifest JSON with Axios
 		const manifestResponse = await axios.get(manifestUrl, {
 			headers: {
 				Authorization: `Basic ${auth}`,
@@ -18,17 +21,41 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 		});
 
 		const manifest = manifestResponse.data;
+		let contentDigest = manifestResponse.headers['docker-content-digest'];
+		let configDigest;
 
-		// Check if the manifest is of type OCI or Docker and handle accordingly
-		const isOciManifest = manifest.mediaType === 'application/vnd.oci.image.index.v1+json';
-		// Extract the content digest from the response headers
-		const contentDigest = manifestResponse.headers['docker-content-digest'];
+		// Handle OCI manifest
+		if (manifest.mediaType === 'application/vnd.oci.image.index.v1+json') {
+			logger.info('OCI manifest detected');
 
-		if (isOciManifest) {
-			// Handle OCI manifest if necessary
+			// Get the first non-attestation manifest
+			const platformManifest = manifest.manifests.find((m: any) => !m.annotations?.['vnd.docker.reference.type']);
+
+			if (!platformManifest) {
+				throw new Error('No valid platform manifest found');
+			}
+
+			// Fetch the platform-specific manifest
+			const platformManifestResponse = await axios.get(`${registryUrl}/v2/${repo}/manifests/${platformManifest.digest}`, {
+				headers: {
+					Authorization: `Basic ${auth}`,
+					Accept: platformManifest.mediaType
+				}
+			});
+
+			// Update configDigest from platform manifest
+			configDigest = platformManifestResponse.data.config?.digest;
+
+			// Calculate content digest for OCI manifest
+			const formattedManifest = JSON.stringify(manifest);
+			const filteredManifest = await filterAttestationManifests(formattedManifest);
+			const hash = await calculateSha256(filteredManifest);
+			logger.info(`Calculated manifest hash: ${hash}`);
+			contentDigest = hash;
+		} else {
+			// Handle regular Docker manifest
+			configDigest = manifest.config?.digest;
 		}
-
-		const configDigest = manifest.config?.digest;
 
 		if (!configDigest) {
 			throw new Error('Config digest not found in manifest.');
@@ -76,7 +103,7 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 			entrypoint: entrypoint
 		};
 	} catch (error) {
-		console.error(`Error fetching metadata for ${repo}:${tag}: ${error instanceof Error ? error.message : error}`);
+		logger.error(`Error fetching metadata for ${repo}:${tag}:`, error);
 		return undefined; // Return undefined in case of an error
 	}
 }
