@@ -9,14 +9,16 @@ interface RegistryRepos {
 }
 
 function getNamespace(fullName: string): string {
+	// If there's no forward slash, it's a root image
+	if (!fullName.includes('/')) {
+		return 'library'; // Use 'library' as default namespace like Docker Hub
+	}
 	return fullName.split('/')[0];
 }
 
 export async function getRegistryReposAxios(url: string): Promise<RegistryRepos> {
 	try {
 		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
-
-		// const response = await axios.get(url);
 
 		const response = await axios.get(url, {
 			headers: {

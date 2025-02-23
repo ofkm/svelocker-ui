@@ -1,3 +1,17 @@
+## [0.23.2](https://github.com/kmendell/svelocker-ui/compare/v0.23.1...v0.23.2) (2025-02-23)
+
+### Bug Fixes
+
+* oci image size metadata ([5b6e129](https://github.com/kmendell/svelocker-ui/commit/5b6e129ffb470b92513d7849f80555c8991e548b))
+* remove debug logs for registry health ([717f5c0](https://github.com/kmendell/svelocker-ui/commit/717f5c0ef31d1c647d190aca574cc0b87391f461))
+## [0.23.1](https://github.com/kmendell/svelocker-ui/compare/v0.23.0...v0.23.1) (2025-02-23)
+
+### Bug Fixes
+
+* allow for images without a namespace ([#62](https://github.com/kmendell/svelocker-ui/issues/62)) ([0b6e17c](https://github.com/kmendell/svelocker-ui/commit/0b6e17c9a8f59ca121e33ee4deb4634a12b9707b))
+* make sure null types are handled ([61e53dc](https://github.com/kmendell/svelocker-ui/commit/61e53dcb23dfad0886814db5fd159ccea0caef29))
+* oci manifest types retrival ([#61](https://github.com/kmendell/svelocker-ui/issues/61)) ([f77eaa2](https://github.com/kmendell/svelocker-ui/commit/f77eaa2f63f92ef8fecfdc098010fcfd1a3eca89))
+* update tag return values ([74402f0](https://github.com/kmendell/svelocker-ui/commit/74402f08c9cee7f2d04b8db7fc8d2a6c04324037))
 ## [0.23.0](https://github.com/kmendell/svelocker-ui/compare/v0.22.4...v0.23.0) (2025-02-23)
 
 ### Features

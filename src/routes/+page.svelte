@@ -20,8 +20,14 @@
 	// Create a store for the repositories
 	const repositories = writable(data.repos.repositories);
 
-	// Filter data based on search
-	const filteredData = derived([repositories, searchQuery], ([$repositories, $searchQuery]) => $repositories.filter((repo) => repo.name.toLowerCase().includes($searchQuery.toLowerCase())));
+	// Filter data based on search, including root-level images
+	const filteredData = derived([repositories, searchQuery], ([$repositories, $searchQuery]) => {
+		return $repositories.filter((repo) => {
+			const searchTerms = $searchQuery.toLowerCase();
+			// Search in both namespace and image names
+			return repo.name.toLowerCase().includes(searchTerms) || repo.images.some((img) => img.name.toLowerCase().includes(searchTerms));
+		});
+	});
 
 	// Update total pages based on filtered data
 	const totalPages = derived(filteredData, ($filteredData) => Math.ceil($filteredData.length / ITEMS_PER_PAGE));
@@ -62,7 +68,8 @@
 				<div class="flex justify-between items-start px-10 pt-10">
 					<div class="space-y-2">
 						<h2 class="text-2xl">
-							Found {$filteredData.length} Repositories in {env.PUBLIC_REGISTRY_NAME}
+							Found {$filteredData.length}
+							{$filteredData.length === 1 ? 'Repository' : 'Repositories'} in {env.PUBLIC_REGISTRY_NAME}
 						</h2>
 						{#if isHealthy !== undefined}
 							<div class="flex items-center gap-2">

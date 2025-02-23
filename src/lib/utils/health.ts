@@ -26,11 +26,11 @@ export async function checkRegistryHealth(registryUrl: string): Promise<HealthSt
 		});
 
 		const apiVersion = response.headers['docker-distribution-api-version'];
-		logger.debug('Registry response', {
-			status: response.status,
-			apiVersion,
-			headers: response.headers
-		});
+		// logger.debug('Registry response', {
+		// 	status: response.status,
+		// 	apiVersion,
+		// 	headers: response.headers
+		// });
 
 		// Handle different response scenarios
 		if (response.status === 200 && apiVersion === 'registry/2.0') {
