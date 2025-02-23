@@ -2,15 +2,19 @@ import axios from 'axios';
 import { Logger } from '$lib/services/logger';
 import { browser } from '$app/environment';
 import { env } from '$env/dynamic/public';
+import { Buffer } from 'buffer';
 
 export async function deleteDockerManifestAxios(registryUrl: string, repo: string, contentDigest: string) {
 	const logger = !browser ? Logger.getInstance('DeleteImageTag') : null;
 
 	try {
+		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
+
 		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${contentDigest}`;
 		logger?.info(`Deleting manifest: ${manifestUrl}`);
 
 		const headers = {
+			Authorization: `Basic ${auth}`,
 			Accept: 'application/json, application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json'
 		};
 
