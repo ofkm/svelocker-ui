@@ -1,3 +1,9 @@
+## [0.23.2](https://github.com/kmendell/svelocker-ui/compare/v0.23.1...v0.23.2) (2025-02-23)
+
+### Bug Fixes
+
+* oci image size metadata ([5b6e129](https://github.com/kmendell/svelocker-ui/commit/5b6e129ffb470b92513d7849f80555c8991e548b))
+* remove debug logs for registry health ([717f5c0](https://github.com/kmendell/svelocker-ui/commit/717f5c0ef31d1c647d190aca574cc0b87391f461))
 ## [0.23.1](https://github.com/kmendell/svelocker-ui/compare/v0.23.0...v0.23.1) (2025-02-23)
 
 ### Bug Fixes
