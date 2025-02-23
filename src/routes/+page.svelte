@@ -7,16 +7,9 @@
 	import type { PageProps } from './$types';
 	import { env } from '$env/dynamic/public';
 	import SyncButton from '$lib/components/SyncButton.svelte';
-	import { onMount } from 'svelte';
-	import { checkRegistryHealth } from '$lib/utils/health';
-
-	let isHealthy = $state<boolean | undefined>(undefined);
-
-	onMount(async () => {
-		isHealthy = await checkRegistryHealth(env.PUBLIC_REGISTRY_URL);
-	});
 
 	let { data }: PageProps = $props();
+	const isHealthy = data.healthStatus.isHealthy;
 	const searchQuery = writable('');
 
 	// Constants

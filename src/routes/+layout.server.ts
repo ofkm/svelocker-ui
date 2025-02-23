@@ -2,6 +2,10 @@ import { getRegistryReposAxios } from '$lib/utils/repos.ts';
 import { env } from '$env/dynamic/public';
 import type { RegistryRepo } from '$lib/models/repo';
 import { RegistryCache } from '$lib/services/db';
+import { Logger } from '$lib/services/logger';
+import { checkRegistryHealth } from '$lib/utils/health';
+
+const logger = Logger.getInstance('LayoutServer');
 
 export async function load({ url }) {
 	// Mock data for tests based on URL parameter
@@ -103,31 +107,51 @@ export async function load({ url }) {
 	}
 
 	try {
+		// Check registry health first
+		logger.info(`Checking registry health at ${env.PUBLIC_REGISTRY_URL}`);
+		const healthStatus = await checkRegistryHealth(env.PUBLIC_REGISTRY_URL);
+
 		// Get fresh data from registry
+		logger.info('Fetching registry data');
 		const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
 
 		// Sync to cache
 		await RegistryCache.syncFromRegistry(registryData.repositories);
+		const repositories = RegistryCache.getRepositories();
 
-		// Return cached data
+		logger.info(`Successfully retrieved ${repositories.length} repositories`);
+
 		return {
-			repos: {
-				repositories: RegistryCache.getRepositories()
-			}
+			repos: { repositories },
+			healthStatus
 		};
 	} catch (error) {
-		console.error('Failed to fetch registry data:', error);
+		logger.error('Failed to fetch registry data:', error);
 
 		// Try to return cached data on failure
 		try {
+			const repositories = RegistryCache.getRepositories();
+			logger.info(`Falling back to cached data with ${repositories.length} repositories`);
+
 			return {
-				repos: {
-					repositories: RegistryCache.getRepositories()
+				repos: { repositories },
+				healthStatus: {
+					isHealthy: false,
+					supportsV2: false,
+					needsAuth: false,
+					message: 'Failed to connect to registry'
 				}
 			};
 		} catch (cacheError) {
+			logger.error('Cache retrieval failed:', cacheError);
 			return {
-				error: true
+				error: true,
+				healthStatus: {
+					isHealthy: false,
+					supportsV2: false,
+					needsAuth: false,
+					message: 'Failed to connect to registry and cache'
+				}
 			};
 		}
 	}
