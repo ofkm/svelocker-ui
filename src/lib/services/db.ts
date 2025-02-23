@@ -70,10 +70,13 @@ export class RegistryCache {
 			db.prepare('DELETE FROM repositories').run();
 
 			for (const repo of repos) {
-				const { lastInsertRowid: repoId } = stmt.run(repo.name);
+				// Use 'library' for root-level images
+				const repoName = repo.name || 'library';
+				const { lastInsertRowid: repoId } = stmt.run(repoName);
 
 				for (const image of repo.images) {
-					const { lastInsertRowid: imageId } = insertImage.run(repoId, image.name, image.fullName);
+					const imageName = image.name || image.fullName.split('/').pop() || '';
+					const { lastInsertRowid: imageId } = insertImage.run(repoId, imageName, image.fullName);
 
 					for (const tag of image.tags) {
 						const { lastInsertRowid: tagId } = insertTag.run(imageId, tag.name, tag.metadata?.configDigest || null);
