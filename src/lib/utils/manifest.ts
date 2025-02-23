@@ -23,6 +23,7 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 		const manifest = manifestResponse.data;
 		let contentDigest = manifestResponse.headers['docker-content-digest'];
 		let configDigest;
+		let totalSize = 0;
 
 		// Handle OCI manifest
 		if (manifest.mediaType === 'application/vnd.oci.image.index.v1+json') {
@@ -43,6 +44,12 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 				}
 			});
 
+			// Calculate total size for OCI manifest
+			const manifestSize = platformManifest.size || 0;
+			const layerSizes = platformManifestResponse.data.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
+
+			totalSize = manifestSize + layerSizes;
+
 			// Update configDigest from platform manifest
 			configDigest = platformManifestResponse.data.config?.digest;
 
@@ -55,13 +62,13 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 		} else {
 			// Handle regular Docker manifest
 			configDigest = manifest.config?.digest;
+			// Calculate size for regular Docker manifest
+			totalSize = manifest.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
 		}
 
 		if (!configDigest) {
 			throw new Error('Config digest not found in manifest.');
 		}
-
-		const totalSize = manifest.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
 
 		// Fetch the image config JSON
 		const configUrl = `${registryUrl}/v2/${repo}/blobs/${configDigest}`;
