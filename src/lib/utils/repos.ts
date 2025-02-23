@@ -9,6 +9,10 @@ interface RegistryRepos {
 }
 
 function getNamespace(fullName: string): string {
+	// If there's no forward slash, it's a root image
+	if (!fullName.includes('/')) {
+		return 'library'; // Use 'library' as default namespace like Docker Hub
+	}
 	return fullName.split('/')[0];
 }
 

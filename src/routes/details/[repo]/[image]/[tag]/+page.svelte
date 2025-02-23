@@ -79,12 +79,16 @@
 				<Breadcrumb.Separator>
 					<Slash class="h-4 w-4" />
 				</Breadcrumb.Separator>
-				<Breadcrumb.Item>
-					<Breadcrumb.Link href="/" class="text-muted-foreground hover:text-foreground">{data.repo}</Breadcrumb.Link>
-				</Breadcrumb.Item>
-				<Breadcrumb.Separator>
-					<Slash class="h-4 w-4" />
-				</Breadcrumb.Separator>
+				{#if data.repo !== 'library'}
+					<Breadcrumb.Item>
+						<Breadcrumb.Link href="/" class="text-muted-foreground hover:text-foreground">
+							{data.repo}
+						</Breadcrumb.Link>
+					</Breadcrumb.Item>
+					<Breadcrumb.Separator>
+						<Slash class="h-4 w-4" />
+					</Breadcrumb.Separator>
+				{/if}
 				<Breadcrumb.Item>
 					<Breadcrumb.Link href="/" class="text-muted-foreground hover:text-foreground">{data.imageName}</Breadcrumb.Link>
 				</Breadcrumb.Item>
