@@ -16,8 +16,6 @@ export async function getRegistryReposAxios(url: string): Promise<RegistryRepos>
 	try {
 		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
 
-		// const response = await axios.get(url);
-
 		const response = await axios.get(url, {
 			headers: {
 				Authorization: `Basic ${auth}`,
