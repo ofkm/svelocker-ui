@@ -69,13 +69,7 @@ test.describe('Docker Registry UI (Mocked)', () => {
 			throw error; // Re-throw the error to fail the test
 		}
 
-		// Check if PUBLIC_REGISTRY_URL is defined
-		console.log('PUBLIC_REGISTRY_URL:', process.env.PUBLIC_REGISTRY_URL);
-
-		// Wait for the error message to appear
-		await page.waitForSelector('text=/Unable to connect to registry/');
-
-		// Use a regex to match part of the error message since it includes dynamic URL
+		// Check for error message
 		await expect(page.getByText(/Unable to connect to registry/)).toBeVisible();
 	});
 
@@ -84,7 +78,7 @@ test.describe('Docker Registry UI (Mocked)', () => {
 		await page.goto('/?mock=empty');
 		await page.waitForLoadState('networkidle');
 
-		// Update to match actual empty state message
+		// Check for empty state message
 		await expect(page.getByText('Could not pull registry data...')).toBeVisible();
 	});
 });

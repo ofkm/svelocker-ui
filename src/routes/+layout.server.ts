@@ -5,12 +5,21 @@ import { RegistryCache } from '$lib/services/db';
 import { Logger } from '$lib/services/logger';
 import { checkRegistryHealth } from '$lib/utils/health';
 
-const logger = Logger.getInstance('LayoutServer');
-
 export async function load({ url }) {
+	const logger = Logger.getInstance('LayoutServer');
+
 	// Mock data for tests based on URL parameter
 	if (process.env.PLAYWRIGHT === 'true') {
 		const mockType = url.searchParams.get('mock');
+		logger.debug('Using mock type:', mockType);
+
+		// Mock health status for tests
+		const mockHealthStatus = {
+			isHealthy: mockType !== 'error',
+			supportsV2: true,
+			needsAuth: false,
+			message: mockType === 'error' ? 'Failed to connect to registry' : 'Registry is healthy'
+		};
 
 		switch (mockType) {
 			case 'basic':
@@ -29,7 +38,8 @@ export async function load({ url }) {
 							}
 						]
 					},
-					error: null
+					error: null,
+					healthStatus: mockHealthStatus
 				};
 
 			case 'search':
@@ -53,7 +63,8 @@ export async function load({ url }) {
 							}
 						]
 					},
-					error: null
+					error: null,
+					healthStatus: mockHealthStatus
 				};
 
 			case 'pagination':
@@ -69,19 +80,22 @@ export async function load({ url }) {
 				}));
 				return {
 					repos: { repositories },
-					error: null
+					error: null,
+					healthStatus: mockHealthStatus
 				};
 
 			case 'error':
 				return {
 					repos: { repositories: [] },
-					error: 'Failed to connect to registry'
+					error: 'Failed to connect to registry',
+					healthStatus: mockHealthStatus
 				};
 
 			case 'empty':
 				return {
 					repos: { repositories: [] },
-					error: null
+					error: null,
+					healthStatus: mockHealthStatus
 				};
 
 			default:
@@ -101,7 +115,8 @@ export async function load({ url }) {
 							}
 						]
 					},
-					error: null
+					error: null,
+					healthStatus: mockHealthStatus
 				};
 		}
 	}
