@@ -143,7 +143,10 @@
 												return;
 											}
 
-											deleteTagBackend(data.imageFullName, digest);
+											// Strip 'library/' prefix if present
+											const imageName = data.imageFullName.startsWith('library/') ? data.imageFullName.replace('library/', '') : data.imageFullName;
+
+											deleteTagBackend(imageName, digest);
 										}}
 										class={buttonVariants({ variant: 'destructive' })}
 									>
