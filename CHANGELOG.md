@@ -1,3 +1,9 @@
+## [0.23.3](https://github.com/kmendell/svelocker-ui/compare/v0.23.2...v0.23.3) (2025-02-24)
+
+### Bug Fixes
+
+* db migration for new database issues ([eba53e7](https://github.com/kmendell/svelocker-ui/commit/eba53e72843a9266e4cbf1bbe1497161ffda53c7))
+* deletion logic for all manifest types ([#67](https://github.com/kmendell/svelocker-ui/issues/67)) ([ee58043](https://github.com/kmendell/svelocker-ui/commit/ee5804398452baaa7bfa1b75f9fd768cfa6e5a76))
 ## [0.23.2](https://github.com/kmendell/svelocker-ui/compare/v0.23.1...v0.23.2) (2025-02-23)
 
 ### Bug Fixes
