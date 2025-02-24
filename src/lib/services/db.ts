@@ -56,19 +56,21 @@ db.exec(`
 `);
 
 export class RegistryCache {
-	private static migrateSchema() {
-		const currentVersion = db.prepare('SELECT version FROM schema_version').get()?.version || 0;
+	private static migrated = false;
 
+	private static migrateSchema() {
+		if (RegistryCache.migrated) return;
+		const currentVersion = db.prepare('SELECT version FROM schema_version').get()?.version || 0;
 		if (currentVersion < 1) {
 			// Add new columns
 			db.exec(`
-        ALTER TABLE tag_metadata ADD COLUMN isOCI BOOLEAN;
-        ALTER TABLE tag_metadata ADD COLUMN indexDigest TEXT;
-        
-        -- Update schema version
-        INSERT OR REPLACE INTO schema_version (version) VALUES (1);
-      `);
+          ALTER TABLE tag_metadata ADD COLUMN isOCI BOOLEAN;
+          ALTER TABLE tag_metadata ADD COLUMN indexDigest TEXT;
+          -- Update schema version
+          INSERT OR REPLACE INTO schema_version (version) VALUES (1);
+        `);
 		}
+		RegistryCache.migrated = true;
 	}
 
 	static async syncFromRegistry(registryData: RegistryRepo[]) {
