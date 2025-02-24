@@ -29,7 +29,14 @@
 
 	$: currentTag = data.tag.tags[data.tagIndex];
 
-	async function deleteTagBackend(name: string, configDigest: string) {
+	async function deleteTagBackend(name: string, digest: string) {
+		if (!digest) {
+			toast.error('Error Deleting Docker Tag', {
+				description: 'No digest found for this tag'
+			});
+			return;
+		}
+
 		try {
 			const response = await fetch('/api/manifest/delete', {
 				method: 'POST',
@@ -39,7 +46,8 @@
 				body: JSON.stringify({
 					registryUrl: env.PUBLIC_REGISTRY_URL,
 					repo: name,
-					contentDigest: configDigest
+					digest: digest,
+					manifestType: currentTag.metadata.isOCI ? 'application/vnd.oci.image.index.v1+json' : 'application/vnd.docker.distribution.manifest.v2+json'
 				})
 			});
 
@@ -123,7 +131,27 @@
 								</AlertDialog.Header>
 								<AlertDialog.Footer>
 									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-									<AlertDialog.Action onclick={() => deleteTagBackend(data.imageFullName, currentTag.metadata.contentDigest)} class={buttonVariants({ variant: 'destructive' })}>Delete</AlertDialog.Action>
+									<AlertDialog.Action
+										onclick={() => {
+											const digest = currentTag.metadata?.indexDigest;
+											console.log('Selected digest:', digest);
+
+											if (!digest) {
+												toast.error('Error Deleting Docker Tag', {
+													description: 'No digest found for this tag'
+												});
+												return;
+											}
+
+											// Strip 'library/' prefix if present
+											const imageName = data.imageFullName.startsWith('library/') ? data.imageFullName.replace('library/', '') : data.imageFullName;
+
+											deleteTagBackend(imageName, digest);
+										}}
+										class={buttonVariants({ variant: 'destructive' })}
+									>
+										Delete
+									</AlertDialog.Action>
 								</AlertDialog.Footer>
 							</AlertDialog.Content>
 						</AlertDialog.Root>

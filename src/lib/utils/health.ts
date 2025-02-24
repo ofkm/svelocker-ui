@@ -14,7 +14,6 @@ export async function checkRegistryHealth(registryUrl: string): Promise<HealthSt
 	const logger = Logger.getInstance('RegistryHealth');
 
 	try {
-		logger.info(`Checking registry health for ${registryUrl}`);
 		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
 
 		const response = await axios.get(`${registryUrl}/v2/`, {

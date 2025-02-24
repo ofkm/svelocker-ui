@@ -5,8 +5,6 @@ import { Buffer } from 'buffer';
 import { Logger } from '$lib/services/logger';
 import { calculateSha256, filterAttestationManifests } from '$lib/utils/oci-manifest';
 
-const logger = Logger.getInstance('ManifestUtils');
-
 export async function fetchDockerMetadataAxios(registryUrl: string, repo: string, tag: string): Promise<ImageMetadata | undefined> {
 	const logger = Logger.getInstance('ManifestUtils');
 	const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
@@ -23,11 +21,22 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 		const manifest = manifestResponse.data;
 		let contentDigest = manifestResponse.headers['docker-content-digest'];
 		let configDigest;
+		let indexDigest;
 		let totalSize = 0;
+		let isOCI = false;
 
-		// Handle OCI manifest
+		// Store the deletion digest in indexDigest for both types
+		indexDigest = manifestResponse.headers['docker-content-digest']?.replace(/"/g, '');
+		// logger.info(`Original manifest digest: ${indexDigest}`);
+
+		// For OCI manifests
 		if (manifest.mediaType === 'application/vnd.oci.image.index.v1+json') {
-			logger.info('OCI manifest detected');
+			isOCI = true;
+			// logger.info('OCI manifest detected');
+
+			// Remove any quotes from the digest
+			indexDigest = manifestResponse.headers['docker-content-digest'].replace(/"/g, '');
+			// logger.info(`Index Digest: ${indexDigest}`);
 
 			// Get the first non-attestation manifest
 			const platformManifest = manifest.manifests.find((m: any) => !m.annotations?.['vnd.docker.reference.type']);
@@ -57,11 +66,16 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 			const formattedManifest = JSON.stringify(manifest);
 			const filteredManifest = await filterAttestationManifests(formattedManifest);
 			const hash = await calculateSha256(filteredManifest);
-			logger.info(`Calculated manifest hash: ${hash}`);
+			// logger.info(`Calculated manifest hash: ${hash}`);
 			contentDigest = hash;
 		} else {
 			// Handle regular Docker manifest
+			isOCI = false;
 			configDigest = manifest.config?.digest;
+
+			// Ensure we have a contentDigest for non-OCI manifests
+			contentDigest = manifestResponse.headers['docker-content-digest']?.replace(/"/g, '') || manifest.config?.digest;
+
 			// Calculate size for regular Docker manifest
 			totalSize = manifest.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
 		}
@@ -107,7 +121,9 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 			command: cmd,
 			description: description,
 			contentDigest: contentDigest,
-			entrypoint: entrypoint
+			entrypoint: entrypoint,
+			indexDigest: indexDigest,
+			isOCI: isOCI
 		};
 	} catch (error) {
 		logger.error(`Error fetching metadata for ${repo}:${tag}:`, error);

@@ -3,29 +3,39 @@ import type { RequestHandler } from './$types';
 import { Logger } from '$lib/services/logger';
 import { deleteDockerManifestAxios } from '$lib/utils/delete';
 
+const logger = Logger.getInstance('DeleteImageTag');
+
 export const POST: RequestHandler = async ({ request }) => {
-	const logger = Logger.getInstance('DeleteImageTag');
-
 	try {
-		const { registryUrl, repo, contentDigest } = await request.json();
+		const { registryUrl, repo, digest, manifestType } = await request.json();
 
-		logger.info(`Received delete request for ${repo}`);
+		// logger.info('Delete request received', {
+		// 	repo,
+		// 	digest,
+		// 	manifestType
+		// });
 
-		const result = await deleteDockerManifestAxios(registryUrl, repo, contentDigest);
-
-		if (!result) {
-			logger.error(`Failed to delete manifest for ${repo}`);
-			return json({ success: false, error: 'Failed to delete manifest' }, { status: 500 });
+		if (!digest) {
+			logger.error('No digest provided');
+			throw new Error('No digest provided for deletion');
 		}
 
-		logger.info(`Successfully deleted manifest for ${repo}`);
+		const cleanDigest = digest.replace(/"/g, '');
+
+		// logger.info(`Processing delete request for ${repo}`, {
+		// 	originalDigest: digest,
+		// 	cleanDigest,
+		// 	manifestType
+		// });
+
+		await deleteDockerManifestAxios(registryUrl, repo, cleanDigest);
 		return json({ success: true });
 	} catch (error) {
-		logger.error('Error processing delete request:', error);
+		logger.error('Failed to delete manifest:', error);
 		return json(
 			{
 				success: false,
-				error: error instanceof Error ? error.message : 'Internal server error'
+				error: error instanceof Error ? error.message : 'Unknown error'
 			},
 			{ status: 500 }
 		);
