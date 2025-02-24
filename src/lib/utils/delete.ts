@@ -10,15 +10,18 @@ export async function deleteDockerManifestAxios(registryUrl: string, repo: strin
 	try {
 		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
 
-		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${contentDigest}`;
+		// Ensure clean digest
+		const cleanDigest = contentDigest.replace(/"/g, '');
+		const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${cleanDigest}`;
+
 		logger?.info(`Deleting manifest: ${manifestUrl}`);
 
-		const headers = {
-			Authorization: `Basic ${auth}`,
-			Accept: 'application/json, application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json'
-		};
-
-		const response = await axios.delete(manifestUrl, { headers });
+		const response = await axios.delete(manifestUrl, {
+			headers: {
+				Authorization: `Basic ${auth}`,
+				Accept: ['application/vnd.docker.distribution.manifest.v2+json', 'application/vnd.oci.image.index.v1+json', 'application/vnd.oci.image.manifest.v1+json'].join(', ')
+			}
+		});
 
 		if (response.status !== 202) {
 			const error = `Failed to delete manifest: ${response.status}`;

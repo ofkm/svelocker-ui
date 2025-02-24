@@ -14,7 +14,6 @@ export async function getDockerTagsNew(registryUrl: string, repo: string): Promi
 	try {
 		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
 
-		logger.debug(`Fetching tags for ${repo}`);
 		const response = await axios.get(`${registryUrl}/v2/${repo}/tags/list`, {
 			headers: {
 				Authorization: `Basic ${auth}`,

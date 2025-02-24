@@ -45,12 +45,36 @@ db.exec(`
     description TEXT,
     contentDigest TEXT,
     entrypoint TEXT,
+    isOCI BOOLEAN,
+    indexDigest TEXT,
     FOREIGN KEY(tag_id) REFERENCES tags(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS schema_version (
+    version INTEGER PRIMARY KEY
   );
 `);
 
 export class RegistryCache {
+	private static migrateSchema() {
+		const currentVersion = db.prepare('SELECT version FROM schema_version').get()?.version || 0;
+
+		if (currentVersion < 1) {
+			// Add new columns
+			db.exec(`
+        ALTER TABLE tag_metadata ADD COLUMN isOCI BOOLEAN;
+        ALTER TABLE tag_metadata ADD COLUMN indexDigest TEXT;
+        
+        -- Update schema version
+        INSERT OR REPLACE INTO schema_version (version) VALUES (1);
+      `);
+		}
+	}
+
 	static async syncFromRegistry(registryData: RegistryRepo[]) {
+		// Run migrations first
+		this.migrateSchema();
+
 		const stmt = db.prepare('INSERT INTO repositories (name) VALUES (?)');
 		const insertImage = db.prepare('INSERT INTO images (repository_id, name, fullName) VALUES (?, ?, ?)');
 		const insertTag = db.prepare('INSERT INTO tags (image_id, name, digest) VALUES (?, ?, ?)');
@@ -58,8 +82,8 @@ export class RegistryCache {
             INSERT INTO tag_metadata (
                 tag_id, created_at, os, architecture, author, 
                 dockerFile, exposedPorts, totalSize, workDir, 
-                command, description, contentDigest, entrypoint
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                command, description, contentDigest, entrypoint, isOCI, indexDigest
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
 		const transaction = db.transaction((repos: RegistryRepo[]) => {
@@ -82,7 +106,7 @@ export class RegistryCache {
 						const { lastInsertRowid: tagId } = insertTag.run(imageId, tag.name, tag.metadata?.configDigest || null);
 
 						// Insert metadata separately
-						insertMetadata.run(tagId, tag.metadata?.created || null, tag.metadata?.os || null, tag.metadata?.architecture || null, tag.metadata?.author || null, tag.metadata?.dockerFile || null, JSON.stringify(tag.metadata?.exposedPorts) || null, tag.metadata?.totalSize || null, tag.metadata?.workDir || null, JSON.stringify(tag.metadata?.command) || null, tag.metadata?.description || null, tag.metadata?.contentDigest || null, JSON.stringify(tag.metadata?.entrypoint) || null);
+						insertMetadata.run(tagId, tag.metadata?.created || null, tag.metadata?.os || null, tag.metadata?.architecture || null, tag.metadata?.author || null, tag.metadata?.dockerFile || null, JSON.stringify(tag.metadata?.exposedPorts) || null, tag.metadata?.totalSize || null, tag.metadata?.workDir || null, JSON.stringify(tag.metadata?.command) || null, tag.metadata?.description || null, tag.metadata?.contentDigest || null, JSON.stringify(tag.metadata?.entrypoint) || null, JSON.stringify(tag.metadata?.isOCI) || null, JSON.stringify(tag.metadata?.indexDigest) || null);
 					}
 				}
 			}
@@ -92,6 +116,9 @@ export class RegistryCache {
 	}
 
 	static getRepositories(): RegistryRepo[] {
+		// Run migrations first
+		this.migrateSchema();
+
 		return db
 			.prepare(
 				`
@@ -119,7 +146,9 @@ export class RegistryCache {
                                             'command', tm.command,
                                             'description', tm.description,
                                             'contentDigest', tm.contentDigest,
-                                            'entrypoint', tm.entrypoint
+                                            'entrypoint', tm.entrypoint,
+                                            'isOCI', tm.isOCI,
+                                            'indexDigest', tm.indexDigest
                                         )
                                         FROM tag_metadata tm
                                         WHERE tm.tag_id = t.id
