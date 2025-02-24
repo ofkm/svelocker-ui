@@ -60,17 +60,29 @@ export class RegistryCache {
 
 	private static migrateSchema() {
 		if (RegistryCache.migrated) return;
-		const currentVersion = db.prepare('SELECT version FROM schema_version').get()?.version || 0;
-		if (currentVersion < 1) {
-			// Add new columns
+
+		try {
+			// Check if schema_version table exists and create if not
 			db.exec(`
-          ALTER TABLE tag_metadata ADD COLUMN isOCI BOOLEAN;
-          ALTER TABLE tag_metadata ADD COLUMN indexDigest TEXT;
-          -- Update schema version
-          INSERT OR REPLACE INTO schema_version (version) VALUES (1);
-        `);
+				CREATE TABLE IF NOT EXISTS schema_version (
+					version INTEGER PRIMARY KEY
+				);
+			`);
+
+			const currentVersion = db.prepare('SELECT version FROM schema_version').get()?.version || 0;
+
+			if (currentVersion < 1) {
+				// For new databases, we don't need to add columns since they're in the initial CREATE TABLE
+				// Just update the schema version
+				db.exec(`
+					INSERT OR REPLACE INTO schema_version (version) VALUES (1);
+				`);
+			}
+
+			RegistryCache.migrated = true;
+		} catch (error) {
+			throw new Error(`Failed to migrate database schema: ${error.message}`);
 		}
-		RegistryCache.migrated = true;
 	}
 
 	static async syncFromRegistry(registryData: RegistryRepo[]) {
