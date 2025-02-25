@@ -57,7 +57,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		};
 	} catch (e) {
 		// Handle unexpected errors
-		if (e.status && e.body) {
+		if (e && typeof e === 'object' && 'status' in e && 'body' in e) {
 			// This is an error thrown by the error() helper
 			throw e;
 		} else {

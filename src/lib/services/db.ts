@@ -69,7 +69,10 @@ export class RegistryCache {
 				);
 			`);
 
-			const currentVersion = db.prepare('SELECT version FROM schema_version').get()?.version || 0;
+			interface SchemaVersion {
+				version: number;
+			}
+			const currentVersion = (db.prepare('SELECT version FROM schema_version').get() as SchemaVersion)?.version || 0;
 
 			if (currentVersion < 1) {
 				// For new databases, we don't need to add columns since they're in the initial CREATE TABLE
@@ -80,8 +83,9 @@ export class RegistryCache {
 			}
 
 			RegistryCache.migrated = true;
-		} catch (error) {
-			throw new Error(`Failed to migrate database schema: ${error.message}`);
+		} catch (error: unknown) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			throw new Error(`Failed to migrate database schema: ${errorMessage}`);
 		}
 	}
 

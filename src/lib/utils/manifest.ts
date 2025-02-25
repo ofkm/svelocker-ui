@@ -176,10 +176,15 @@ export async function getDockerTagsNew(registryUrl: string, repo: string): Promi
 			logger.info(`Found ${data.tags.length} tags for ${repo}`);
 
 			// Fetch metadata for each tag in parallel
+			interface FetchTagMetadataResult {
+				name: string;
+				metadata: ImageMetadata | undefined;
+			}
+
 			tags = await Promise.all(
-				data.tags.map(async (tag) => {
+				data.tags.map(async (tag: string): Promise<ImageTag> => {
 					try {
-						const metadata = await fetchDockerMetadataAxios(registryUrl, repo, tag);
+						const metadata: ImageMetadata | undefined = await fetchDockerMetadataAxios(registryUrl, repo, tag);
 						return { name: tag, metadata };
 					} catch (error) {
 						logger.error(`Error fetching metadata for ${repo}:${tag}:`, error instanceof Error ? error.message : String(error));

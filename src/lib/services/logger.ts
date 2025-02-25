@@ -1,3 +1,5 @@
+import { env } from '$env/dynamic/public';
+
 type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
 export class Logger {
@@ -35,8 +37,15 @@ export class Logger {
 		return `[${timestamp}] [${level}] [${this.serviceName}] ${message}`;
 	}
 
+	// Check if debug mode is enabled
+	private isDebugEnabled(): boolean {
+		// Check both browser and server environment variables
+		return (typeof process !== 'undefined' && (process.env.DEBUG === 'true' || process.env.PUBLIC_DEBUG === 'true')) || (typeof env !== 'undefined' && env.PUBLIC_DEBUG === 'true');
+	}
+
 	public debug(message: string, ...args: any[]): void {
-		if (process.env.NODE_ENV !== 'production') {
+		// Only log if debug is enabled
+		if (this.isDebugEnabled()) {
 			console.debug(this.formatMessage('DEBUG', message), ...args);
 		}
 	}

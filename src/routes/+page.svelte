@@ -7,6 +7,7 @@
 	import type { PageProps } from './$types';
 	import { env } from '$env/dynamic/public';
 	import SyncButton from '$lib/components/SyncButton.svelte';
+	import type { RegistryRepo } from '$lib/models/repo';
 
 	let { data }: PageProps = $props();
 	const isHealthy = data.healthStatus.isHealthy;
@@ -17,7 +18,7 @@
 	const currentPage = writable(1);
 
 	// Create a store for the repositories
-	const repositories = writable(data.repos.repositories);
+	const repositories = writable(data.repos?.repositories || []);
 
 	// Filter data based on search, including root-level images
 	const filteredData = derived([repositories, searchQuery], ([$repositories, $searchQuery]) => {
@@ -90,7 +91,7 @@
 				{#if $filteredData.length > 0}
 					<!-- RepoCard List -->
 					<div class="grid grid-cols-1 gap-4" style="margin-bottom: 2em;">
-						<RepoCard filteredData={$paginatedData} />
+						<RepoCard filteredData={$paginatedData as unknown as RegistryRepo[]} />
 					</div>
 
 					<!-- Pagination Component -->

@@ -1,6 +1,6 @@
 import type { RegistryRepo } from '$lib/models/repo';
 import { getDockerTagsNew } from '$lib/utils/tags';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { env } from '$env/dynamic/public';
 import { Buffer } from 'buffer';
 import { Logger } from '$lib/services/logger';
@@ -99,7 +99,7 @@ export async function getRegistryReposAxios(url: string): Promise<RegistryRepos>
 		return { repositories: filteredNamespaces };
 	} catch (error) {
 		// Improved error logging with type safety and details
-		if (error instanceof AxiosError) {
+		if (axios.isAxiosError(error)) {
 			logger.error(`Failed to fetch repositories from ${url}:`, {
 				status: error.response?.status,
 				url: error.config?.url,

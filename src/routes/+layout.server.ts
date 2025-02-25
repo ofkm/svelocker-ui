@@ -74,7 +74,7 @@ export async function load({ url }) {
 						{
 							name: `repo-${i + 1}`,
 							fullName: `namespace${i + 1}/repo-${i + 1}`,
-							tags: ['latest']
+							tags: [{ name: 'latest' }]
 						}
 					]
 				}));
