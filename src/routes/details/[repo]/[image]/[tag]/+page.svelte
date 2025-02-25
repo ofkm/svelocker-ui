@@ -18,6 +18,11 @@
 	export let data: PageData;
 
 	async function copyDockerfile() {
+		if (!currentTag.metadata?.dockerFile) {
+			toast.error('No Dockerfile available');
+			return;
+		}
+
 		copyTextToClipboard(currentTag.metadata.dockerFile).then((success) => {
 			if (success) {
 				toast.success('Dockerfile Copied successfully');
@@ -47,7 +52,7 @@
 					registryUrl: env.PUBLIC_REGISTRY_URL,
 					repo: name,
 					digest: digest,
-					manifestType: currentTag.metadata.isOCI ? 'application/vnd.oci.image.index.v1+json' : 'application/vnd.docker.distribution.manifest.v2+json'
+					manifestType: currentTag.metadata?.isOCI ? 'application/vnd.oci.image.index.v1+json' : 'application/vnd.docker.distribution.manifest.v2+json'
 				})
 			});
 
@@ -159,7 +164,7 @@
 					{#if currentTag.metadata}
 						<div class="space-y-2">
 							<p class="text-lg text-muted-foreground">{currentTag.metadata.description}</p>
-							<p class="text-sm text-muted-foreground font-mono">{currentTag.digest}</p>
+							<p class="text-sm text-muted-foreground font-mono">{currentTag.metadata?.indexDigest || ''}</p>
 						</div>
 					{/if}
 				</div>
@@ -171,9 +176,9 @@
 						<div class="grid grid-cols-2 gap-6">
 							<MetadataItem label="OS" icon={AppWindowMac} value={currentTag.metadata.os} />
 							<MetadataItem label="Arch" icon={CircuitBoard} value={currentTag.metadata.architecture} />
-							<MetadataItem label="Created" icon={CalendarCog} value={convertTimeString(currentTag.metadata.created)} />
-							<MetadataItem label="Author" icon={UserPen} value={currentTag.metadata.author} />
-							<MetadataItem label="Exposed Ports" icon={EthernetPort} value={currentTag.metadata.exposedPorts} />
+							<MetadataItem label="Created" icon={CalendarCog} value={currentTag.metadata.created ? (convertTimeString(currentTag.metadata.created) ?? '') : ''} />
+							<MetadataItem label="Author" icon={UserPen} value={currentTag.metadata.author ?? ''} />
+							<MetadataItem label="Exposed Ports" icon={EthernetPort} value={Array.isArray(currentTag.metadata.exposedPorts) ? currentTag.metadata.exposedPorts.join(', ') : currentTag.metadata.exposedPorts} />
 							<MetadataItem label="Container Size" icon={Scaling} value={currentTag.metadata.totalSize} />
 							<MetadataItem label="Working Directory" icon={FolderCode} value={currentTag.metadata.workDir} />
 							<MetadataItem label="Command" icon={Terminal} value={currentTag.metadata.command} />
@@ -199,17 +204,21 @@
 					<pre class="flex text-sm font-mono leading-relaxed">
 						<!-- Line numbers -->
 						<div class="py-1 pl-2 pr-4 text-gray-400 select-none border-r border-gray-700 bg-[#1e1e1e] w-[4rem]">
-							{#each currentTag.metadata.dockerFile.split('\n') as _, i}
-								<div class="text-right max-h-[1px] flex items-center justify-end px-2">{i + 1}</div>
-							{/each}
+							{#if currentTag.metadata?.dockerFile}
+								{#each currentTag.metadata.dockerFile.split('\n') as _, i}
+									<div class="text-right max-h-[1px] flex items-center justify-end px-2">{i + 1}</div>
+								{/each}
+							{/if}
 						</div>
 						<!-- Code content -->
 						<div class="py-1 px-6 bg-[#1e1e1e] w-full overflow-x-auto">
-							{#each currentTag.metadata.dockerFile.split('\n') as line}
-								<div class="max-h-[1px] flex items-center">
-									<span>{line}</span>
-								</div>
-							{/each}
+							{#if currentTag.metadata?.dockerFile}
+								{#each currentTag.metadata.dockerFile.split('\n') as line}
+									<div class="max-h-[1px] flex items-center">
+										<span>{line}</span>
+									</div>
+								{/each}
+							{/if}
 						</div>
 					</pre>
 				</div>

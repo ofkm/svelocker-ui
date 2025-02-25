@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Label } from '$lib/components/ui/label';
-	import { type Icon as IconType } from 'lucide-svelte';
+	import type { ComponentType } from 'svelte';
 
-	export let icon: IconType;
+	export let icon: ComponentType;
 	export let label: string;
 	export let value: string;
 </script>
