@@ -30,16 +30,19 @@
 			return a.name.localeCompare(b.name);
 		});
 	});
+
+	// Generate a unique ID for this dropdown
+	const dropdownId = `tag-dropdown-${imageFullName.replace(/[^\w]/g, '-')}`;
 </script>
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger>
-		<Button data-testid="tag-button" variant="ghost" size="icon" class="relative size-8 p-0">
+		<Button data-testid={`tag-button-${imageName}`} data-dropdown-id={dropdownId} variant="ghost" size="icon" class="relative size-8 p-0">
 			<span class="sr-only">Open menu</span>
 			<Tag />
 		</Button>
 	</DropdownMenu.Trigger>
-	<DropdownMenu.Content data-testid="dropdown-content">
+	<DropdownMenu.Content data-testid={`dropdown-content-${imageName}`}>
 		<DropdownMenu.Group>
 			<DropdownMenu.GroupHeading class="font-bold flex items-center justify-center">Tags</DropdownMenu.GroupHeading>
 			<DropdownMenu.Separator />

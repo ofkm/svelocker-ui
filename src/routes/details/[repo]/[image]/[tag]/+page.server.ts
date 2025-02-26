@@ -2,9 +2,16 @@ import { error } from '@sveltejs/kit';
 import { RegistryCache } from '$lib/services/db';
 import { Logger } from '$lib/services/logger';
 import type { PageServerLoad } from './$types';
+import { tagDetailsMock } from '../../../../../../tests/e2e/mocks.ts';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, url }) => {
 	const logger = Logger.getInstance('TagDetails');
+
+	// For E2E tests
+	if (process.env.PLAYWRIGHT === 'true' && url.searchParams.get('mock') === 'tagDetails') {
+		logger.debug('Using mock tag details');
+		return tagDetailsMock;
+	}
 
 	try {
 		const repositories = RegistryCache.getRepositories();
