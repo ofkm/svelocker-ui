@@ -1,4 +1,4 @@
-import type { RegistryRepo } from '$lib/models/repo';
+import type { RegistryRepo } from '$lib/types/repo';
 import { getDockerTags } from '$lib/utils/manifest/index.ts';
 import axios, { AxiosError } from 'axios';
 import { env } from '$env/dynamic/public';

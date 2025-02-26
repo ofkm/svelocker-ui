@@ -1,6 +1,6 @@
 // src/lib/utils/manifest/fetch.ts
 import axios from 'axios';
-import type { ImageMetadata } from '$lib/models/metadata';
+import type { ImageMetadata } from '$lib/types/metadata';
 import { Logger } from '$lib/services/logger';
 import { getAuthString } from './helpers';
 import { calculateSha256, filterAttestationManifests } from '$lib/utils/oci';

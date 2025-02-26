@@ -1,5 +1,5 @@
 // src/lib/utils/manifest/metadata.ts
-import type { ImageMetadata } from '$lib/models/metadata';
+import type { ImageMetadata } from '$lib/types/metadata';
 import { Logger } from '$lib/services/logger';
 import { formatSize } from './helpers';
 import { fetchManifest, fetchImageConfig, processOciManifest } from './fetch';

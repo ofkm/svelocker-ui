@@ -1,7 +1,7 @@
 // src/lib/utils/manifest/tags.ts
 import axios, { AxiosError } from 'axios';
-import type { ImageTag } from '$lib/models/tag';
-import type { RepoImage } from '$lib/models/image';
+import type { ImageTag } from '$lib/types/tag';
+import type { RepoImage } from '$lib/types/image';
 import { Logger } from '$lib/services/logger';
 import { getAuthHeaders, extractRepoName } from './helpers';
 import { fetchDockerMetadata } from './metadata';

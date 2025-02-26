@@ -1,6 +1,6 @@
 // src/lib/services/db.ts
 import Database from 'better-sqlite3';
-import type { RegistryRepo } from '$lib/models/repo';
+import type { RegistryRepo } from '$lib/types/repo';
 import { env } from '$env/dynamic/private';
 
 const dbPath = env.DB_PATH || 'data/svelockerui.db';

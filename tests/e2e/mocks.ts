@@ -1,5 +1,5 @@
 // file: tests/e2e/mocks.ts
-import type { RegistryRepo } from '$lib/models/repo';
+import type { RegistryRepo } from '$lib/types/repo';
 
 export const mockHealthStatus = {
 	isHealthy: true,
