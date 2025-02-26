@@ -1,5 +1,5 @@
 import type { RegistryRepo } from '$lib/models/repo';
-import { getDockerTagsNew } from '$lib/utils/tags';
+import { getDockerTags } from '$lib/utils/manifest/index.ts';
 import axios, { AxiosError } from 'axios';
 import { env } from '$env/dynamic/public';
 import { Buffer } from 'buffer';
@@ -80,7 +80,7 @@ export async function getRegistryReposAxios(url: string): Promise<RegistryRepos>
 			const imagePromises = repos.map(async (repo) => {
 				try {
 					// Pass the base registry URL, not the catalog URL
-					const repoData = await getDockerTagsNew(baseRegistryUrl, repo);
+					const repoData = await getDockerTags(baseRegistryUrl, repo);
 					namespaceObj.images.push(repoData);
 				} catch (error) {
 					logger.error(`Error fetching tags for ${repo}:`, error instanceof Error ? error.message : String(error));
