@@ -7,6 +7,10 @@ import { Logger } from '$lib/services/logger';
 
 const logger = Logger.getInstance('DBConnection');
 
+function sqlLogger(sql: string): void {
+	logger.debug(`SQL: ${sql}`);
+}
+
 // Database configuration
 const DB_CONFIG = {
 	path: env.DB_PATH || 'data/svelockerui.db',
@@ -117,7 +121,7 @@ function createConnection(): Database.Database {
 
 		// Now create the actual database connection
 		const database = new Database(DB_CONFIG.path, {
-			verbose: env.NODE_ENV === 'development' ? console.log : undefined
+			verbose: sqlLogger
 		});
 
 		// Configure database

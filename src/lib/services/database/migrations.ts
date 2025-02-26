@@ -151,7 +151,7 @@ export async function runMigrations(): Promise<void> {
 					// Record migration
 					db.prepare('INSERT INTO schema_version (version, description) VALUES (?, ?)').run(migration.version, migration.description);
 
-					logger.info(`Migration v${migration.version} applied successfully`);
+					logger.debug(`Migration v${migration.version} applied successfully`);
 				}
 			}
 		})();
