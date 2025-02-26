@@ -1,9 +1,9 @@
 import cron from 'node-cron';
 import { getRegistryReposAxios } from '$lib/utils/repos';
-import { RegistryCache } from './db';
+import { syncFromRegistry } from '$lib/services/database';
+import { db } from '$lib/services/database/connection';
 import { env } from '$env/dynamic/public';
 import { Logger } from '$lib/services/logger';
-import { dev } from '$app/environment';
 
 export class RegistrySyncService {
 	private static instance: RegistrySyncService;
@@ -17,12 +17,9 @@ export class RegistrySyncService {
 		// Run every 5 minutes by default
 		this.cronJob = cron.schedule('*/5 * * * *', async () => {
 			try {
-				this.logger.info('Starting registry sync...');
-				const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
-				await RegistryCache.syncFromRegistry(registryData.repositories);
-				this.logger.info('Registry sync completed successfully');
+				await this.performSync();
 			} catch (error) {
-				console.error('Registry sync failed:', error);
+				this.logger.error('Registry sync failed:', error);
 			}
 		});
 	}
@@ -34,9 +31,21 @@ export class RegistrySyncService {
 		}
 
 		this.isSyncing = true;
+		this.logger.info('Starting registry sync...');
+
 		try {
 			const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
-			await RegistryCache.syncFromRegistry(registryData.repositories);
+			await syncFromRegistry(registryData.repositories);
+
+			// Update the last sync time in the database
+			try {
+				const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
+				stmt.run('last_sync_time', Date.now());
+			} catch (error) {
+				this.logger.error('Error updating last sync time:', error);
+			}
+
+			this.logger.info('Registry sync completed successfully');
 		} catch (error) {
 			this.logger.error('Registry sync failed', error);
 		} finally {
