@@ -1,54 +1,68 @@
-import type { PageServerLoad } from './$types';
+import { error } from '@sveltejs/kit';
+import { RegistryCache } from '$lib/services/db';
 import { Logger } from '$lib/services/logger';
+import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, parent }) => {
-	// Initialize logger for this page
+export const load: PageServerLoad = async ({ params }) => {
 	const logger = Logger.getInstance('TagDetails');
-	const { repos } = await parent();
-	const repoName = params.repo;
-	const imageName = params.image;
-	const tagName = params.tag;
 
-	if (!repos) {
-		throw new Error('Repository data not available');
+	try {
+		const repositories = RegistryCache.getRepositories();
+
+		// Extract params
+		const { repo, image, tag } = params;
+
+		logger.info(`Loading details for ${repo}/${image}:${tag}`);
+
+		// Find the repo by name
+		let repoObj = repositories.find((r) => r.name === repo);
+
+		// Handle the 'library' namespace case
+		if (!repoObj && repo === 'library') {
+			// For 'library' namespace, look for root-level images
+			repoObj = repositories.find((r) => r.name === 'library');
+		}
+
+		if (!repoObj) {
+			logger.error(`Repository ${repo} not found`);
+			throw error(404, `Repository ${repo} not found`);
+		}
+
+		// Find the image within the repo
+		const imageObj = repoObj.images.find((img) => img.name === image || img.fullName === `${repo}/${image}` || img.fullName === image);
+
+		if (!imageObj) {
+			logger.error(`Image ${image} not found in ${repo}`);
+			throw error(404, `Image ${image} not found in ${repo}`);
+		}
+
+		// Find the tag
+		const tagIndex = imageObj.tags.findIndex((t) => t.name === tag);
+
+		if (tagIndex === -1) {
+			logger.error(`Tag ${tag} not found for ${repo}/${image}`);
+			throw error(404, `Tag ${tag} not found for ${repo}/${image}`);
+		}
+
+		const isLatest = tag === 'latest';
+
+		// Return the data for the page
+		return {
+			repo,
+			imageName: image,
+			imageFullName: imageObj.fullName,
+			tag: imageObj,
+			tagIndex,
+			isLatest
+		};
+	} catch (e) {
+		// Handle unexpected errors
+		if (e && typeof e === 'object' && 'status' in e && 'body' in e) {
+			// This is an error thrown by the error() helper
+			throw e;
+		} else {
+			logger.error('Error loading tag details:', e);
+			throw error(500, 'Failed to load image details');
+		}
 	}
-
-	// Find the repository
-	const repoIndex = repos.repositories.findIndex((r) => r.name === repoName);
-	if (repoIndex === -1) {
-		const error = `Repository ${repoName} not found`;
-		logger.error(error);
-		throw new Error(error);
-	}
-
-	const repo = repos.repositories[repoIndex];
-
-	// Find the image that matches both repo and image name
-	const image = repo.images.find((img) => img.name === imageName);
-	if (!image) {
-		const error = `Image ${imageName} not found in ${repoName}`;
-		logger.error(error);
-		throw new Error(error);
-	}
-
-	// Find the tag within the image's tags array
-	const tagIndex = image.tags.findIndex((t) => typeof t === 'object' && t.name === tagName);
-	if (tagIndex === -1) {
-		const error = `Tag ${tagName} not found in ${imageName}`;
-		logger.error(error);
-		throw new Error(error);
-	}
-
-	logger.info(`Successfully loaded details for ${repoName}/${imageName}:${tagName}`);
-
-	return {
-		repositories: repos.repositories,
-		repo: repoName,
-		tag: image,
-		repoIndex,
-		tagIndex,
-		imageFullName: `${repoName}/${imageName}`,
-		imageName: `${imageName}`,
-		isLatest: tagName === 'latest'
-	};
 };

@@ -69,7 +69,10 @@ export class RegistryCache {
 				);
 			`);
 
-			const currentVersion = db.prepare('SELECT version FROM schema_version').get()?.version || 0;
+			interface SchemaVersion {
+				version: number;
+			}
+			const currentVersion = (db.prepare('SELECT version FROM schema_version').get() as SchemaVersion)?.version || 0;
 
 			if (currentVersion < 1) {
 				// For new databases, we don't need to add columns since they're in the initial CREATE TABLE
@@ -80,8 +83,9 @@ export class RegistryCache {
 			}
 
 			RegistryCache.migrated = true;
-		} catch (error) {
-			throw new Error(`Failed to migrate database schema: ${error.message}`);
+		} catch (error: unknown) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			throw new Error(`Failed to migrate database schema: ${errorMessage}`);
 		}
 	}
 
@@ -92,13 +96,15 @@ export class RegistryCache {
 		const stmt = db.prepare('INSERT INTO repositories (name) VALUES (?)');
 		const insertImage = db.prepare('INSERT INTO images (repository_id, name, fullName) VALUES (?, ?, ?)');
 		const insertTag = db.prepare('INSERT INTO tags (image_id, name, digest) VALUES (?, ?, ?)');
+
+		// Fix: Store boolean and JSON data properly
 		const insertMetadata = db.prepare(`
-            INSERT INTO tag_metadata (
-                tag_id, created_at, os, architecture, author, 
-                dockerFile, exposedPorts, totalSize, workDir, 
-                command, description, contentDigest, entrypoint, isOCI, indexDigest
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `);
+			INSERT INTO tag_metadata (
+				tag_id, created_at, os, architecture, author, 
+				dockerFile, exposedPorts, totalSize, workDir, 
+				command, description, contentDigest, entrypoint, isOCI, indexDigest
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`);
 
 		const transaction = db.transaction((repos: RegistryRepo[]) => {
 			// Clear existing data
@@ -119,8 +125,18 @@ export class RegistryCache {
 					for (const tag of image.tags) {
 						const { lastInsertRowid: tagId } = insertTag.run(imageId, tag.name, tag.metadata?.configDigest || null);
 
-						// Insert metadata separately
-						insertMetadata.run(tagId, tag.metadata?.created || null, tag.metadata?.os || null, tag.metadata?.architecture || null, tag.metadata?.author || null, tag.metadata?.dockerFile || null, JSON.stringify(tag.metadata?.exposedPorts) || null, tag.metadata?.totalSize || null, tag.metadata?.workDir || null, JSON.stringify(tag.metadata?.command) || null, tag.metadata?.description || null, tag.metadata?.contentDigest || null, JSON.stringify(tag.metadata?.entrypoint) || null, JSON.stringify(tag.metadata?.isOCI) || null, JSON.stringify(tag.metadata?.indexDigest) || null);
+						// Fix: Convert arrays/objects to JSON strings, booleans to 0/1
+						const exposedPorts = Array.isArray(tag.metadata?.exposedPorts) ? JSON.stringify(tag.metadata.exposedPorts) : '[]';
+
+						const command = typeof tag.metadata?.command === 'string' ? tag.metadata.command : JSON.stringify(tag.metadata?.command || null);
+
+						const entrypoint = typeof tag.metadata?.entrypoint === 'string' ? tag.metadata.entrypoint : JSON.stringify(tag.metadata?.entrypoint || null);
+
+						// Convert boolean to number (SQLite doesn't have a true boolean type)
+						const isOCI = tag.metadata?.isOCI === true ? 1 : 0;
+
+						// Insert metadata with proper type conversions
+						insertMetadata.run(tagId, tag.metadata?.created || null, tag.metadata?.os || null, tag.metadata?.architecture || null, tag.metadata?.author || null, tag.metadata?.dockerFile || null, exposedPorts, tag.metadata?.totalSize || null, tag.metadata?.workDir || null, command, tag.metadata?.description || null, tag.metadata?.contentDigest || null, entrypoint, isOCI, tag.metadata?.indexDigest || null);
 					}
 				}
 			}
@@ -136,48 +152,48 @@ export class RegistryCache {
 		return db
 			.prepare(
 				`
-            SELECT 
-                r.name as repoName,
-                json_group_array(
-                    json_object(
-                        'name', i.name,
-                        'fullName', i.fullName,
-                        'tags', (
-                            SELECT json_group_array(
-                                json_object(
-                                    'name', t.name,
-                                    'digest', t.digest,
-                                    'metadata', (
-                                        SELECT json_object(
-                                            'created', tm.created_at,
-                                            'os', tm.os,
-                                            'architecture', tm.architecture,
-                                            'author', tm.author,
-                                            'dockerFile', tm.dockerFile,
-                                            'exposedPorts', tm.exposedPorts,
-                                            'totalSize', tm.totalSize,
-                                            'workDir', tm.workDir,
-                                            'command', tm.command,
-                                            'description', tm.description,
-                                            'contentDigest', tm.contentDigest,
-                                            'entrypoint', tm.entrypoint,
-                                            'isOCI', tm.isOCI,
-                                            'indexDigest', tm.indexDigest
-                                        )
-                                        FROM tag_metadata tm
-                                        WHERE tm.tag_id = t.id
-                                    )
-                                )
-                            )
-                            FROM tags t
-                            WHERE t.image_id = i.id
-                        )
-                    )
-                ) as images
-            FROM repositories r
-            LEFT JOIN images i ON i.repository_id = r.id
-            GROUP BY r.id
-        `
+					SELECT 
+						r.name as repoName,
+						json_group_array(
+							json_object(
+								'name', i.name,
+								'fullName', i.fullName,
+								'tags', (
+									SELECT json_group_array(
+										json_object(
+											'name', t.name,
+											'digest', t.digest,
+											'metadata', (
+												SELECT json_object(
+													'created', tm.created_at,
+													'os', tm.os,
+													'architecture', tm.architecture,
+													'author', tm.author,
+													'dockerFile', tm.dockerFile,
+													'exposedPorts', json(CASE WHEN tm.exposedPorts IS NULL THEN '[]' ELSE tm.exposedPorts END),
+													'totalSize', tm.totalSize,
+													'workDir', tm.workDir,
+													'command', tm.command,
+													'description', tm.description,
+													'contentDigest', tm.contentDigest,
+													'entrypoint', tm.entrypoint,
+													'isOCI', CASE WHEN tm.isOCI = 1 THEN 'true' ELSE 'false' END,
+													'indexDigest', tm.indexDigest
+												)
+												FROM tag_metadata tm
+												WHERE tm.tag_id = t.id
+											)
+										)
+									)
+									FROM tags t
+									WHERE t.image_id = i.id
+								)
+							)
+						) as images
+					FROM repositories r
+					LEFT JOIN images i ON i.repository_id = r.id
+					GROUP BY r.id
+					`
 			)
 			.all()
 			.map((row) => ({
