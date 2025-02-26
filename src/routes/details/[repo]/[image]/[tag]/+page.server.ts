@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { RegistryCache } from '$lib/services/db';
+import { db } from '$lib/services/db';
 import { Logger } from '$lib/services/logger';
 import type { PageServerLoad } from './$types';
 import { tagDetailsMock } from '../../../../../../tests/e2e/mocks.ts';
@@ -14,51 +14,117 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	}
 
 	try {
-		const repositories = RegistryCache.getRepositories();
-
 		// Extract params
-		const { repo, image, tag } = params;
+		const { repo: repoName, image: imageName, tag: tagName } = params;
 
-		logger.info(`Loading details for ${repo}/${image}:${tag}`);
+		logger.info(`Loading details for ${repoName}/${imageName}:${tagName}`);
 
-		// Find the repo by name
-		let repoObj = repositories.find((r) => r.name === repo);
+		// Query the database directly instead of loading all repositories
+		// First find the repository
+		let repository = db
+			.prepare(
+				`
+            SELECT id, name 
+            FROM repositories 
+            WHERE name = ?
+        `
+			)
+			.get(repoName);
 
-		// Handle the 'library' namespace case
-		if (!repoObj && repo === 'library') {
-			// For 'library' namespace, look for root-level images
-			repoObj = repositories.find((r) => r.name === 'library');
-		}
+		if (!repository) {
+			// Try library namespace as fallback for root-level images
+			const libraryRepo = db
+				.prepare(
+					`
+                SELECT id, name 
+                FROM repositories 
+                WHERE name = 'library'
+            `
+				)
+				.get();
 
-		if (!repoObj) {
-			logger.error(`Repository ${repo} not found`);
-			throw error(404, `Repository ${repo} not found`);
+			if (!libraryRepo) {
+				logger.error(`Repository ${repoName} not found`);
+				throw error(404, `Repository ${repoName} not found`);
+			}
+
+			repository = libraryRepo;
 		}
 
 		// Find the image within the repo
-		const imageObj = repoObj.images.find((img) => img.name === image || img.fullName === `${repo}/${image}` || img.fullName === image);
+		const image = db
+			.prepare(
+				`
+            SELECT id, name, fullName
+            FROM images
+            WHERE repository_id = ? AND (name = ? OR fullName = ? OR fullName = ?)
+        `
+			)
+			.get(repository.id, imageName, `${repoName}/${imageName}`, imageName);
 
-		if (!imageObj) {
-			logger.error(`Image ${image} not found in ${repo}`);
-			throw error(404, `Image ${image} not found in ${repo}`);
+		if (!image) {
+			logger.error(`Image ${imageName} not found in ${repoName}`);
+			throw error(404, `Image ${imageName} not found in ${repoName}`);
 		}
 
-		// Find the tag
-		const tagIndex = imageObj.tags.findIndex((t) => t.name === tag);
+		// Get all tags for this image
+		const tags = db
+			.prepare(
+				`
+            SELECT t.id, t.name, t.digest,
+                tm.created_at, tm.os, tm.architecture, tm.author, 
+                tm.dockerFile, tm.exposedPorts, tm.totalSize, tm.workDir,
+                tm.command, tm.description, tm.contentDigest,
+                tm.entrypoint, tm.isOCI, tm.indexDigest
+            FROM tags t
+            LEFT JOIN tag_metadata tm ON tm.tag_id = t.id
+            WHERE t.image_id = ?
+            ORDER BY t.name = 'latest' DESC, t.name ASC
+        `
+			)
+			.all(image.id);
+
+		// Find the specific tag
+		const tagIndex = tags.findIndex((t) => t.name === tagName);
 
 		if (tagIndex === -1) {
-			logger.error(`Tag ${tag} not found for ${repo}/${image}`);
-			throw error(404, `Tag ${tag} not found for ${repo}/${image}`);
+			logger.error(`Tag ${tagName} not found for ${repoName}/${imageName}`);
+			throw error(404, `Tag ${tagName} not found for ${repoName}/${imageName}`);
 		}
 
-		const isLatest = tag === 'latest';
+		// Process the tags to match the expected format
+		const formattedTags = tags.map((tag) => ({
+			name: tag.name,
+			metadata: {
+				created: tag.created_at,
+				os: tag.os,
+				architecture: tag.architecture,
+				author: tag.author,
+				dockerFile: tag.dockerFile,
+				exposedPorts: tag.exposedPorts ? JSON.parse(tag.exposedPorts) : [],
+				totalSize: tag.totalSize,
+				workDir: tag.workDir,
+				command: tag.command ? (tag.command.startsWith('[') ? JSON.parse(tag.command) : tag.command) : null,
+				description: tag.description,
+				contentDigest: tag.contentDigest,
+				entrypoint: tag.entrypoint ? (tag.entrypoint.startsWith('[') ? JSON.parse(tag.entrypoint) : tag.entrypoint) : null,
+				isOCI: tag.isOCI === 1,
+				indexDigest: tag.indexDigest
+			}
+		}));
 
-		// Return the data for the page
+		const isLatest = tagName === 'latest';
+
+		// Return minimal data
 		return {
-			repo,
-			imageName: image,
-			imageFullName: imageObj.fullName,
-			tag: imageObj,
+			repo: repoName,
+			imageName: image.name,
+			imageFullName: image.fullName,
+			tag: {
+				name: image.name,
+				fullName: image.fullName,
+				tags: formattedTags
+			},
 			tagIndex,
 			isLatest
 		};

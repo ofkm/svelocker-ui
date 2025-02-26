@@ -4,7 +4,7 @@ import type { RegistryRepo } from '$lib/models/repo';
 import { env } from '$env/dynamic/private';
 
 const dbPath = env.DB_PATH || 'data/svelockerui.db';
-const db = new Database(dbPath);
+export const db = new Database(dbPath);
 
 // Initialize tables with new tag_metadata table
 db.exec(`
