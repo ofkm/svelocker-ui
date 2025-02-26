@@ -52,3 +52,4 @@ notes.txt
 
 svelockerui.db
 svelockerui.db-journal
+*.db-*
