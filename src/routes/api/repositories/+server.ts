@@ -13,7 +13,7 @@ export async function GET({ url }) {
 	const searchTerm = `%${search}%`;
 
 	try {
-		// Get paginated repositories with search
+		// Get paginated repositories with search and include ALL tags
 		const repositories = db
 			.prepare(
 				`
@@ -27,13 +27,31 @@ export async function GET({ url }) {
                 SELECT json_group_array(
                   json_object(
                     'name', t.name,
-                    'digest', t.digest
+                    'digest', t.digest,
+                    'metadata', (
+                      SELECT json_object(
+                        'created_at', tm.created_at,
+                        'os', tm.os,
+                        'architecture', tm.architecture,
+                        'author', tm.author,
+                        'dockerFile', tm.dockerFile,
+                        'exposedPorts', tm.exposedPorts,
+                        'totalSize', tm.totalSize,
+                        'workDir', tm.workDir,
+                        'command', tm.command,
+                        'contentDigest', tm.contentDigest,
+                        'entrypoint', tm.entrypoint,
+                        'isOCI', tm.isOCI,
+                        'indexDigest', tm.indexDigest
+                      )
+                      FROM tag_metadata tm
+                      WHERE tm.tag_id = t.id
+                    )
                   )
                 )
                 FROM tags t
                 WHERE t.image_id = i.id
                 ORDER BY t.name = 'latest' DESC, t.name ASC
-                LIMIT 10
               )
             )
           )
