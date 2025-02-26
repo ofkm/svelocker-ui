@@ -15,7 +15,44 @@ const MIN_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 // Store last sync time in memory (will reset on server restart)
 let lastSyncTime = 0;
 
-export async function load() {
+export async function load({ url }) {
+	// Mock data for tests based on URL parameter
+	if (process.env.PLAYWRIGHT === 'true') {
+		const mockType = url.searchParams.get('mock');
+		logger.debug('Using mock type:', mockType);
+
+		switch (mockType) {
+			case 'basic':
+				return basicMock;
+
+			case 'search':
+				return searchMock;
+
+			case 'pagination':
+				return paginationMock;
+
+			case 'error':
+				return errorMock;
+
+			case 'empty':
+				return emptyMock;
+
+			case 'unhealthy':
+				return {
+					repos: { repositories: [] },
+					error: null,
+					healthStatus: unhealthyStatus
+				};
+
+			case 'tagDetails':
+				return tagDetailsMock;
+
+			default:
+				// For default case, return a simple mock
+				return basicMock;
+		}
+	}
+
 	try {
 		// Initialize database (runs migrations if needed)
 		await initDatabase();
