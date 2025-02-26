@@ -64,40 +64,48 @@ export class RegistryCache {
 		if (RegistryCache.migrated) return;
 
 		try {
-			// Check schema version
+			// Create schema version table if it doesn't exist
 			db.exec(`CREATE TABLE IF NOT EXISTS schema_version (version INTEGER PRIMARY KEY);`);
 			const currentVersion = (db.prepare('SELECT version FROM schema_version').get() as { version: number })?.version || 0;
 
+			// Check if columns exist before adding them
+			const columnCheck = (tableName: string, columnName: string): boolean => {
+				const result = db.prepare(`PRAGMA table_info(${tableName})`).all() as any[];
+				return result.some((col) => col.name === columnName);
+			};
+
 			if (currentVersion < 2) {
-				// Add namespace-specific columns
+				// Wrap each ALTER TABLE in a transaction and check if the column exists
+				const hasPathColumn = columnCheck('repositories', 'path');
+				if (!hasPathColumn) {
+					db.exec(`ALTER TABLE repositories ADD COLUMN path TEXT DEFAULT NULL;`);
+				}
+
+				// Create namespace metadata table
 				db.exec(`
-					-- Add path column to repositories table
-					ALTER TABLE repositories ADD COLUMN path TEXT DEFAULT NULL;
-					
-					-- Add namespace metadata table
-					CREATE TABLE IF NOT EXISTS namespace_metadata (
-						id INTEGER PRIMARY KEY AUTOINCREMENT,
-						namespace_id INTEGER,
-						image_count INTEGER DEFAULT 0,
-						total_size TEXT DEFAULT NULL,
-						description TEXT DEFAULT NULL,
-						FOREIGN KEY(namespace_id) REFERENCES repositories(id)
-					);
-					
-					-- Add image metadata table
-					CREATE TABLE IF NOT EXISTS image_metadata (
-						id INTEGER PRIMARY KEY AUTOINCREMENT,
-						image_id INTEGER,
-						last_updated DATETIME,
-						pull_count INTEGER DEFAULT 0,
-						is_official BOOLEAN DEFAULT 0,
-						star_count INTEGER DEFAULT 0,
-						FOREIGN KEY(image_id) REFERENCES images(id)
-					);
-					
-					-- Update schema version
-					INSERT OR REPLACE INTO schema_version (version) VALUES (2);
-				`);
+								CREATE TABLE IF NOT EXISTS namespace_metadata (
+										id INTEGER PRIMARY KEY AUTOINCREMENT,
+										namespace_id INTEGER,
+										image_count INTEGER DEFAULT 0,
+										total_size TEXT DEFAULT NULL,
+										description TEXT DEFAULT NULL,
+										FOREIGN KEY(namespace_id) REFERENCES repositories(id)
+								);
+								
+								-- Add image metadata table if it doesn't exist
+								CREATE TABLE IF NOT EXISTS image_metadata (
+										id INTEGER PRIMARY KEY AUTOINCREMENT,
+										image_id INTEGER,
+										last_updated DATETIME,
+										pull_count INTEGER DEFAULT 0,
+										is_official BOOLEAN DEFAULT 0,
+										star_count INTEGER DEFAULT 0,
+										FOREIGN KEY(image_id) REFERENCES images(id)
+								);
+								
+								-- Update schema version
+								INSERT OR REPLACE INTO schema_version (version) VALUES (2);
+						`);
 			}
 
 			RegistryCache.migrated = true;
