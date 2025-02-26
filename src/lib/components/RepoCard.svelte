@@ -19,7 +19,7 @@
 	);
 </script>
 
-<div class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
+<div data-testid="repo-card" class="grid grid-cols-1 md:grid-cols-1 gap-4 p-10">
 	{#each Object.entries(groupedData) as [repoName, repos]}
 		<CollapsibleCard id={repoName} title={repoName} description={`${repos[0].images.length} ${repos[0].images.length > 1 ? 'Images' : 'Image'} Found`}>
 			{#each repos as repo, index}

@@ -1,9 +1,10 @@
-import { getRegistryReposAxios } from '$lib/utils/repos.ts';
-import { env } from '$env/dynamic/public';
-import type { RegistryRepo } from '$lib/models/repo';
-import { RegistryCache } from '$lib/services/db';
 import { Logger } from '$lib/services/logger';
+import { env } from '$env/dynamic/public';
+import { getRegistryReposAxios } from '$lib/utils/repos';
 import { checkRegistryHealth } from '$lib/utils/health';
+import { RegistryCache } from '$lib/services/db';
+// Import the mocks for testing
+import { basicMock, searchMock, paginationMock, errorMock, emptyMock, tagDetailsMock, unhealthyStatus } from '../../tests/e2e/mocks.ts';
 
 export async function load({ url }) {
 	const logger = Logger.getInstance('LayoutServer');
@@ -13,111 +14,35 @@ export async function load({ url }) {
 		const mockType = url.searchParams.get('mock');
 		logger.debug('Using mock type:', mockType);
 
-		// Mock health status for tests
-		const mockHealthStatus = {
-			isHealthy: mockType !== 'error',
-			supportsV2: true,
-			needsAuth: false,
-			message: mockType === 'error' ? 'Failed to connect to registry' : 'Registry is healthy'
-		};
-
 		switch (mockType) {
 			case 'basic':
-				return {
-					repos: {
-						repositories: [
-							{
-								name: 'namespace1',
-								images: [
-									{
-										name: 'mock-app',
-										fullName: 'namespace1/mock-app',
-										tags: ['latest', 'v1.0.0']
-									}
-								]
-							}
-						]
-					},
-					error: null,
-					healthStatus: mockHealthStatus
-				};
+				return basicMock;
 
 			case 'search':
-				return {
-					repos: {
-						repositories: [
-							{
-								name: 'namespace1',
-								images: [
-									{
-										name: 'frontend-app',
-										fullName: 'namespace1/frontend-app',
-										tags: ['latest', 'v1.0.0']
-									},
-									{
-										name: 'backend-api',
-										fullName: 'namespace1/backend-api',
-										tags: ['latest']
-									}
-								]
-							}
-						]
-					},
-					error: null,
-					healthStatus: mockHealthStatus
-				};
+				return searchMock;
 
 			case 'pagination':
-				const repositories: RegistryRepo[] = Array.from({ length: 12 }, (_, i) => ({
-					name: `namespace${i + 1}`,
-					images: [
-						{
-							name: `repo-${i + 1}`,
-							fullName: `namespace${i + 1}/repo-${i + 1}`,
-							tags: [{ name: 'latest' }]
-						}
-					]
-				}));
-				return {
-					repos: { repositories },
-					error: null,
-					healthStatus: mockHealthStatus
-				};
+				return paginationMock;
 
 			case 'error':
-				return {
-					repos: { repositories: [] },
-					error: 'Failed to connect to registry',
-					healthStatus: mockHealthStatus
-				};
+				return errorMock;
 
 			case 'empty':
+				return emptyMock;
+
+			case 'unhealthy':
 				return {
 					repos: { repositories: [] },
 					error: null,
-					healthStatus: mockHealthStatus
+					healthStatus: unhealthyStatus
 				};
 
+			case 'tagDetails':
+				return tagDetailsMock;
+
 			default:
-				// Important: Handle the case when no mock type is specified
-				return {
-					repos: {
-						repositories: [
-							{
-								name: 'namespace1',
-								images: [
-									{
-										name: 'mock-app',
-										fullName: 'namespace1/mock-app',
-										tags: ['latest', 'v1.0.0']
-									}
-								]
-							}
-						]
-					},
-					error: null,
-					healthStatus: mockHealthStatus
-				};
+				// For default case, return a simple mock
+				return basicMock;
 		}
 	}
 
