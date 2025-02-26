@@ -1,6 +1,8 @@
 // file: tests/e2e/mocks.ts
+
 import type { RegistryRepo } from '$lib/types/repo';
 import type { Namespace } from '$lib/types/namespace.type';
+
 
 export const mockHealthStatus = {
 	isHealthy: true,
@@ -102,6 +104,7 @@ export const basicMock = {
 			]
 		}
 	],
+
 	error: null,
 	healthStatus: mockHealthStatus
 };
