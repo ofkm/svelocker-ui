@@ -1,3 +1,8 @@
+## [0.23.4](https://github.com/kmendell/svelocker-ui/compare/v0.23.3...v0.23.4) (2025-02-26)
+
+### Bug Fixes
+
+* image retrival refactor ([#71](https://github.com/kmendell/svelocker-ui/issues/71)) ([ff43ee1](https://github.com/kmendell/svelocker-ui/commit/ff43ee164400e544697a54c87af6bf60dc18ccd9))
 ## [0.23.3](https://github.com/kmendell/svelocker-ui/compare/v0.23.2...v0.23.3) (2025-02-24)
 
 ### Bug Fixes
