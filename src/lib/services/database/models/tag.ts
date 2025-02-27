@@ -119,6 +119,14 @@ export const TagModel = {
 
 	// Delete tag
 	delete(id: number): void {
+		// First delete the metadata
+		try {
+			db.prepare('DELETE FROM tag_metadata WHERE tag_id = ?').run(id);
+		} catch (error) {
+			// Continue even if metadata doesn't exist or fails
+		}
+
+		// Then delete the tag itself
 		db.prepare('DELETE FROM tags WHERE id = ?').run(id);
 	},
 

@@ -133,55 +133,71 @@ function syncRepoImages(repoId: number, images: { name: string; fullName: string
 
 // Helper function to sync tags for an image
 function syncImageTags(imageId: number, tags: { name: string; digest: string; metadata?: any }[], stats: any): void {
-	// 1. Get existing tags
-	const existingTags = TagModel.getByImageId(imageId);
-	const existingTagMap = new Map(existingTags.map((tag) => [tag.name, tag]));
+	try {
+		// 1. Get existing tags
+		const existingTags = TagModel.getByImageId(imageId);
+		const existingTagMap = new Map(existingTags.map((tag) => [tag.name, tag]));
 
-	// 2. Track tags found in the registry data
-	const foundTagNames = new Set<string>();
+		// 2. Track tags found in the registry data
+		const foundTagNames = new Set<string>();
 
-	// 3. Process each tag
-	for (const tag of tags) {
-		foundTagNames.add(tag.name);
+		// 3. Process each tag
+		for (const tag of tags) {
+			foundTagNames.add(tag.name);
 
-		// Get digest (default to empty if not available)
-		const digest = tag.metadata?.configDigest || tag.digest || '';
+			// Get digest (default to empty if not available)
+			const digest = tag.metadata?.configDigest || tag.digest || '';
 
-		// Check if tag exists
-		const existingTag = existingTagMap.get(tag.name);
+			// Check if tag exists
+			const existingTag = existingTagMap.get(tag.name);
 
-		if (existingTag) {
-			// Only update if the digest has changed
-			if (existingTag.digest !== digest) {
-				// Delete the old tag and create a new one
-				// This ensures related metadata is properly updated
-				TagModel.delete(existingTag.id);
-				const tagId = TagModel.create(imageId, tag.name, digest);
+			if (existingTag) {
+				// Only update if the digest has changed
+				if (existingTag.digest !== digest) {
+					try {
+						// Delete the old tag and create a new one
+						// This ensures related metadata is properly updated
+						TagModel.delete(existingTag.id);
+						const tagId = TagModel.create(imageId, tag.name, digest);
 
-				// Update metadata if available
-				if (tag.metadata) {
-					TagModel.saveMetadata(tagId, tag.metadata);
+						// Update metadata if available
+						if (tag.metadata) {
+							TagModel.saveMetadata(tagId, tag.metadata);
+						}
+						stats.updatedTags++;
+					} catch (error) {
+						logger.error(`Error updating tag ${tag.name}:`, error);
+					}
 				}
-				stats.updatedTags++;
-			}
-		} else {
-			// Create new tag
-			const tagId = TagModel.create(imageId, tag.name, digest);
+			} else {
+				try {
+					// Create new tag
+					const tagId = TagModel.create(imageId, tag.name, digest);
 
-			// Save metadata if available
-			if (tag.metadata) {
-				TagModel.saveMetadata(tagId, tag.metadata);
+					// Save metadata if available
+					if (tag.metadata) {
+						TagModel.saveMetadata(tagId, tag.metadata);
+					}
+					stats.addedTags++;
+				} catch (error) {
+					logger.error(`Error creating tag ${tag.name}:`, error);
+				}
 			}
-			stats.addedTags++;
 		}
-	}
 
-	// 4. Remove tags that no longer exist in the registry
-	for (const [tagName, tag] of existingTagMap) {
-		if (!foundTagNames.has(tagName)) {
-			TagModel.delete(tag.id);
-			stats.removedTags++;
+		// 4. Remove tags that no longer exist in the registry
+		for (const [tagName, tag] of existingTagMap) {
+			if (!foundTagNames.has(tagName)) {
+				try {
+					TagModel.delete(tag.id);
+					stats.removedTags++;
+				} catch (error) {
+					logger.error(`Error deleting tag ${tagName}:`, error);
+				}
+			}
 		}
+	} catch (mainError) {
+		logger.error(`Error in syncImageTags for image ${imageId}:`, mainError);
 	}
 }
 
