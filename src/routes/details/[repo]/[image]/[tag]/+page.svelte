@@ -132,7 +132,7 @@
 						</Breadcrumb.Separator>
 					{/if}
 					<Breadcrumb.Item>
-						<Breadcrumb.Link href="/" class="text-muted-foreground hover:text-foreground">{data.imageName}</Breadcrumb.Link>
+						<Breadcrumb.Link href="/" class="text-muted-foreground hover:text-foreground">{data.imageFullName.includes('/') ? data.imageFullName.split('/').pop() : data.imageFullName}</Breadcrumb.Link>
 					</Breadcrumb.Item>
 					<Breadcrumb.Separator>
 						<Slash class="h-4 w-4" />
