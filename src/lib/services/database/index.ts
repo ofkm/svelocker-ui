@@ -238,7 +238,7 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 			)
 			.get(searchPattern) as { count: number };
 
-		// Format response
+		// Format response - ensure lastSynced is properly mapped
 		const formattedRepos = repos.map((repo) => {
 			// Get images for this repository
 			const images = ImageModel.getByRepositoryId(repo.id).map((image) => {
@@ -256,12 +256,14 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 				return {
 					name: image.name,
 					fullName: image.fullName,
+					lastSynced: repo.last_synced,
 					tags
 				};
 			});
 
 			return {
 				name: repo.repoName,
+				lastSynced: repo.last_synced, // Make sure last_synced is included in the response
 				images
 			};
 		});

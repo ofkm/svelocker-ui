@@ -58,7 +58,9 @@ export const RepositoryModel = {
 
 	// Update last_synced timestamp
 	updateLastSynced(id: number): void {
-		db.prepare('UPDATE repositories SET last_synced = CURRENT_TIMESTAMP WHERE id = ?').run(id);
+		// Use ISO string format for more consistent timestamp storage
+		const now = new Date().toISOString();
+		db.prepare('UPDATE repositories SET last_synced = ? WHERE id = ?').run(now, id);
 	},
 
 	// Delete repository

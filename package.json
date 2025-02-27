@@ -55,6 +55,7 @@
 		"axios": "^1.8.1",
 		"better-sqlite3": "^11.8.1",
 		"buffer": "^6.0.3",
+		"date-fns": "^4.1.0",
 		"dotenv": "^16.4.7",
 		"json": "^11.0.0",
 		"node-cron": "^3.0.3",

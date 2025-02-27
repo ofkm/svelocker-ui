@@ -11,12 +11,14 @@
 		id,
 		title,
 		description,
+		lastSynced,
 		defaultExpanded = false,
 		children
 	}: {
 		id: string;
 		title: string;
 		description?: string;
+		lastSynced?: string;
 		defaultExpanded?: boolean;
 		children: Snippet;
 	} = $props();
@@ -62,7 +64,13 @@
 					{/if}
 				</div>
 				{#if description}
-					<Card.Description>{description}</Card.Description>
+					<Card.Description>
+						{description}
+						{#if lastSynced}
+							<br />
+							<span class="text-xs text-muted-foreground">{lastSynced}</span>
+						{/if}</Card.Description
+					>
 				{/if}
 			</div>
 			<Button class="ml-10 h-8 p-3 shrink-0" variant="ghost" aria-label="Expand card">
