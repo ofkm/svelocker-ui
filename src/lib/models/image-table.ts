@@ -29,7 +29,7 @@ export const columns: ColumnDef<ExtendedRepoImage>[] = [
 				tags: row.original.tags || [],
 				data: row.original,
 				imageFullName: row.original.fullName,
-				imageName: row.original.name
+				imageName: row.original.name.replace(/[^\w]/g, '-')
 			});
 		}
 	}

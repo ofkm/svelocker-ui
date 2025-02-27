@@ -16,43 +16,49 @@ const MIN_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 let lastSyncTime = 0;
 
 export async function load({ url }) {
-	// Mock data for tests based on URL parameter
+	// Make sure to log environment variables for debugging
+	logger.debug('PLAYWRIGHT env:', process.env.PLAYWRIGHT);
+	logger.debug('URL search params:', Object.fromEntries(url.searchParams.entries()));
+
+	// Check for test environment first
 	if (process.env.PLAYWRIGHT === 'true') {
+		logger.info('Running in Playwright test environment');
+
+		// Check for mock parameter
 		const mockType = url.searchParams.get('mock');
-		logger.debug('Using mock type:', mockType);
+		if (mockType) {
+			logger.debug('Using mock type:', mockType);
 
-		switch (mockType) {
-			case 'basic':
-				return basicMock;
-
-			case 'search':
-				return searchMock;
-
-			case 'pagination':
-				return paginationMock;
-
-			case 'error':
-				return errorMock;
-
-			case 'empty':
-				return emptyMock;
-
-			case 'unhealthy':
-				return {
-					repos: { repositories: [] },
-					error: null,
-					healthStatus: unhealthyStatus
-				};
-
-			case 'tagDetails':
-				return tagDetailsMock;
-
-			default:
-				// For default case, return a simple mock
-				return basicMock;
+			// Return the appropriate mock
+			switch (mockType) {
+				case 'basic':
+					return basicMock;
+				case 'search':
+					return searchMock;
+				case 'pagination':
+					return paginationMock;
+				case 'error':
+					return errorMock;
+				case 'empty':
+					return emptyMock;
+				case 'unhealthy':
+					return {
+						repos: { repositories: [] },
+						error: null,
+						healthStatus: unhealthyStatus
+					};
+				case 'tagDetails':
+					return tagDetailsMock;
+				default:
+					return basicMock;
+			}
 		}
+
+		// If no mock specified in test, default to basic mock
+		return basicMock;
 	}
 
+	// Proceed with regular functionality for non-test environments
 	try {
 		// Initialize database (runs migrations if needed)
 		await initDatabase();

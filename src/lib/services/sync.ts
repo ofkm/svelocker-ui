@@ -24,6 +24,30 @@ export class RegistrySyncService {
 		});
 	}
 
+	// Ensure the settings table exists
+	private ensureSettingsTable() {
+		const tableExists = db
+			.prepare(
+				`
+		SELECT name FROM sqlite_master 
+		WHERE type='table' AND name='settings'
+	  `
+			)
+			.get();
+
+		if (!tableExists) {
+			db.prepare(
+				`
+		  CREATE TABLE settings (
+			key TEXT PRIMARY KEY,
+			value INTEGER NOT NULL
+		  )
+		`
+			).run();
+			this.logger.info('Settings table created');
+		}
+	}
+
 	private async performSync(): Promise<void> {
 		if (this.isSyncing) {
 			this.logger.warn('Sync already in progress, skipping...');

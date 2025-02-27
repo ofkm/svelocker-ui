@@ -52,5 +52,6 @@ notes.txt
 
 svelockerui.db
 svelockerui.db-journal
+*.db
 *.db-shm
 *.db-wal
