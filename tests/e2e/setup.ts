@@ -28,7 +28,7 @@ export async function setupTestEnvironment() {
 
 	try {
 		// Start Docker services
-		await execPromise('docker-compose -f tests/e2e/docker-compose.test.yml up -d');
+		await execPromise('docker compose -f tests/e2e/docker-compose.test.yml up -d');
 		console.log('✅ Started Docker registry container');
 
 		// Wait for services to be ready
@@ -89,7 +89,7 @@ export async function teardownTestEnvironment() {
 
 	try {
 		// Stop Docker services
-		await execPromise('docker-compose -f tests/e2e/docker-compose.test.yml down -v');
+		await execPromise('docker- ompose -f tests/e2e/docker-compose.test.yml down -v');
 		console.log('✅ Stopped Docker containers and removed volumes');
 
 		// Remove test database
