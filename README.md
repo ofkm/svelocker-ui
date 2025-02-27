@@ -24,7 +24,6 @@
 - Delete Image Tags from the UI
 - SQLite Cache Layer for registry data
 - View and Copy the Dockerfile from the UI
-- 
 
 ## Get Started
 
