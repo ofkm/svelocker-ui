@@ -1,3 +1,13 @@
+## [0.23.5](https://github.com/kmendell/svelocker-ui/compare/v0.23.4...v0.23.5) (2025-02-27)
+
+### Features
+
+* add default namespace badge ([87c9807](https://github.com/kmendell/svelocker-ui/commit/87c98074b1cf1e4538286345d2f4be9ec6e79738))
+* add last synced label to RepoCard ([b2b02fe](https://github.com/kmendell/svelocker-ui/commit/b2b02fef31025c75a533255f3844b1ebc81d7a4a))
+
+### Bug Fixes
+
+* database rework/memory issues ([#84](https://github.com/kmendell/svelocker-ui/issues/84)) ([c89b851](https://github.com/kmendell/svelocker-ui/commit/c89b851881abfc62ca8fab92c67bb69ec46e9685))
 ## [0.23.4](https://github.com/kmendell/svelocker-ui/compare/v0.23.3...v0.23.4) (2025-02-26)
 
 ### Bug Fixes
