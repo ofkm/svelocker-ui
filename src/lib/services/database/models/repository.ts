@@ -34,6 +34,17 @@ export const RepositoryModel = {
 		};
 	},
 
+	// Get repository ID by name, create if it doesn't exist
+	getOrCreate(name: string): { id: number; isNew: boolean } {
+		const repo = this.getByName(name);
+		if (repo) {
+			return { id: repo.id, isNew: false };
+		}
+
+		const id = this.create(name);
+		return { id, isNew: true };
+	},
+
 	// Get all repositories
 	getAll(): Repository[] {
 		const repos = db.prepare('SELECT * FROM repositories ORDER BY name').all() as RepositoryRecord[];
@@ -53,6 +64,25 @@ export const RepositoryModel = {
 	// Delete repository
 	delete(id: number): void {
 		db.prepare('DELETE FROM repositories WHERE id = ?').run(id);
+	},
+
+	// Bulk delete repositories not in the provided list
+	deleteNotIn(repoNames: string[]): number {
+		if (repoNames.length === 0) return 0;
+
+		// Convert array to SQL string format ('name1','name2',...)
+		const placeholders = repoNames.map(() => '?').join(',');
+
+		const result = db
+			.prepare(
+				`
+			DELETE FROM repositories 
+			WHERE name NOT IN (${placeholders})
+		`
+			)
+			.run(...repoNames);
+
+		return result.changes;
 	},
 
 	// Count repositories

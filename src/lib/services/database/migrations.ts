@@ -11,7 +11,7 @@ interface Migration {
 }
 
 // Array of migrations (ordered by version)
-const migrations: Migration[] = [
+export const migrations: Migration[] = [
 	{
 		version: 1,
 		description: 'Initial schema',
@@ -87,6 +87,14 @@ const migrations: Migration[] = [
 			value INTEGER NOT NULL
 		  );
 		`
+	},
+	// Add to migrations array
+	{
+		version: 4,
+		description: 'Add fullName index to images for faster lookups',
+		sql: `
+	  CREATE INDEX IF NOT EXISTS idx_image_fullname ON images(fullName);
+	`
 	}
 	// Add more migrations as your schema evolves
 ];

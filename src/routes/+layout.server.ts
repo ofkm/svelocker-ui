@@ -2,7 +2,7 @@ import { Logger } from '$lib/services/logger';
 import { env } from '$env/dynamic/public';
 import { getRegistryReposAxios } from '$lib/utils/repos';
 import { checkRegistryHealth } from '$lib/utils/health';
-import { initDatabase, syncFromRegistry } from '$lib/services/database';
+import { initDatabase, syncFromRegistry, incrementalSync } from '$lib/services/database';
 import { db } from '$lib/services/database/connection';
 import { runMigrations } from '$lib/services/database/migrations.ts';
 
@@ -37,8 +37,9 @@ export async function load({ url }) {
 			// Fetch registry data
 			const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
 
-			// Sync to database
-			await syncFromRegistry(registryData.repositories);
+			// Use incremental sync instead of full sync
+			const forceFullSync = url.searchParams.has('fullSync');
+			await incrementalSync(registryData.repositories, { forceFullSync });
 
 			// Update last sync time in both memory and DB
 			lastSyncTime = currentTime;
