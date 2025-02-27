@@ -24,30 +24,6 @@ export class RegistrySyncService {
 		});
 	}
 
-	// Ensure the settings table exists
-	private ensureSettingsTable() {
-		const tableExists = db
-			.prepare(
-				`
-		SELECT name FROM sqlite_master 
-		WHERE type='table' AND name='settings'
-	  `
-			)
-			.get();
-
-		if (!tableExists) {
-			db.prepare(
-				`
-		  CREATE TABLE settings (
-			key TEXT PRIMARY KEY,
-			value INTEGER NOT NULL
-		  )
-		`
-			).run();
-			this.logger.info('Settings table created');
-		}
-	}
-
 	private async performSync(): Promise<void> {
 		if (this.isSyncing) {
 			this.logger.warn('Sync already in progress, skipping...');
@@ -63,6 +39,22 @@ export class RegistrySyncService {
 
 			// Update the last sync time in the database
 			try {
+				// Check if settings table exists
+				const tableCheck = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='settings'").get();
+
+				if (!tableCheck) {
+					// Create settings table if it doesn't exist
+					db.prepare(
+						`
+						CREATE TABLE IF NOT EXISTS settings (
+							key TEXT PRIMARY KEY,
+							value INTEGER NOT NULL
+						)
+					`
+					).run();
+					this.logger.info('Created settings table');
+				}
+
 				const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
 				stmt.run('last_sync_time', Date.now());
 			} catch (error) {

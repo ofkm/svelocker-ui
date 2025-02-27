@@ -59,7 +59,7 @@
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger>
-		<Button data-testid={`tag-dropdown-${imageName}`} data-dropdown-id={dropdownId} variant="ghost" size="icon" class="relative size-8 p-0">
+		<Button data-testid={`tag-dropdown-${imageName}`} data-dropdown-id={dropdownId} data-state={open ? 'open' : 'closed'} variant="ghost" size="icon" class="relative size-8 p-0">
 			<span class="sr-only">Open menu</span>
 			<Tag />
 		</Button>

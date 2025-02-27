@@ -4,8 +4,7 @@ import { getRegistryReposAxios } from '$lib/utils/repos';
 import { checkRegistryHealth } from '$lib/utils/health';
 import { initDatabase, syncFromRegistry } from '$lib/services/database';
 import { db } from '$lib/services/database/connection';
-// Import the mocks for testing
-import { basicMock, searchMock, paginationMock, errorMock, emptyMock, tagDetailsMock, unhealthyStatus } from '../../tests/e2e/mocks.ts';
+import { runMigrations } from '$lib/services/database/migrations.ts';
 
 const logger = Logger.getInstance('LayoutServer');
 
@@ -16,55 +15,11 @@ const MIN_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 let lastSyncTime = 0;
 
 export async function load({ url }) {
-	// Make sure to log environment variables for debugging
-	logger.debug('PLAYWRIGHT env:', process.env.PLAYWRIGHT);
-	logger.debug('URL search params:', Object.fromEntries(url.searchParams.entries()));
-
-	// Check for test environment first
-	if (process.env.PLAYWRIGHT === 'true') {
-		logger.info('Running in Playwright test environment');
-
-		// Check for mock parameter
-		const mockType = url.searchParams.get('mock');
-		if (mockType) {
-			logger.debug('Using mock type:', mockType);
-
-			// Return the appropriate mock
-			switch (mockType) {
-				case 'basic':
-					return basicMock;
-				case 'search':
-					return searchMock;
-				case 'pagination':
-					return paginationMock;
-				case 'error':
-					return errorMock;
-				case 'empty':
-					return emptyMock;
-				case 'unhealthy':
-					return {
-						repos: { repositories: [] },
-						error: null,
-						healthStatus: unhealthyStatus
-					};
-				case 'tagDetails':
-					return tagDetailsMock;
-				default:
-					return basicMock;
-			}
-		}
-
-		// If no mock specified in test, default to basic mock
-		return basicMock;
-	}
-
 	// Proceed with regular functionality for non-test environments
 	try {
 		// Initialize database (runs migrations if needed)
 		await initDatabase();
-
-		// Check if we need to create the settings table
-		ensureSettingsTable();
+		await runMigrations();
 
 		// Get last sync time from DB
 		const lastSyncSetting = getLastSyncTime();

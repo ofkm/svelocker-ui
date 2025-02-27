@@ -14,10 +14,7 @@
 		"format": "prettier --write .",
 		"test:e2e": "PLAYWRIGHT=true DB_PATH=test.db PUBLIC_REGISTRY_URL=http://localhost:5001 playwright test",
 		"test:e2e:ui": "PLAYWRIGHT=true DB_PATH=test.db playwright test --ui",
-		"test:e2e:new": "docker-compose -f ./tests/e2e/docker-compose.test.yml up -d && PLAYWRIGHT=true DB_PATH=test.db PUBLIC_REGISTRY_URL=http://localhost:5001 npx playwright test && docker-compose down -f ./tests/e2e/docker-compose.test.yml",
-		"test:e2e:debug": "PLAYWRIGHT=true DB_PATH=test.db playwright test --debug",
-		"check:docker": "node tests/e2e/check-docker.ts",
-		"test:e2eold": "PLAYWRIGHT=true DOTENV_CONFIG_PATH=.env.test playwright test"
+		"test:e2e:debug": "PLAYWRIGHT=true DB_PATH=test.db playwright test --debug"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.7",

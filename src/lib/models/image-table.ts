@@ -12,7 +12,14 @@ type ExtendedRepoImage = RepoImage & {
 export const columns: ColumnDef<ExtendedRepoImage>[] = [
 	{
 		accessorKey: 'name',
-		header: 'Image Name'
+		header: 'Image Name',
+		accessorFn: (row) => {
+			// Extract just the image name part
+			if (row.name && row.name.includes('/')) {
+				return row.name.split('/').pop();
+			}
+			return row.name;
+		}
 	},
 	{
 		accessorKey: 'fullName',

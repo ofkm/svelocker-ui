@@ -1,5 +1,4 @@
 import { defineConfig } from '@playwright/test';
-import { setupTestEnvironment, teardownTestEnvironment } from './tests/e2e/setup';
 
 export default defineConfig({
 	testDir: './tests/e2e',
@@ -27,7 +26,7 @@ export default defineConfig({
 		reuseExistingServer: !process.env.CI,
 		env: {
 			PLAYWRIGHT: 'true',
-			DB_PATH: 'test.db',
+			DB_PATH: './tests/e2e/test.db',
 			PUBLIC_REGISTRY_URL: 'http://localhost:5001',
 			PUBLIC_REGISTRY_NAME: 'Playwright Registry'
 		},

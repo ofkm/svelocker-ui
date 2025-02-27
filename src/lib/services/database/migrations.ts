@@ -77,6 +77,16 @@ const migrations: Migration[] = [
 		sql: `
       ALTER TABLE images ADD COLUMN pull_count INTEGER DEFAULT 0;
     `
+	},
+	{
+		version: 3,
+		description: 'Add settings table',
+		sql: `
+		  CREATE TABLE IF NOT EXISTS settings (
+			key TEXT PRIMARY KEY,
+			value INTEGER NOT NULL
+		  );
+		`
 	}
 	// Add more migrations as your schema evolves
 ];

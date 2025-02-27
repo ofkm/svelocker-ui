@@ -119,7 +119,7 @@
 			<div class="space-y-8">
 				<div class="space-y-4">
 					<div class="flex justify-between items-center">
-						<h1 class="text-3xl font-semibold tracking-tight">
+						<h1 data-testid="image-details-header" class="text-3xl font-semibold tracking-tight">
 							{data.imageFullName}:{currentTag.name}
 							{#if data.isLatest}
 								<span class="ml-3 inline-flex items-center">

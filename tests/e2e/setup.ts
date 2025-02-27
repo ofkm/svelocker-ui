@@ -6,7 +6,7 @@ import path from 'path';
 const execPromise = util.promisify(exec);
 
 // Path to test DB
-const TEST_DB_PATH = 'test.db';
+const TEST_DB_PATH = './tests/e2e/test.db';
 
 /**
  * Sets up the test environment
@@ -19,12 +19,6 @@ export async function setupTestEnvironment() {
 	process.env.PLAYWRIGHT = 'true';
 
 	console.log('🚀 Setting up test environment...');
-
-	// Remove any existing test DB
-	if (fs.existsSync(TEST_DB_PATH)) {
-		fs.unlinkSync(TEST_DB_PATH);
-		console.log('✅ Removed old test database');
-	}
 
 	try {
 		// Start Docker services
@@ -41,7 +35,7 @@ export async function setupTestEnvironment() {
 		// Set environment variables for tests
 		process.env.DB_PATH = TEST_DB_PATH;
 		process.env.PUBLIC_REGISTRY_URL = 'http://localhost:5001';
-		process.env.PUBLIC_API_URL = 'http://localhost:5173';
+		process.env.PUBLIC_API_URL = 'http://localhost:3000';
 
 		console.log('✅ Test environment setup complete');
 	} catch (error) {
@@ -55,26 +49,29 @@ export async function setupTestEnvironment() {
  */
 async function pushTestImages() {
 	const images = [
-		{ name: 'alpine', tag: '3.14' },
-		{ name: 'busybox', tag: 'latest' },
-		{ name: 'nginx', tag: '1.21' }
+		{ name: 'caddy', tag: 'alpine' },
+		{ name: 'redis', tag: 'alpine' },
+		{ name: 'nginx', tag: '1.27.4-alpine' }
 	];
 
 	for (const image of images) {
+		// Create test namespace
+		console.log('Creating test namespace');
+		const testNamespace = 'test';
 		// Pull image
 		await execPromise(`docker pull ${image.name}:${image.tag}`);
-
-		// Tag for local registry
-		await execPromise(`docker tag ${image.name}:${image.tag} localhost:5001/test/${image.name}:${image.tag}`);
+		// Tag for local registry with test namespace
+		console.log(`Tagging ${image.name}:${image.tag} as ${testNamespace}/${image.name}`);
+		await execPromise(`docker tag ${image.name}:${image.tag} localhost:5001/${testNamespace}/${image.name}:${image.tag}`);
 
 		// Push to local registry
-		await execPromise(`docker push localhost:5001/test/${image.name}:${image.tag}`);
+		console.log(`Pushing to registry: localhost:5001/${testNamespace}/${image.name}:${image.tag}`);
+		await execPromise(`docker push localhost:5001/${testNamespace}/${image.name}:${image.tag}`);
 
-		// Add another tag variant for testing
-		if (image.name === 'nginx') {
-			await execPromise(`docker tag ${image.name}:${image.tag} localhost:5001/test/${image.name}:beta`);
-			await execPromise(`docker push localhost:5001/test/${image.name}:beta`);
-		}
+		// Add another tag variant
+		console.log(`Tagging ${image.name}:${image.tag} as ${testNamespace}/${image.name}:beta`);
+		await execPromise(`docker tag ${image.name}:${image.tag} localhost:5001/${testNamespace}/${image.name}:beta`);
+		await execPromise(`docker push localhost:5001/${testNamespace}/${image.name}:beta`);
 	}
 
 	console.log('Pushed test images to registry');

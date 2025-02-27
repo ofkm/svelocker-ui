@@ -1,17 +1,14 @@
 import { error } from '@sveltejs/kit';
-import { db } from '$lib/services/db';
+import { db } from '$lib/services/database/connection';
 import { Logger } from '$lib/services/logger';
 import type { PageServerLoad } from './$types';
-import { tagDetailsMock } from '../../../../../../tests/e2e/mocks.ts';
 
 export const load: PageServerLoad = async ({ params, url }) => {
 	const logger = Logger.getInstance('TagDetails');
 
-	// For E2E tests
-	if (process.env.PLAYWRIGHT === 'true' && url.searchParams.get('mock') === 'tagDetails') {
-		logger.debug('Using mock tag details');
-		return tagDetailsMock;
-	}
+	// Check for Playwright test mode
+	const isPlaywrightTest = process.env.PLAYWRIGHT === 'true';
+	console.log('Is Playwright test:', isPlaywrightTest);
 
 	try {
 		// Extract params
