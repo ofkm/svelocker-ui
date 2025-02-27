@@ -347,10 +347,41 @@ async function deltaSync(registryData: RegistryRepo[]): Promise<void> {
 			// 4. Remove repositories that no longer exist in the registry
 			// Only if we have a complete registry dataset
 			if (registryData.length > 0) {
-				for (const [repoName, repo] of existingRepoMap) {
-					if (!foundRepoNames.has(repoName)) {
+				// Collect repo names to keep
+				const repoNamesToKeep = Array.from(foundRepoNames);
+
+				// Instead of deleting repositories one by one, use a safer method:
+				// First, identify repositories to remove
+				const reposToRemove = existingRepos.filter((repo) => !foundRepoNames.has(repo.name));
+
+				// For each repository to remove, first delete all related data
+				for (const repo of reposToRemove) {
+					try {
+						// Get all images for this repository
+						const images = ImageModel.getByRepositoryId(repo.id);
+
+						// For each image, delete all tags first
+						for (const image of images) {
+							// Get tags for this image
+							const tags = TagModel.getByImageId(image.id);
+
+							// Delete all tag metadata and tags
+							for (const tag of tags) {
+								// Tag metadata will be deleted by cascade constraint
+								TagModel.delete(tag.id);
+								stats.removedTags++;
+							}
+
+							// Now delete the image
+							ImageModel.delete(image.id);
+							stats.removedImages++;
+						}
+
+						// Finally, delete the repository
 						RepositoryModel.delete(repo.id);
 						stats.removedRepos++;
+					} catch (error) {
+						logger.error(`Error deleting repository ${repo.name}:`, error);
 					}
 				}
 			}
