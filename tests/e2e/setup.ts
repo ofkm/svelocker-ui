@@ -89,7 +89,7 @@ export async function teardownTestEnvironment() {
 
 	try {
 		// Stop Docker services
-		await execPromise('docker- ompose -f tests/e2e/docker-compose.test.yml down -v');
+		await execPromise('docker compose -f tests/e2e/docker-compose.test.yml down -v');
 		console.log('✅ Stopped Docker containers and removed volumes');
 
 		// Remove test database
