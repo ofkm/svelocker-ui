@@ -25,7 +25,5 @@ export default defineConfig({
 		}
 	},
 	// Important: Tell Vite how to handle these Node.js built-in modules
-	ssr: {
-		noExternal: ['crypto-browserify', 'buffer']
-	}
+	ssr: {}
 });
