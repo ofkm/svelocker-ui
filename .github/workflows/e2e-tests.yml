@@ -44,6 +44,9 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
+      # - name: Install Docker
+      #   run: wget -O docker.sh https://get.docker.com && sh docker.sh
+
       - name: Run E2E tests
         run: npm run test:e2e
         env:

@@ -8,9 +8,22 @@
 	export let repoIndex: number;
 	export let filteredData: RegistryRepo[];
 
+	// For debugging
+	console.log('RepoImage: filteredData received:', filteredData);
+	if (filteredData && filteredData[repoIndex]) {
+		console.log('RepoImage: images for repository:', filteredData[repoIndex].images);
+	}
+
 	const table = createSvelteTable({
 		get data() {
+			if (!filteredData || !filteredData[repoIndex] || !filteredData[repoIndex].images) {
+				console.warn('Missing or invalid data in RepoImage');
+				return [];
+			}
+
 			const images = filteredData[repoIndex].images || [];
+			console.log('Images being processed:', images);
+
 			// Add repo and repoIndex to each image
 			return images.map((image) => ({
 				...image,
@@ -23,7 +36,8 @@
 	});
 
 	$: {
-		if (filteredData) {
+		if (filteredData && filteredData[repoIndex]) {
+			console.log('Updating table options with data');
 			table.setOptions((prev) => ({
 				...prev,
 				data:
@@ -57,7 +71,7 @@
 			</Table.Header>
 			<Table.Body>
 				{#each table.getRowModel().rows as row (row.id)}
-					<Table.Row data-state={row.getIsSelected() && 'selected'}>
+					<Table.Row data-testid="image-row-{row.original.name.replace(/[^\w]/g, '-')}" data-state={row.getIsSelected() && 'selected'}>
 						{#each row.getVisibleCells() as cell (cell.id)}
 							<Table.Cell>
 								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />

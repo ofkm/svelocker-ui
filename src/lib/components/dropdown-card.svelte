@@ -48,7 +48,7 @@
 
 <Card.Root>
 	<Card.Header class="cursor-pointer rounded-lg" onclick={toggleExpanded}>
-		<div class="flex items-center justify-between">
+		<div data-testid="repository-row" class="flex items-center justify-between">
 			<div>
 				<Card.Title>{title}</Card.Title>
 				{#if description}

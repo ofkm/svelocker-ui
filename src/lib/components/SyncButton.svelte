@@ -8,9 +8,19 @@
 	async function triggerSync() {
 		syncing = true;
 		try {
-			const response = await fetch('/api/sync', { method: 'POST' });
+			const response = await fetch('/api/sync', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ fullSync: false }) // Specify full sync if needed
+			});
+
 			if (!response.ok) {
-				toast.error('Failed to sync Registry');
+				const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+				toast.error('Failed to sync Registry', {
+					description: errorData.message || 'Unknown error occurred'
+				});
 				throw new Error('Sync failed');
 			} else {
 				toast.success('Registry Synced successfully');
