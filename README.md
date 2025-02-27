@@ -14,7 +14,7 @@
 
 
 > [!IMPORTANT]
-> This project is currently in development. Features, Themes, and other items my not be available or are subject to change.
+> This project is currently in development. Features, Themes, and other items may not be available or are subject to change.
 
 ## Features:
 
