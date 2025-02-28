@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { Buffer } from 'buffer';
-import { env } from '$env/dynamic/public';
 import { Logger } from '$lib/services/logger';
+import { getBasicAuth } from './auth';
 
 export type HealthStatus = {
 	isHealthy: boolean;
@@ -14,22 +13,17 @@ export async function checkRegistryHealth(registryUrl: string): Promise<HealthSt
 	const logger = Logger.getInstance('RegistryHealth');
 
 	try {
-		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
+		const auth = getBasicAuth();
 
 		const response = await axios.get(`${registryUrl}/v2/`, {
 			headers: {
-				Authorization: `Basic ${auth}`,
+				Authorization: auth,
 				Accept: 'application/json'
 			},
 			validateStatus: (status) => [200, 401, 404].includes(status)
 		});
 
 		const apiVersion = response.headers['docker-distribution-api-version'];
-		// logger.debug('Registry response', {
-		// 	status: response.status,
-		// 	apiVersion,
-		// 	headers: response.headers
-		// });
 
 		// Handle different response scenarios
 		if (response.status === 200 && apiVersion === 'registry/2.0') {

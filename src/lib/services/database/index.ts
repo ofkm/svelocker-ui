@@ -4,7 +4,7 @@ import { runMigrations, getDatabaseInfo, migrations } from './migrations'; // Ad
 import { RepositoryModel } from './models/repository';
 import { ImageModel } from './models/image';
 import { TagModel } from './models/tag';
-import type { RegistryRepo } from '$lib/models/repo';
+import type { RegistryRepo } from '$lib/models';
 import { Logger } from '$lib/services/logger';
 
 const logger = Logger.getInstance('DBService');
@@ -208,7 +208,7 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 	page: number;
 	limit: number;
 }> {
-	logger.info(`Fetching repositories (page ${page}, limit ${limit}, search: ${search})`);
+	logger.debug(`Fetching repositories (page ${page}, limit ${limit}, search: ${search})`);
 
 	try {
 		// Search pattern
@@ -309,6 +309,26 @@ export async function incrementalSync(registryData: RegistryRepo[], options = { 
 // Helper to get latest migration version - simplify this function
 function getLatestMigrationVersion(): number {
 	return migrations[migrations.length - 1].version;
+}
+
+// Get the last sync time from the database
+export function getLastSyncTime() {
+	try {
+		return db.prepare('SELECT value FROM settings WHERE key = ?').get('last_sync_time');
+	} catch (error) {
+		logger.error('Error getting last sync time:', error);
+		return null;
+	}
+}
+
+// Update the last sync time in the database
+export function updateLastSyncTime(timestamp: number) {
+	try {
+		const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
+		stmt.run('last_sync_time', timestamp);
+	} catch (error) {
+		logger.error('Error updating last sync time:', error);
+	}
 }
 
 // Delta sync implementation (renamed from previous syncFromRegistry)
