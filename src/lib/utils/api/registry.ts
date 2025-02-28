@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import type { RepoImage, ImageTag } from '$lib/models';
-import { fetchDockerMetadataAxios } from '$lib/utils/manifest.ts';
+import { fetchDockerMetadata } from '$lib/utils/api';
 import { Logger } from '$lib/services/logger';
 import { getAuthHeaders } from '$lib/utils/api/auth';
 import { extractRepoName } from '$lib/utils/formatting';
@@ -43,7 +43,7 @@ export async function getDockerTags(registryUrl: string, repo: string, limit: nu
 			tags = await Promise.all<ImageTag>(
 				data.tags.map(async (tag: string): Promise<ImageTag> => {
 					try {
-						const metadata = await fetchDockerMetadataAxios(registryUrl, repo, tag);
+						const metadata = await fetchDockerMetadata(registryUrl, repo, tag);
 						return { name: tag, metadata };
 					} catch (error: unknown) {
 						logger.error(`Error fetching metadata for ${repo}:${tag}:`, error instanceof Error ? error.message : String(error));
