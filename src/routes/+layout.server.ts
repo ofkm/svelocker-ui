@@ -1,7 +1,7 @@
 import { Logger } from '$lib/services/logger';
 import { env } from '$env/dynamic/public';
 import { getRegistryReposAxios } from '$lib/utils/repos';
-import { checkRegistryHealth } from '$lib/utils/health';
+import { checkRegistryHealth } from '$lib/utils/api/health';
 import { initDatabase, syncFromRegistry, incrementalSync } from '$lib/services/database';
 import { db } from '$lib/services/database/connection';
 import { runMigrations } from '$lib/services/database/migrations.ts';
