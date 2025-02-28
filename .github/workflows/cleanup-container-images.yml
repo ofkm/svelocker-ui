@@ -208,10 +208,7 @@ jobs:
             log "Getting packages for user: $ORG"
             
             # Get all packages - with proper error handling
-            packages_response=$(gh api \
-              -H "Accept: application/vnd.github+json" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              /user/packages?package_type=container || echo "[]")
+            packages_response=$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "/user/packages?package_type=container")
             
             # Debug output
             debug_response "Packages response:" "$packages_response"
