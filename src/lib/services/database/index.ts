@@ -208,7 +208,7 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 	page: number;
 	limit: number;
 }> {
-	logger.info(`Fetching repositories (page ${page}, limit ${limit}, search: ${search})`);
+	logger.debug(`Fetching repositories (page ${page}, limit ${limit}, search: ${search})`);
 
 	try {
 		// Search pattern
