@@ -1,4 +1,3 @@
-// src/lib/utils/universal-crypto.ts
 import { Logger } from '$lib/services/logger';
 
 const logger = Logger.getInstance('UniversalCrypto');

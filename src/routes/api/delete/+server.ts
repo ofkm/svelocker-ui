@@ -1,15 +1,14 @@
 import { json } from '@sveltejs/kit';
-import type { RequestHandler } from './$types';
+import type { RequestHandler } from '../delete/$types';
 import { Logger } from '$lib/services/logger';
-import { deleteDockerManifestAxios } from '$lib/utils/delete';
+import { deleteDockerManifestAxios } from '$lib/utils/api';
 import { TagModel } from '$lib/services/database/models/tag';
-import { ImageModel } from '$lib/services/database/models/image';
 import { db } from '$lib/services/database/connection';
 import { incrementalSync } from '$lib/services/database';
 import { getRegistryReposAxios } from '$lib/utils/repos';
 import { env } from '$env/dynamic/public';
 
-const logger = Logger.getInstance('DeleteImageTag');
+const logger = Logger.getInstance('DeleteAPI');
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {

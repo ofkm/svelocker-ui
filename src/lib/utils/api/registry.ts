@@ -1,37 +1,9 @@
 import axios, { AxiosError } from 'axios';
-import type { ImageTag } from '$lib/models/tag.ts';
-import type { RepoImage } from '$lib/models/image.ts';
-import { fetchDockerMetadataAxios } from '$lib/utils/manifest.ts';
-import { env } from '$env/dynamic/public';
-import { Buffer } from 'buffer';
+import type { RepoImage, ImageTag } from '$lib/models';
+import { fetchDockerMetadata } from '$lib/utils/api';
 import { Logger } from '$lib/services/logger';
-
-/**
- * Creates authentication headers for registry requests
- */
-function getAuthHeaders(): Record<string, string> {
-	const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
-	return {
-		Authorization: `Basic ${auth}`,
-		Accept: 'application/json'
-	};
-}
-
-/**
- * Extract repository name from full path
- */
-function extractRepoName(fullRepoPath: string, defaultName: string = ''): string {
-	return fullRepoPath.split('/').pop() || defaultName;
-}
-
-// Get tags with default limit (50)
-// const repoWithDefaultLimit = await getDockerTagsNew(registryUrl, repo);
-
-// // Get tags with custom limit
-// const repoWithCustomLimit = await getDockerTagsNew(registryUrl, repo, 100);
-
-// // Get only a few tags for a quick preview
-// const repoPreview = await getDockerTagsNew(registryUrl, repo, 5);
+import { getAuthHeaders } from '$lib/utils/api/auth';
+import { extractRepoName } from '$lib/utils/formatting';
 
 /**
  * Fetches tags for a Docker repository with a limit on the number of tags returned
@@ -40,7 +12,7 @@ function extractRepoName(fullRepoPath: string, defaultName: string = ''): string
  * @param limit Maximum number of tags to return (default: 50)
  * @returns Promise resolving to repository image data with tags
  */
-export async function getDockerTagsNew(registryUrl: string, repo: string, limit: number = 50): Promise<RepoImage> {
+export async function getDockerTags(registryUrl: string, repo: string, limit: number = 50): Promise<RepoImage> {
 	const logger = Logger.getInstance('TagUtils');
 	logger.debug(`Fetching tags for repository: ${repo} (limit: ${limit})`);
 
@@ -71,7 +43,7 @@ export async function getDockerTagsNew(registryUrl: string, repo: string, limit:
 			tags = await Promise.all<ImageTag>(
 				data.tags.map(async (tag: string): Promise<ImageTag> => {
 					try {
-						const metadata = await fetchDockerMetadataAxios(registryUrl, repo, tag);
+						const metadata = await fetchDockerMetadata(registryUrl, repo, tag);
 						return { name: tag, metadata };
 					} catch (error: unknown) {
 						logger.error(`Error fetching metadata for ${repo}:${tag}:`, error instanceof Error ? error.message : String(error));

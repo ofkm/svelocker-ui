@@ -1,7 +1,7 @@
 // src/routes/api/metadata/[repo]/[tag]/+server.ts
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { fetchDockerMetadataAxios } from '$lib/utils/manifest';
+import { fetchDockerMetadata } from '$lib/utils/api';
 import { env } from '$env/dynamic/public';
 import { Logger } from '$lib/services/logger';
 
@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ params }) => {
 			return json({ error: 'Repository and tag are required' }, { status: 400 });
 		}
 
-		const metadata = await fetchDockerMetadataAxios(env.PUBLIC_REGISTRY_URL, repo, tag);
+		const metadata = await fetchDockerMetadata(env.PUBLIC_REGISTRY_URL, repo, tag);
 
 		if (!metadata) {
 			return json({ error: 'Metadata not found' }, { status: 404 });

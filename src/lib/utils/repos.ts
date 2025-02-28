@@ -1,36 +1,12 @@
-import type { RegistryRepo } from '$lib/models/repo';
-import { getDockerTagsNew } from '$lib/utils/tags';
+import type { RegistryRepo } from '$lib/models';
+import { getDockerTags } from '$lib/utils/api';
 import axios, { AxiosError } from 'axios';
-import { env } from '$env/dynamic/public';
-import { Buffer } from 'buffer';
 import { Logger } from '$lib/services/logger';
+import { getAuthHeaders } from '$lib/utils/api/auth';
+import { getNamespace } from '$lib/utils/formatting';
 
 interface RegistryRepos {
 	repositories: RegistryRepo[];
-}
-
-/**
- * Extracts the namespace from a full repository name
- * @param fullName Full repository name (e.g., 'namespace/image' or 'image')
- * @returns Namespace string or 'library' for root-level images
- */
-function getNamespace(fullName: string): string {
-	if (!fullName?.includes('/')) {
-		return 'library'; // Use 'library' as default namespace like Docker Hub
-	}
-	return fullName.split('/')[0];
-}
-
-/**
- * Creates authorization headers for registry requests
- * @returns Authorization headers object
- */
-export function getAuthHeaders() {
-	const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
-	return {
-		Authorization: `Basic ${auth}`,
-		Accept: 'application/json'
-	};
 }
 
 /**
@@ -39,7 +15,7 @@ export function getAuthHeaders() {
  * @returns Promise resolving to organized repositories
  */
 export async function getRegistryReposAxios(url: string): Promise<RegistryRepos> {
-	const logger = Logger.getInstance('RegistryRepos');
+	const logger = Logger.getInstance('Registry-GetRepos');
 
 	try {
 		// Fix: Make sure we're using the base registry URL, not the catalog URL
@@ -80,7 +56,7 @@ export async function getRegistryReposAxios(url: string): Promise<RegistryRepos>
 			const imagePromises = repos.map(async (repo) => {
 				try {
 					// Pass the base registry URL, not the catalog URL
-					const repoData = await getDockerTagsNew(baseRegistryUrl, repo);
+					const repoData = await getDockerTags(baseRegistryUrl, repo);
 					namespaceObj.images.push(repoData);
 				} catch (error) {
 					logger.error(`Error fetching tags for ${repo}:`, error instanceof Error ? error.message : String(error));

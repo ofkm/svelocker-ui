@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Logger } from '$lib/services/logger';
-import { getAuthHeaders } from './repos';
+import { getAuthHeaders } from '$lib/utils/api/auth';
 
-const logger = Logger.getInstance('DeleteManifest');
+const logger = Logger.getInstance('DeleteTags');
 
 /**
  * Delete a Docker manifest from the registry
@@ -11,7 +11,6 @@ export async function deleteDockerManifestAxios(registryUrl: string, repo: strin
 	logger.info(`Deleting manifest: ${registryUrl}/v2/${repo}/manifests/${digest}`);
 
 	try {
-		// Make DELETE request to the registry API
 		await axios.delete(`${registryUrl}/v2/${repo}/manifests/${digest}`, {
 			headers: {
 				...getAuthHeaders(),
