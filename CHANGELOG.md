@@ -1,3 +1,10 @@
+## [0.23.7](https://github.com/kmendell/svelocker-ui/compare/v0.23.6...v0.23.7) (2025-02-28)
+
+### Bug Fixes
+
+* last synced label not updating per repo ([f356075](https://github.com/kmendell/svelocker-ui/commit/f3560757a3e4ef8438baee7557bc6ab081e36512))
+* remove un-need sync function ([bfc36fd](https://github.com/kmendell/svelocker-ui/commit/bfc36fd7fdb3d20938323c5a244217ef5c0d40ee))
+* **sync:** repo and images delta sync not working ([ded4144](https://github.com/kmendell/svelocker-ui/commit/ded41446de431ddba0138e536689ac55e79c9e2e))
 ## [0.23.6](https://github.com/kmendell/svelocker-ui/compare/v0.23.5...v0.23.6) (2025-02-28)
 
 ### Features
