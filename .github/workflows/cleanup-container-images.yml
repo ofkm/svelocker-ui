@@ -38,10 +38,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup GitHub CLI
+        uses: cli/setup-gh@v1
+
       - name: Create cleanup script
         run: |
           cat > cleanup.sh << 'EOF'
           #!/bin/bash
+
+          set -e  # Exit on any error
 
           # Configuration
           DRY_RUN="${{ github.event.inputs.dryRun || 'true' }}"
@@ -96,6 +101,16 @@ jobs:
           # Format a message with prefix
           log() {
             echo "$(date '+%Y-%m-%d %H:%M:%S') $1"
+          }
+
+          # Debug function - print the raw response for debugging
+          debug_response() {
+            local description=$1
+            local response=$2
+            
+            echo "DEBUG: $description"
+            echo "$response" | jq '.'
+            echo "--------------------------------"
           }
 
           # Helper function to check if a version should be deleted
@@ -179,7 +194,7 @@ jobs:
               --method DELETE \
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              "/users/$ORG/packages/container/$package_name/versions/$version_id"; then
+              "/user/packages/container/$package_name/versions/$version_id"; then
               log "✅ Deleted $package_name version $version_id"
               return 0
             else
@@ -192,38 +207,98 @@ jobs:
           main() {
             log "${DRY_RUN:+[DRY RUN] }Starting cleanup in $ORG"
             
-            # Get all packages
-            packages=$(gh api \
+            # FIXED: Use /user/packages for current authenticated user
+            log "Getting packages for user: $ORG"
+            
+            # Get all packages - with proper error handling
+            packages_response=$(gh api \
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              "/users/$ORG/packages?package_type=container" | jq -c '.[]')
+              "/user/packages?package_type=container" || echo "[]")
             
-            package_count=$(echo "$packages" | wc -l)
+            # Debug output
+            debug_response "Packages response:" "$packages_response"
+            
+            # Make sure we have valid JSON
+            if ! echo "$packages_response" | jq empty 2>/dev/null; then
+              log "ERROR: Invalid JSON response when fetching packages"
+              echo "$packages_response"
+              return 1
+            fi
+            
+            # Extract package count
+            package_count=$(echo "$packages_response" | jq '. | length')
             log "Found $package_count packages"
             
             # Process each package
-            echo "$packages" | while read -r package; do
-              package_name=$(echo "$package" | jq -r '.name')
+            echo "$packages_response" | jq -c '.[]' | while read -r package; do
+              if [ -z "$package" ]; then
+                continue
+              fi
+              
+              # Extract package name with error handling
+              package_name=$(echo "$package" | jq -r '.name // empty')
+              if [ -z "$package_name" ]; then
+                log "WARNING: Package without name, skipping"
+                continue
+              fi
+              
               log "\nProcessing package: $package_name"
               
-              # Get package versions
-              versions=$(gh api \
+              # Get package versions - with proper error handling
+              versions_response=$(gh api \
                 -H "Accept: application/vnd.github+json" \
                 -H "X-GitHub-Api-Version: 2022-11-28" \
-                "/users/$ORG/packages/container/$package_name/versions" | jq -c '.[]')
+                "/user/packages/container/$package_name/versions" || echo "[]")
               
-              version_count=$(echo "$versions" | wc -l)
+              # Debug output
+              debug_response "Versions for $package_name:" "$versions_response"
+              
+              # Make sure we have valid JSON
+              if ! echo "$versions_response" | jq empty 2>/dev/null; then
+                log "ERROR: Invalid JSON response when fetching versions for $package_name"
+                echo "$versions_response"
+                continue
+              fi
+              
+              # Extract version count
+              version_count=$(echo "$versions_response" | jq '. | length')
               log "  Found $version_count versions"
               
               # Process each version
-              echo "$versions" | while read -r version; do
-                version_id=$(echo "$version" | jq -r '.id')
-                created_at=$(echo "$version" | jq -r '.created_at')
-                created_timestamp=$(date -d "$created_at" +%s)
-                tags=($(echo "$version" | jq -r '.metadata.container.tags[]' 2>/dev/null))
+              echo "$versions_response" | jq -c '.[]' | while read -r version; do
+                if [ -z "$version" ]; then
+                  continue
+                fi
+                
+                # Extract version details with error handling
+                version_id=$(echo "$version" | jq -r '.id // empty')
+                if [ -z "$version_id" ]; then
+                  log "WARNING: Version without ID, skipping"
+                  continue
+                fi
+                
+                created_at=$(echo "$version" | jq -r '.created_at // empty')
+                if [ -z "$created_at" ]; then
+                  created_at="unknown"
+                  created_timestamp=$NOW
+                else
+                  created_timestamp=$(date -d "$created_at" +%s 2>/dev/null || echo $NOW)
+                fi
+                
+                # Get metadata and tags with error handling
+                metadata=$(echo "$version" | jq -r '.metadata // {}')
+                container=$(echo "$metadata" | jq -r '.container // {}' 2>/dev/null || echo "{}")
+                tags_json=$(echo "$container" | jq -r '.tags // []' 2>/dev/null || echo "[]")
+                
+                # Debug tags
+                debug_response "Tags for version $version_id:" "$tags_json"
+                
+                # Extract tags as array
+                mapfile -t tags < <(echo "$tags_json" | jq -r '.[]' 2>/dev/null || echo "")
                 
                 # Check age if OLDER_THAN_DAYS is specified
-                if [ $OLDER_THAN_DAYS -gt 0 ]; then
+                if [ "$OLDER_THAN_DAYS" -gt 0 ] && [ "$created_timestamp" != "$NOW" ]; then
                   age_seconds=$((NOW - created_timestamp))
                   if [ $age_seconds -lt $OLDER_THAN_SECONDS ]; then
                     log "  Skipping $version_id - too recent ($created_at)"
@@ -274,6 +349,7 @@ jobs:
 
       - name: Run cleanup script
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./cleanup.sh
 
