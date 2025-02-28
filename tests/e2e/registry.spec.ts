@@ -5,7 +5,7 @@ test.describe('Registry UI with Real Registry', () => {
 		// Go to the home page
 		await page.goto('/');
 
-		await page.getByRole('button', { name: 'Sync Now' }).click();
+		await page.getByRole('button', { name: 'Sync Registry' }).click();
 
 		await page.waitForTimeout(500);
 
