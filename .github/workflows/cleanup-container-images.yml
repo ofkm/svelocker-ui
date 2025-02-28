@@ -241,7 +241,7 @@ jobs:
           EOF
 
       - name: Run cleanup script
-        run: python cleanup.py
+        run: python3 cleanup.py
 
       - name: Create Summary
         if: always()
