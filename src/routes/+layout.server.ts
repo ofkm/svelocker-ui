@@ -2,7 +2,7 @@ import { Logger } from '$lib/services/logger';
 import { env } from '$env/dynamic/public';
 import { getRegistryReposAxios } from '$lib/utils/repos';
 import { checkRegistryHealth } from '$lib/utils/api/health';
-import { initDatabase, syncFromRegistry, incrementalSync } from '$lib/services/database';
+import { initDatabase, incrementalSync } from '$lib/services/database';
 import { runMigrations } from '$lib/services/database/migrations.ts';
 import { getLastSyncTime, updateLastSyncTime } from '$lib/services/database';
 import { MIN_SYNC_INTERVAL } from '$lib/utils/constants';
