@@ -56,7 +56,7 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 			// Fetch the platform-specific manifest
 			const platformManifestResponse = await axios.get(`${registryUrl}/v2/${repo}/manifests/${platformManifest.digest}`, {
 				headers: {
-					Authorization: `Basic ${auth}`,
+					Authorization: auth,
 					Accept: platformManifest.mediaType
 				}
 			});
@@ -99,7 +99,7 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 			// const configResponse = await axios.get(configUrl);
 			const configResponse = await axios.get(configUrl, {
 				headers: {
-					Authorization: `Basic ${auth}`,
+					Authorization: auth,
 					Accept: 'application/json'
 				}
 			});

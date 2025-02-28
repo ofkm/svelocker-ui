@@ -15,7 +15,7 @@
 	import { env } from '$env/dynamic/public';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { onMount, onDestroy } from 'svelte';
-	import { copyDockerRunCommand } from '$lib/utils/ui';}
+	import { copyDockerRunCommand } from '$lib/utils/ui';
 
 	export let data: PageData;
 

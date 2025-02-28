@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Logger } from '$lib/services/logger';
-import { getAuthHeaders } from './repos';
+import { getAuthHeaders } from '$lib/utils/api/auth';
 
 const logger = Logger.getInstance('DeleteManifest');
 

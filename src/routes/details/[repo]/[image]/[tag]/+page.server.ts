@@ -8,7 +8,6 @@ export const load: PageServerLoad = async ({ params, url }) => {
 
 	// Check for Playwright test mode
 	const isPlaywrightTest = process.env.PLAYWRIGHT === 'true';
-	console.log('Is Playwright test:', isPlaywrightTest);
 
 	try {
 		// Extract params
