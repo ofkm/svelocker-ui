@@ -1,7 +1,5 @@
 import { json } from '@sveltejs/kit';
 import { incrementalSync, getSyncStatus } from '$lib/services/database';
-import { getRegistryReposAxios } from '$lib/utils/repos';
-import { env } from '$env/dynamic/public';
 import { Logger } from '$lib/services/logger';
 
 const logger = Logger.getInstance('SyncAPI');

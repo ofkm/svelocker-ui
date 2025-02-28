@@ -2,8 +2,10 @@ import cron from 'node-cron';
 import { getRegistryReposAxios } from '$lib/utils/repos';
 import { incrementalSync } from '$lib/services/database'; // Change to use incrementalSync
 import { db } from '$lib/services/database/connection';
+import { getLastSyncTime, updateLastSyncTime } from '$lib/services/database';
 import { env } from '$env/dynamic/public';
 import { Logger } from '$lib/services/logger';
+import { MIN_SYNC_INTERVAL } from '$lib/utils/constants';
 
 export class RegistrySyncService {
 	private static instance: RegistrySyncService;
@@ -85,6 +87,24 @@ export class RegistrySyncService {
 		} finally {
 			this.isSyncing = false;
 		}
+	}
+
+	public async syncIfNeeded() {
+		const lastSyncSetting = getLastSyncTime();
+		const currentTime = Date.now();
+		const needsSync = !lastSyncSetting || currentTime - lastSyncSetting.value > MIN_SYNC_INTERVAL;
+
+		if (needsSync) {
+			// Your sync logic here
+			const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
+			await incrementalSync(registryData.repositories);
+			updateLastSyncTime(currentTime);
+		}
+
+		return {
+			lastSyncTime: lastSyncSetting?.value || null,
+			justSynced: needsSync
+		};
 	}
 
 	public static getInstance(): RegistrySyncService {

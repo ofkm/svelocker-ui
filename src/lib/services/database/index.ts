@@ -311,6 +311,26 @@ function getLatestMigrationVersion(): number {
 	return migrations[migrations.length - 1].version;
 }
 
+// Get the last sync time from the database
+export function getLastSyncTime() {
+	try {
+		return db.prepare('SELECT value FROM settings WHERE key = ?').get('last_sync_time');
+	} catch (error) {
+		logger.error('Error getting last sync time:', error);
+		return null;
+	}
+}
+
+// Update the last sync time in the database
+export function updateLastSyncTime(timestamp: number) {
+	try {
+		const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
+		stmt.run('last_sync_time', timestamp);
+	} catch (error) {
+		logger.error('Error updating last sync time:', error);
+	}
+}
+
 // Delta sync implementation (renamed from previous syncFromRegistry)
 async function deltaSync(registryData: RegistryRepo[]): Promise<void> {
 	logger.info(`Starting delta sync for ${registryData.length} repositories`);
