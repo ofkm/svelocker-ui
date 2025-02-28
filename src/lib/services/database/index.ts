@@ -17,78 +17,6 @@ export async function initDatabase(): Promise<void> {
 	logger.info('Database initialized successfully');
 }
 
-// Sync registry data to database - delta approach
-export async function syncFromRegistry(registryData: RegistryRepo[]): Promise<void> {
-	logger.info(`Starting delta sync for ${registryData.length} repositories`);
-
-	try {
-		// Use transaction for better performance and atomicity
-		db.transaction(() => {
-			// Track stats for logging
-			const stats = {
-				addedRepos: 0,
-				updatedRepos: 0,
-				removedRepos: 0,
-				addedImages: 0,
-				updatedImages: 0,
-				removedImages: 0,
-				addedTags: 0,
-				updatedTags: 0,
-				removedTags: 0
-			};
-
-			// 1. Get existing repositories
-			const existingRepos = RepositoryModel.getAll();
-			const existingRepoMap = new Map(existingRepos.map((r) => [r.name, r]));
-
-			// 2. Track repositories found in the registry data
-			const foundRepoNames = new Set<string>();
-
-			// 3. Process each repository
-			for (const repo of registryData) {
-				const repoName = repo.name || 'library';
-				foundRepoNames.add(repoName);
-
-				// Check if repository exists
-				let repoId: number;
-				const existingRepo = existingRepoMap.get(repoName);
-
-				if (existingRepo) {
-					// Update existing repository
-					repoId = existingRepo.id;
-					RepositoryModel.updateLastSynced(repoId);
-					stats.updatedRepos++;
-				} else {
-					// Create new repository
-					repoId = RepositoryModel.create(repoName);
-					stats.addedRepos++;
-				}
-
-				// Process images for this repository
-				syncRepoImages(repoId, repo.images, stats);
-			}
-
-			// 4. Remove repositories that no longer exist in the registry
-			// Only if we have a complete registry dataset
-			if (registryData.length > 0) {
-				for (const [repoName, repo] of existingRepoMap) {
-					if (!foundRepoNames.has(repoName)) {
-						RepositoryModel.delete(repo.id);
-						stats.removedRepos++;
-					}
-				}
-			}
-
-			logger.info(`Delta sync stats: ` + `Repositories: +${stats.addedRepos} ~${stats.updatedRepos} -${stats.removedRepos}, ` + `Images: +${stats.addedImages} ~${stats.updatedImages} -${stats.removedImages}, ` + `Tags: +${stats.addedTags} ~${stats.updatedTags} -${stats.removedTags}`);
-		})();
-
-		logger.info('Registry data synchronized successfully (delta sync)');
-	} catch (error) {
-		logger.error('Failed to sync registry data', error);
-		throw error;
-	}
-}
-
 // Helper function to sync images for a repository
 function syncRepoImages(repoId: number, images: { name: string; fullName: string; tags: any[] }[], stats: any): void {
 	// 1. Get existing images
@@ -291,14 +219,14 @@ export async function incrementalSync(registryData: RegistryRepo[], options = { 
 	// 3. Version mismatch detected
 	if (repoCount === 0 || options.forceFullSync) {
 		logger.info('Performing full sync (empty DB or forced sync)');
-		return syncFromRegistry(registryData);
+		return deltaSync(registryData);
 	}
 
 	// Check if there are pending migrations
 	// Using non-async function now
 	if (dbInfo.version < getLatestMigrationVersion()) {
 		logger.info('Performing full sync due to schema version mismatch');
-		return syncFromRegistry(registryData);
+		return deltaSync(registryData);
 	}
 
 	// Otherwise, perform delta sync
