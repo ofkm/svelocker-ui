@@ -9,6 +9,7 @@
 	import SyncButton from '$lib/components/SyncButton.svelte';
 	import type { RegistryRepo } from '$lib/models/repo';
 	import { onMount } from 'svelte';
+	import { lastSyncTimestamp, isSyncing } from '$lib/stores/sync-store';
 
 	let { data }: PageProps = $props();
 	const isHealthy = data.healthStatus.isHealthy;
@@ -60,6 +61,14 @@
 	// Reactively load data when page or search changes
 	$effect(() => {
 		if ($currentPage || $searchQuery !== undefined) {
+			loadPageData();
+		}
+	});
+
+	// Listen for sync completion and reload data
+	$effect(() => {
+		if ($lastSyncTimestamp) {
+			console.log('Sync completed, refreshing data...');
 			loadPageData();
 		}
 	});
@@ -125,7 +134,7 @@
 				{#snippet children({ pages })}
 					<Pagination.Content>
 						<Pagination.Item>
-							<Pagination.PrevButton onclick={prevPage} />
+							<Pagination.PrevButton onclick={prevPage} disabled={$isSyncing} />
 						</Pagination.Item>
 						{#each pages as page (page.key)}
 							{#if page.type === 'ellipsis'}
@@ -134,14 +143,14 @@
 								</Pagination.Item>
 							{:else}
 								<Pagination.Item>
-									<Pagination.Link {page} isActive={$currentPage === page.value} onclick={() => goToPage(page.value)}>
+									<Pagination.Link {page} isActive={$currentPage === page.value} onclick={() => goToPage(page.value)} disabled={$isSyncing}>
 										{page.value}
 									</Pagination.Link>
 								</Pagination.Item>
 							{/if}
 						{/each}
 						<Pagination.Item>
-							<Pagination.NextButton onclick={nextPage} />
+							<Pagination.NextButton onclick={nextPage} disabled={$isSyncing} />
 						</Pagination.Item>
 					</Pagination.Content>
 				{/snippet}
@@ -160,3 +169,13 @@
 		{/if}
 	</div>
 </div>
+
+<!-- Add an indicator when sync is in progress -->
+{#if $isSyncing}
+	<div class="fixed bottom-4 right-4 bg-accent p-2 rounded-md shadow-lg text-accent-foreground z-50">
+		<div class="flex items-center gap-2">
+			<RefreshCw class="animate-spin h-4 w-4" />
+			<span class="text-sm">Syncing registry...</span>
+		</div>
+	</div>
+{/if}

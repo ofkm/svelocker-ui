@@ -1,43 +1,36 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { Loader2 } from 'lucide-svelte';
-	import { toast } from 'svelte-sonner';
+	import { RefreshCw } from 'lucide-svelte';
+	import { startSync, isSyncing, notifySyncComplete } from '$lib/stores/sync-store';
 
-	let syncing = false;
+	let isLoading = false;
 
-	async function triggerSync() {
-		syncing = true;
+	async function handleSync() {
+		if (isLoading) return;
+
+		isLoading = true;
+		startSync();
+
 		try {
 			const response = await fetch('/api/sync', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ fullSync: false }) // Specify full sync if needed
+				method: 'POST'
 			});
 
 			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-				toast.error('Failed to sync Registry', {
-					description: errorData.message || 'Unknown error occurred'
-				});
 				throw new Error('Sync failed');
-			} else {
-				toast.success('Registry Synced successfully');
 			}
+
+			// Notify that sync is complete
+			notifySyncComplete();
 		} catch (error) {
-			console.error('Failed to sync:', error);
+			console.error('Failed to sync registry:', error);
 		} finally {
-			syncing = false;
+			isLoading = false;
 		}
 	}
 </script>
 
-<Button onclick={triggerSync} disabled={syncing}>
-	{#if syncing}
-		<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-		<span>Syncing...</span>
-	{:else}
-		<span>Sync Now</span>
-	{/if}
+<Button variant="outline" size="sm" onclick={handleSync} disabled={isLoading} class="gap-1">
+	<RefreshCw size={16} class="opacity-70 {isLoading ? 'animate-spin' : ''}" />
+	Sync Registry
 </Button>
