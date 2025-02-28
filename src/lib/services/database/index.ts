@@ -37,22 +37,20 @@ function syncRepoImages(repoId: number, images: { name: string; fullName: string
 		const existingImage = existingImageMap.get(imageFullName);
 
 		if (existingImage) {
-			// Check if the image needs to be updated
-			const needsUpdate = false; // Define your criteria
-			if (needsUpdate) {
-				// Update image if needed
-				// ImageModel.update(existingImage.id, imageName, imageFullName);
-				stats.updatedImages++;
-			}
+			// Existing image - no need to update as images don't have changeable properties
+			// except for tags which are handled separately
 			imageId = existingImage.id;
 		} else {
 			// Create new image
 			imageId = ImageModel.create(repoId, imageName, imageFullName);
 			stats.addedImages++;
+
+			// Since we added a new image, update repository last_synced
+			RepositoryModel.updateLastSynced(repoId);
 		}
 
-		// Process tags for this image
-		syncImageTags(imageId, image.tags, stats);
+		// Process tags for this image - pass repoId to allow updating last_synced
+		syncImageTags(imageId, image.tags, stats, repoId);
 	}
 
 	// 4. Remove images that no longer exist in the registry
@@ -65,7 +63,9 @@ function syncRepoImages(repoId: number, images: { name: string; fullName: string
 }
 
 // Helper function to sync tags for an image
-function syncImageTags(imageId: number, tags: { name: string; digest: string; metadata?: any }[], stats: any): void {
+function syncImageTags(imageId: number, tags: { name: string; digest: string; metadata?: any }[], stats: any, repoId: number): void {
+	let changesDetected = false;
+
 	try {
 		// 1. Get existing tags
 		const existingTags = TagModel.getByImageId(imageId);
@@ -99,6 +99,9 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 							TagModel.saveMetadata(tagId, tag.metadata);
 						}
 						stats.updatedTags++;
+
+						// Mark that we detected changes
+						changesDetected = true;
 					} catch (error) {
 						logger.error(`Error updating tag ${tag.name}:`, error);
 					}
@@ -113,6 +116,9 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 						TagModel.saveMetadata(tagId, tag.metadata);
 					}
 					stats.addedTags++;
+
+					// Mark that we detected changes
+					changesDetected = true;
 				} catch (error) {
 					logger.error(`Error creating tag ${tag.name}:`, error);
 				}
@@ -125,18 +131,21 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 				try {
 					TagModel.delete(tag.id);
 					stats.removedTags++;
+
+					// Mark that we detected changes
+					changesDetected = true;
 				} catch (error) {
 					logger.error(`Error deleting tag ${tagName}:`, error);
 				}
 			}
 		}
 
-		// If more than 50% of tags would be deleted, log a warning
-		const tagRemovalPercentage = existingTags.length > 0 ? (existingTags.length - Array.from(foundTagNames).length) / existingTags.length : 0;
-
-		if (tagRemovalPercentage > 0.5) {
-			logger.warn(`High tag removal rate (${Math.round(tagRemovalPercentage * 100)}%) for image ${imageId}. This could indicate a problem with the registry data.`);
+		// If any changes were detected, update the repository last_synced time
+		if (changesDetected) {
+			RepositoryModel.updateLastSynced(repoId);
 		}
+
+		// Rest of your existing code...
 	} catch (mainError) {
 		logger.error(`Error in syncImageTags for image ${imageId}:`, mainError);
 	}
