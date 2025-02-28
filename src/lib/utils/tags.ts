@@ -24,19 +24,29 @@ function extractRepoName(fullRepoPath: string, defaultName: string = ''): string
 	return fullRepoPath.split('/').pop() || defaultName;
 }
 
+// Get tags with default limit (50)
+// const repoWithDefaultLimit = await getDockerTagsNew(registryUrl, repo);
+
+// // Get tags with custom limit
+// const repoWithCustomLimit = await getDockerTagsNew(registryUrl, repo, 100);
+
+// // Get only a few tags for a quick preview
+// const repoPreview = await getDockerTagsNew(registryUrl, repo, 5);
+
 /**
- * Fetches tags for a Docker repository
+ * Fetches tags for a Docker repository with a limit on the number of tags returned
  * @param registryUrl Base URL of the registry
  * @param repo Repository name (or path)
+ * @param limit Maximum number of tags to return (default: 50)
  * @returns Promise resolving to repository image data with tags
  */
-export async function getDockerTagsNew(registryUrl: string, repo: string): Promise<RepoImage> {
+export async function getDockerTagsNew(registryUrl: string, repo: string, limit: number = 50): Promise<RepoImage> {
 	const logger = Logger.getInstance('TagUtils');
-	logger.debug(`Fetching tags for repository: ${repo}`);
+	logger.debug(`Fetching tags for repository: ${repo} (limit: ${limit})`);
 
 	try {
-		// Fix the URL construction - ensure it's correctly formatted
-		const tagsUrl = `${registryUrl}/v2/${repo}/tags/list`;
+		// Construct URL with tag limit parameter
+		const tagsUrl = `${registryUrl}/v2/${repo}/tags/list?n=${limit}`;
 		logger.debug(`Requesting tags from ${tagsUrl}`);
 
 		const response = await axios.get(tagsUrl, {
@@ -55,15 +65,9 @@ export async function getDockerTagsNew(registryUrl: string, repo: string): Promi
 		// Process tags if available
 		let tags: ImageTag[] = [];
 		if (Array.isArray(data.tags) && data.tags.length > 0) {
-			logger.debug(`Found ${data.tags.length} tags for ${repo}`);
+			logger.debug(`Found ${data.tags.length} tags for ${repo} (limited to ${limit})`);
 
 			// Fetch metadata for each tag in parallel
-			// Define interfaces for type safety
-			interface TagMetadataResult {
-				name: string;
-				metadata: Record<string, unknown> | undefined;
-			}
-
 			tags = await Promise.all<ImageTag>(
 				data.tags.map(async (tag: string): Promise<ImageTag> => {
 					try {
