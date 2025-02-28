@@ -4,7 +4,7 @@ import { runMigrations, getDatabaseInfo, migrations } from './migrations'; // Ad
 import { RepositoryModel } from './models/repository';
 import { ImageModel } from './models/image';
 import { TagModel } from './models/tag';
-import type { RegistryRepo } from '$lib/models/repo';
+import type { RegistryRepo } from '$lib/models';
 import { Logger } from '$lib/services/logger';
 
 const logger = Logger.getInstance('DBService');

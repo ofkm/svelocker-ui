@@ -1,6 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import type { ImageTag } from '$lib/models/tag.ts';
-import type { RepoImage } from '$lib/models/image.ts';
+import type { RepoImage, ImageTag } from '$lib/models';
 import { fetchDockerMetadataAxios } from '$lib/utils/manifest.ts';
 import { Logger } from '$lib/services/logger';
 import { getAuthHeaders } from '$lib/utils/api/auth';

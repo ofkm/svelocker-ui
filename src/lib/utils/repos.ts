@@ -1,4 +1,4 @@
-import type { RegistryRepo } from '$lib/models/repo';
+import type { RegistryRepo } from '$lib/models';
 import { getDockerTags } from '$lib/utils/api';
 import axios, { AxiosError } from 'axios';
 import { Logger } from '$lib/services/logger';
@@ -15,7 +15,7 @@ interface RegistryRepos {
  * @returns Promise resolving to organized repositories
  */
 export async function getRegistryReposAxios(url: string): Promise<RegistryRepos> {
-	const logger = Logger.getInstance('RegistryRepos');
+	const logger = Logger.getInstance('Registry-GetRepos');
 
 	try {
 		// Fix: Make sure we're using the base registry URL, not the catalog URL

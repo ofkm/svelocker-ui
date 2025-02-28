@@ -1,6 +1,4 @@
 import axios from 'axios';
-import { Buffer } from 'buffer';
-import { env } from '$env/dynamic/public';
 import { Logger } from '$lib/services/logger';
 import { getBasicAuth } from './auth';
 

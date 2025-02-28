@@ -1,7 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import type { ImageMetadata } from '$lib/models/metadata.ts';
-import type { ImageTag } from '$lib/models/tag.ts';
-import type { RepoImage } from '$lib/models/image.ts';
+import type { ImageMetadata, ImageTag, RepoImage } from '$lib/models';
 import { Logger } from '$lib/services/logger';
 import { calculateSha256, filterAttestationManifests, extractRepoName } from '$lib/utils/formatting';
 import { getBasicAuth, getAuthHeaders } from '$lib/utils/api/auth';
