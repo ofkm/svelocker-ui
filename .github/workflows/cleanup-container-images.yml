@@ -43,19 +43,12 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Login to registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ github.event.inputs.registry || 'ghcr.io' }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Create cleanup script
         run: |
-          cat > cleanup.js << 'EOF'
-          const fs = require('fs');
-          const https = require('https');
-          const path = require('path');
+          # Save the script as cleanup.mjs (explicitly marking it as an ES module)
+          cat > cleanup.mjs << 'EOF'
+          import { appendFileSync } from 'fs';
+          import { request } from 'https';
 
           // Configuration
           const DRY_RUN = ${{ github.event.inputs.dryRun || 'false' }};
@@ -109,12 +102,16 @@ jobs:
            */
           function makeRequest(url, method = 'GET') {
             return new Promise((resolve, reject) => {
+              const urlObj = new URL(url);
+              
               const options = {
+                hostname: urlObj.hostname,
+                path: urlObj.pathname + urlObj.search,
                 method,
                 headers
               };
 
-              const req = https.request(url, options, (res) => {
+              const req = request(options, (res) => {
                 let data = '';
                 
                 res.on('data', (chunk) => {
@@ -326,9 +323,9 @@ jobs:
             // Set output for GitHub Actions
             const envFile = process.env.GITHUB_ENV;
             if (envFile) {
-              fs.appendFileSync(envFile, `DELETED_COUNT=${deletedCount}\n`);
-              fs.appendFileSync(envFile, `PRESERVED_COUNT=${preservedCount}\n`);
-              fs.appendFileSync(envFile, `FAILED_COUNT=${failedCount}\n`);
+              appendFileSync(envFile, `DELETED_COUNT=${deletedCount}\n`);
+              appendFileSync(envFile, `PRESERVED_COUNT=${preservedCount}\n`);
+              appendFileSync(envFile, `FAILED_COUNT=${failedCount}\n`);
             }
           }
 
@@ -340,7 +337,7 @@ jobs:
           EOF
 
       - name: Run cleanup script
-        run: node cleanup.js
+        run: node cleanup.mjs
 
       - name: Create Summary
         if: always()
