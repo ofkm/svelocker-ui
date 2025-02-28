@@ -32,7 +32,7 @@ function extractRepoName(fullRepoPath: string, defaultName: string = ''): string
  */
 export async function getDockerTagsNew(registryUrl: string, repo: string): Promise<RepoImage> {
 	const logger = Logger.getInstance('TagUtils');
-	logger.info(`Fetching tags for repository: ${repo}`);
+	logger.debug(`Fetching tags for repository: ${repo}`);
 
 	try {
 		// Fix the URL construction - ensure it's correctly formatted
