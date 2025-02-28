@@ -118,6 +118,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Svelocker UI</title>
+</svelte:head>
+
 {#if loadError}
 	<div class="mx-auto w-full max-w-[95%] p-8">
 		<div class="p-4 border border-red-300 rounded-md bg-red-50 dark:bg-red-900/20 dark:border-red-800">
