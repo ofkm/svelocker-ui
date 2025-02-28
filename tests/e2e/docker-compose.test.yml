@@ -8,7 +8,7 @@ services:
     environment:
       REGISTRY_STORAGE_DELETE_ENABLED: true
       REGISTRY_VALIDATION_DISABLED: true
-      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '[https://svelocker.example.com]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '[http://localhost:3000]'
       REGISTRY_HTTP_HEADERS_Access-Control-Allow-Methods: '[HEAD,GET,OPTIONS,DELETE]'
       REGISTRY_HTTP_HEADERS_Access-Control-Allow-Credentials: '[true]'
       REGISTRY_HTTP_HEADERS_Access-Control-Allow-Headers: '[Authorization,Accept,Cache-Control]'
