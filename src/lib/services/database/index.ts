@@ -37,9 +37,14 @@ function syncRepoImages(repoId: number, images: { name: string; fullName: string
 		const existingImage = existingImageMap.get(imageFullName);
 
 		if (existingImage) {
-			// Update existing image
+			// Check if the image needs to be updated
+			const needsUpdate = false; // Define your criteria
+			if (needsUpdate) {
+				// Update image if needed
+				// ImageModel.update(existingImage.id, imageName, imageFullName);
+				stats.updatedImages++;
+			}
 			imageId = existingImage.id;
-			stats.updatedImages++;
 		} else {
 			// Create new image
 			imageId = ImageModel.create(repoId, imageName, imageFullName);
@@ -80,15 +85,16 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 			const existingTag = existingTagMap.get(tag.name);
 
 			if (existingTag) {
-				// Only update if the digest has changed
-				if (existingTag.digest !== digest) {
+				// Only update if the digest has changed or other metadata needs updating
+				const digestChanged = existingTag.digest !== digest;
+				const metadataChanged = existingTag.metadata && tag.metadata && JSON.stringify(existingTag.metadata) !== JSON.stringify(tag.metadata);
+
+				if (digestChanged || metadataChanged) {
 					try {
-						// Delete the old tag and create a new one
-						// This ensures related metadata is properly updated
+						// Your existing update logic
 						TagModel.delete(existingTag.id);
 						const tagId = TagModel.create(imageId, tag.name, digest);
 
-						// Update metadata if available
 						if (tag.metadata) {
 							TagModel.saveMetadata(tagId, tag.metadata);
 						}
@@ -123,6 +129,13 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 					logger.error(`Error deleting tag ${tagName}:`, error);
 				}
 			}
+		}
+
+		// If more than 50% of tags would be deleted, log a warning
+		const tagRemovalPercentage = existingTags.length > 0 ? (existingTags.length - Array.from(foundTagNames).length) / existingTags.length : 0;
+
+		if (tagRemovalPercentage > 0.5) {
+			logger.warn(`High tag removal rate (${Math.round(tagRemovalPercentage * 100)}%) for image ${imageId}. This could indicate a problem with the registry data.`);
 		}
 	} catch (mainError) {
 		logger.error(`Error in syncImageTags for image ${imageId}:`, mainError);
@@ -288,26 +301,31 @@ async function deltaSync(registryData: RegistryRepo[]): Promise<void> {
 
 			// 3. Process each repository
 			for (const repo of registryData) {
-				const repoName = repo.name || 'library';
-				foundRepoNames.add(repoName);
+				db.transaction(() => {
+					const repoName = repo.name || 'library';
+					foundRepoNames.add(repoName);
 
-				// Check if repository exists
-				let repoId: number;
-				const existingRepo = existingRepoMap.get(repoName);
+					// Check if repository exists
+					let repoId: number;
+					const existingRepo = existingRepoMap.get(repoName);
 
-				if (existingRepo) {
-					// Update existing repository
-					repoId = existingRepo.id;
-					RepositoryModel.updateLastSynced(repoId);
-					stats.updatedRepos++;
-				} else {
-					// Create new repository
-					repoId = RepositoryModel.create(repoName);
-					stats.addedRepos++;
-				}
+					if (existingRepo) {
+						repoId = existingRepo.id;
+						// Only update if needed (e.g., if last_synced needs updating)
+						const needsUpdate = shouldUpdateRepo(existingRepo, repo);
+						if (needsUpdate) {
+							RepositoryModel.updateLastSynced(repoId);
+							stats.updatedRepos++;
+						}
+					} else {
+						// Create new repository
+						repoId = RepositoryModel.create(repoName);
+						stats.addedRepos++;
+					}
 
-				// Process images for this repository
-				syncRepoImages(repoId, repo.images, stats);
+					// Process images for this repository
+					syncRepoImages(repoId, repo.images, stats);
+				})();
 			}
 
 			// 4. Remove repositories that no longer exist in the registry
@@ -360,6 +378,14 @@ async function deltaSync(registryData: RegistryRepo[]): Promise<void> {
 		logger.error('Failed to sync registry data', error);
 		throw error;
 	}
+}
+
+function shouldUpdateRepo(existingRepo: any, newRepo: any): boolean {
+	// Define your criteria for updating repos
+	// For example, update timestamp every N hours
+	const lastSyncTime = new Date(existingRepo.last_synced).getTime();
+	const hoursSinceLastSync = (Date.now() - lastSyncTime) / (1000 * 60 * 60);
+	return hoursSinceLastSync > 24; // Only update once per day
 }
 
 // Track sync status
