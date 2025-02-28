@@ -1,4 +1,4 @@
-import { sha256 } from './universal-crypto';
+import { sha256 } from '$lib/utils/crypto';
 import { Logger } from '$lib/services/logger';
 
 const logger = Logger.getInstance('OCIManifest');

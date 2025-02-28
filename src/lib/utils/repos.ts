@@ -1,9 +1,8 @@
 import type { RegistryRepo } from '$lib/models/repo';
 import { getDockerTagsNew } from '$lib/utils/tags';
 import axios, { AxiosError } from 'axios';
-import { env } from '$env/dynamic/public';
-import { Buffer } from 'buffer';
 import { Logger } from '$lib/services/logger';
+import { getAuthHeaders } from '$lib/utils/api/auth';
 
 interface RegistryRepos {
 	repositories: RegistryRepo[];
@@ -19,18 +18,6 @@ function getNamespace(fullName: string): string {
 		return 'library'; // Use 'library' as default namespace like Docker Hub
 	}
 	return fullName.split('/')[0];
-}
-
-/**
- * Creates authorization headers for registry requests
- * @returns Authorization headers object
- */
-export function getAuthHeaders() {
-	const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
-	return {
-		Authorization: `Basic ${auth}`,
-		Accept: 'application/json'
-	};
 }
 
 /**

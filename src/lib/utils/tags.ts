@@ -2,20 +2,8 @@ import axios, { AxiosError } from 'axios';
 import type { ImageTag } from '$lib/models/tag.ts';
 import type { RepoImage } from '$lib/models/image.ts';
 import { fetchDockerMetadataAxios } from '$lib/utils/manifest.ts';
-import { env } from '$env/dynamic/public';
-import { Buffer } from 'buffer';
 import { Logger } from '$lib/services/logger';
-
-/**
- * Creates authentication headers for registry requests
- */
-function getAuthHeaders(): Record<string, string> {
-	const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
-	return {
-		Authorization: `Basic ${auth}`,
-		Accept: 'application/json'
-	};
-}
+import { getAuthHeaders } from '$lib/utils/api/auth';
 
 /**
  * Extract repository name from full path

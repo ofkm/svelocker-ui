@@ -2,21 +2,9 @@ import axios, { AxiosError } from 'axios';
 import type { ImageMetadata } from '$lib/models/metadata.ts';
 import type { ImageTag } from '$lib/models/tag.ts';
 import type { RepoImage } from '$lib/models/image.ts';
-import { env } from '$env/dynamic/public';
-import { Buffer } from 'buffer';
 import { Logger } from '$lib/services/logger';
 import { calculateSha256, filterAttestationManifests } from '$lib/utils/oci-manifest';
-
-/**
- * Creates authentication headers for registry requests
- */
-function getAuthHeaders(): Record<string, string> {
-	const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
-	return {
-		Authorization: `Basic ${auth}`,
-		Accept: 'application/json'
-	};
-}
+import { getBasicAuth, getAuthHeaders } from '$lib/utils/api/auth';
 
 /**
  * Extract repository name from full path
@@ -30,10 +18,10 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 	const manifestUrl = `${registryUrl}/v2/${repo}/manifests/${tag}`;
 
 	try {
-		const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
+		const auth = getBasicAuth();
 		const manifestResponse = await axios.get(manifestUrl, {
 			headers: {
-				Authorization: `Basic ${auth}`,
+				Authorization: auth,
 				Accept: 'application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.oci.index.manifest.v1+json'
 			}
 		});
