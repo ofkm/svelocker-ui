@@ -2,8 +2,8 @@
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { AppWindowMac, Trash2, CalendarCog, CircuitBoard, UserPen, EthernetPort, Slash, Scaling, Terminal, FolderCode } from 'lucide-svelte';
 	import { Separator } from '$lib/components/ui/separator';
-	import { copyTextToClipboard } from '$lib/utils/clipboard.ts';
-	import { convertTimeString } from '$lib/utils/time.ts';
+	import { copyTextToClipboard } from '$lib/utils/ui';
+	import { convertTimeString } from '$lib/utils/formatting';
 	import { Badge } from '$lib/components/ui/badge';
 	import MetadataItem from '$lib/components/docker-metadata/MetadataItem.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.ts';
