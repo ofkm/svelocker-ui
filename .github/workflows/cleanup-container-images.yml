@@ -1,0 +1,262 @@
+name: Cleanup Untagged and Digest-Only Images
+
+on:
+  # Run on a schedule (every Sunday at midnight)
+  #   schedule:
+  #     - cron: '0 0 * * 0'
+
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Dry run (no actual deletion)'
+        type: boolean
+        default: false
+      registry:
+        description: 'Registry host (leave empty for GitHub Container Registry)'
+        type: string
+        default: 'ghcr.io'
+      organization:
+        description: 'Organization or username'
+        required: true
+        type: string
+        default: ${{ github.repository_owner }}
+      olderThan:
+        description: 'Only delete images older than X days (0 for all)'
+        type: number
+        default: 7
+
+jobs:
+  cleanup:
+    name: Cleanup Unnecessary Images
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ github.event.inputs.registry || 'ghcr.io' }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: |
+          pip install requests semver
+
+      - name: Create cleanup script
+        run: |
+          cat > cleanup.py << 'EOF'
+          import os
+          import requests
+          import json
+          import sys
+          import re
+          import semver
+          from datetime import datetime, timedelta
+
+          # Configuration
+          DRY_RUN = ${{ github.event.inputs.dryRun || 'False' }}
+          REGISTRY = "${{ github.event.inputs.registry || 'ghcr.io' }}"
+          ORG = "${{ github.event.inputs.organization || github.repository_owner }}"
+          TOKEN = "${{ secrets.GITHUB_TOKEN }}"
+          OLDER_THAN_DAYS = ${{ github.event.inputs.olderThan || 7 }}
+
+          # Tags to preserve
+          PRESERVE_PATTERNS = [
+              r'^latest$',                      # latest tag
+              r'^v?\d+\.\d+\.\d+',              # Semantic versions like v1.2.3 or 1.2.3
+              r'^v?\d+\.\d+',                   # Shortened versions like v1.2 or 1.2
+              r'^v?\d+$',                       # Major versions like v1 or 1
+              r'^development$',                 # development tag
+              r'^pr-\d+',                       # PR tags like pr-123
+              r'^main$',                        # main branch tag
+              r'^master$',                      # master branch tag
+              r'^stable$',                      # stable tag
+              r'^beta$',                        # beta tag
+              r'^alpha$',                       # alpha tag
+              r'^rc-\d+',                       # Release candidates like rc-1
+          ]
+
+          # GitHub API URLs
+          if "github" in REGISTRY.lower() or REGISTRY == "ghcr.io":
+              # GitHub Container Registry
+              API_URL = "https://api.github.com"
+              PACKAGES_URL = f"{API_URL}/users/{ORG}/packages/container"
+          else:
+              print(f"Custom registry {REGISTRY} not supported yet")
+              sys.exit(1)
+
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": f"Bearer {TOKEN}",
+              "X-GitHub-Api-Version": "2022-11-28"
+          }
+
+          def is_digest_tag(tag):
+              """Check if a tag is a digest-based tag (sha256)"""
+              return tag.startswith('sha256-') or re.match(r'^[0-9a-f]{64}$', tag) is not None
+
+          def is_preserved_tag(tag):
+              """Check if a tag should be preserved based on our patterns"""
+              for pattern in PRESERVE_PATTERNS:
+                  if re.match(pattern, tag):
+                      return True
+              return False
+
+          def get_packages():
+              """Get all container packages"""
+              packages = []
+              page = 1
+              
+              while True:
+                  response = requests.get(f"{PACKAGES_URL}?page={page}&per_page=100", headers=headers)
+                  if response.status_code != 200:
+                      print(f"Error fetching packages: {response.status_code}")
+                      print(response.text)
+                      return packages
+                      
+                  page_packages = response.json()
+                  if not page_packages:
+                      break
+                      
+                  packages.extend(page_packages)
+                  page += 1
+                  
+              return packages
+
+          def get_package_versions(package_name):
+              """Get all versions for a package"""
+              url = f"{PACKAGES_URL}/{package_name}/versions"
+              response = requests.get(url, headers=headers)
+              
+              if response.status_code != 200:
+                  print(f"Error fetching versions for {package_name}: {response.status_code}")
+                  return []
+                  
+              return response.json()
+              
+          def should_delete_version(version):
+              """Determine if a version should be deleted based on its tags"""
+              tags = version.get("metadata", {}).get("container", {}).get("tags", [])
+              
+              # Case 1: No tags at all (untagged)
+              if not tags:
+                  return True
+                  
+              # Case 2: Check if all tags are digest-based or non-preserved
+              return all(is_digest_tag(tag) or not is_preserved_tag(tag) for tag in tags)
+
+          def delete_version(package_name, version_id):
+              """Delete a package version"""
+              url = f"{PACKAGES_URL}/{package_name}/versions/{version_id}"
+              
+              if DRY_RUN:
+                  print(f"[DRY RUN] Would delete {package_name} version {version_id}")
+                  return True
+                  
+              response = requests.delete(url, headers=headers)
+              success = response.status_code == 204
+              
+              if success:
+                  print(f"✅ Deleted {package_name} version {version_id}")
+              else:
+                  print(f"❌ Failed to delete {package_name} version {version_id}: {response.status_code}")
+                  print(response.text)
+                  
+              return success
+
+          # Main cleanup logic
+          print(f"{'[DRY RUN] ' if DRY_RUN else ''}Starting cleanup in {ORG}")
+          packages = get_packages()
+          print(f"Found {len(packages)} packages")
+
+          deleted_count = 0
+          preserved_count = 0
+          failed_count = 0
+
+          for package in packages:
+              package_name = package['name']
+              print(f"\nProcessing package: {package_name}")
+              
+              versions = get_package_versions(package_name)
+              print(f"  Found {len(versions)} versions")
+              
+              for version in versions:
+                  version_id = version['id']
+                  created_at = datetime.strptime(version['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+                  tags = version.get("metadata", {}).get("container", {}).get("tags", [])
+                  
+                  # Check age if OLDER_THAN_DAYS is specified
+                  if OLDER_THAN_DAYS > 0:
+                      if datetime.utcnow() - created_at < timedelta(days=OLDER_THAN_DAYS):
+                          print(f"  Skipping {version_id} - too recent ({created_at.isoformat()})")
+                          preserved_count += 1
+                          continue
+                  
+                  # Analyze tags
+                  if not tags:
+                      tag_info = "no tags"
+                  else:
+                      preserved_tags = [t for t in tags if is_preserved_tag(t)]
+                      digest_tags = [t for t in tags if is_digest_tag(t)]
+                      other_tags = [t for t in tags if not is_digest_tag(t) and not is_preserved_tag(t)]
+                      
+                      tag_info = f"{len(tags)} tags: "
+                      if preserved_tags:
+                          tag_info += f"{len(preserved_tags)} preserved, "
+                      if digest_tags:
+                          tag_info += f"{len(digest_tags)} digest, "
+                      if other_tags:
+                          tag_info += f"{len(other_tags)} other, "
+                      tag_info = tag_info.rstrip(", ")
+                  
+                  # Check if we should delete this version
+                  if should_delete_version(version):
+                      print(f"  Deleting version {version_id} ({tag_info}) from {created_at.isoformat()}")
+                      if delete_version(package_name, version_id):
+                          deleted_count += 1
+                      else:
+                          failed_count += 1
+                  else:
+                      print(f"  Preserving version {version_id} ({tag_info}) from {created_at.isoformat()}")
+                      preserved_count += 1
+
+          print(f"\nCleanup summary:")
+          print(f"  Deleted: {deleted_count} versions")
+          print(f"  Preserved: {preserved_count} versions")
+          print(f"  Failed: {failed_count} deletions")
+          print(f"  {'[DRY RUN] No actual deletions performed' if DRY_RUN else 'Cleanup completed'}")
+
+          # Set output for GitHub Actions
+          with open(os.environ.get('GITHUB_ENV', ''), 'a') as f:
+              f.write(f"DELETED_COUNT={deleted_count}\n")
+              f.write(f"PRESERVED_COUNT={preserved_count}\n")
+              f.write(f"FAILED_COUNT={failed_count}\n")
+          EOF
+
+      - name: Run cleanup script
+        run: python cleanup.py
+
+      - name: Create Summary
+        if: always()
+        run: |
+          echo "# Container Image Cleanup Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Registry: \`${{ github.event.inputs.registry || 'ghcr.io' }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Organization: \`${{ github.event.inputs.organization || github.repository_owner }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Dry run: \`${{ github.event.inputs.dryRun || 'false' }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Age filter: \`${{ github.event.inputs.olderThan || '7' }} days\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Deleted: ${{ env.DELETED_COUNT || '0' }} images" >> $GITHUB_STEP_SUMMARY
+          echo "- 🛡️ Preserved: ${{ env.PRESERVED_COUNT || '0' }} images" >> $GITHUB_STEP_SUMMARY
+          echo "- ❌ Failed: ${{ env.FAILED_COUNT || '0' }} deletions" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "See job logs for detailed results" >> $GITHUB_STEP_SUMMARY
