@@ -7,6 +7,7 @@ import { db } from '$lib/services/database/connection';
 import { runMigrations } from '$lib/services/database/migrations.ts';
 import { getLastSyncTime, updateLastSyncTime } from '$lib/services/database';
 import { MIN_SYNC_INTERVAL } from '$lib/utils/constants';
+import { formatTimeDiff } from '$lib/utils/formatting/time';
 
 const logger = Logger.getInstance('LayoutServer');
 
@@ -57,12 +58,4 @@ export async function load({ url }) {
 			}
 		};
 	}
-}
-
-// Format time difference for logging
-function formatTimeDiff(diffMs: number): string {
-	if (diffMs < 1000) return `${diffMs}ms`;
-	if (diffMs < 60000) return `${Math.round(diffMs / 1000)}s`;
-	if (diffMs < 3600000) return `${Math.round(diffMs / 60000)}m`;
-	return `${Math.round(diffMs / 3600000)}h`;
 }
