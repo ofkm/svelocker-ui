@@ -53,27 +53,6 @@
 		}
 	});
 
-	// async function copyDockerRunCommand() {
-	// 	let registryHost = '';
-	// 	try {
-	// 		const url = new URL(env.PUBLIC_REGISTRY_URL);
-	// 		registryHost = url.host;
-	// 	} catch (e) {
-	// 		// Fallback if URL parsing fails
-	// 		registryHost = env.PUBLIC_REGISTRY_URL.replace(/^https?:\/\//, '');
-	// 	}
-
-	// 	const dockerRunCmd = `docker run ${registryHost}/${data.imageFullName}:${currentTag.name}`;
-
-	// 	copyTextToClipboard(dockerRunCmd).then((success) => {
-	// 		if (success) {
-	// 			toast.success('Docker Run command copied to clipboard');
-	// 		} else {
-	// 			toast.error('Failed to copy Docker Run command');
-	// 		}
-	// 	});
-	// }
-
 	async function deleteTagBackend(name: string, digest: string) {
 		if (!digest) {
 			toast.error('Error Deleting Docker Tag', {
@@ -222,7 +201,7 @@
 								<div class="flex flex-col gap-2">
 									<p class="text-sm text-muted-foreground font-mono">{currentTag.metadata?.indexDigest || ''}</p>
 									<!-- Add the Docker Run Command button here -->
-									<Button variant="outline" size="sm" class="gap-2 mt-5 w-fit" onclick={copyDockerRunCommand(data.imageFullName, currentTag.name, env.PUBLIC_REGISTRY_URL)}>
+									<Button variant="outline" size="sm" class="gap-2 mt-5 w-fit" onclick={() => copyDockerRunCommand(data.imageFullName, currentTag.name, env.PUBLIC_REGISTRY_URL)}>
 										<Terminal class="h-4 w-4" />
 										Copy Docker Run Command
 									</Button>
