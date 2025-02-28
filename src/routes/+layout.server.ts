@@ -59,30 +59,6 @@ export async function load({ url }) {
 	}
 }
 
-// Ensure the settings table exists
-function ensureSettingsTable() {
-	const tableExists = db
-		.prepare(
-			`
-    SELECT name FROM sqlite_master 
-    WHERE type='table' AND name='settings'
-  `
-		)
-		.get();
-
-	if (!tableExists) {
-		db.prepare(
-			`
-      CREATE TABLE settings (
-        key TEXT PRIMARY KEY,
-        value INTEGER NOT NULL
-      )
-    `
-		).run();
-		logger.info('Settings table created');
-	}
-}
-
 // Format time difference for logging
 function formatTimeDiff(diffMs: number): string {
 	if (diffMs < 1000) return `${diffMs}ms`;
