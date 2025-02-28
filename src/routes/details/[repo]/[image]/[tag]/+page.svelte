@@ -11,7 +11,6 @@
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Copy } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
-	import { deleteDockerManifestAxios } from '$lib/utils/delete.ts';
 	import { env } from '$env/dynamic/public';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { onMount, onDestroy } from 'svelte';
@@ -62,7 +61,7 @@
 		}
 
 		try {
-			const response = await fetch('/api/manifest/delete', {
+			const response = await fetch('/api/delete', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
