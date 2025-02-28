@@ -3,15 +3,8 @@ import type { ImageMetadata } from '$lib/models/metadata.ts';
 import type { ImageTag } from '$lib/models/tag.ts';
 import type { RepoImage } from '$lib/models/image.ts';
 import { Logger } from '$lib/services/logger';
-import { calculateSha256, filterAttestationManifests } from '$lib/utils/oci-manifest';
+import { calculateSha256, filterAttestationManifests, extractRepoName } from '$lib/utils/formatting';
 import { getBasicAuth, getAuthHeaders } from '$lib/utils/api/auth';
-
-/**
- * Extract repository name from full path
- */
-function extractRepoName(fullRepoPath: string, defaultName: string = ''): string {
-	return fullRepoPath.split('/').pop() || defaultName;
-}
 
 export async function fetchDockerMetadataAxios(registryUrl: string, repo: string, tag: string): Promise<ImageMetadata | undefined> {
 	const logger = Logger.getInstance('ManifestUtils');

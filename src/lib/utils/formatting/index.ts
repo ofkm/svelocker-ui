@@ -1,4 +1,5 @@
 export * from './time';
+export * from './oci';
 
 /**
  * Extract repository name from full path
