@@ -38,6 +38,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Login to registry
         uses: docker/login-action@v3
         with:
@@ -45,203 +50,297 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install dependencies
-        run: |
-          pip install requests semver
-
       - name: Create cleanup script
         run: |
-          cat > cleanup.py << 'EOF'
-          import os
-          import requests
-          import json
-          import sys
-          import re
-          import semver
-          from datetime import datetime, timedelta
+          cat > cleanup.js << 'EOF'
+          const fs = require('fs');
+          const https = require('https');
+          const path = require('path');
 
-          # Configuration
-          DRY_RUN = ${{ github.event.inputs.dryRun || 'False' }}
-          REGISTRY = "${{ github.event.inputs.registry || 'ghcr.io' }}"
-          ORG = "${{ github.event.inputs.organization || github.repository_owner }}"
-          TOKEN = "${{ secrets.GITHUB_TOKEN }}"
-          OLDER_THAN_DAYS = ${{ github.event.inputs.olderThan || 7 }}
+          // Configuration
+          const DRY_RUN = ${{ github.event.inputs.dryRun || 'false' }};
+          const REGISTRY = "${{ github.event.inputs.registry || 'ghcr.io' }}";
+          const ORG = "${{ github.event.inputs.organization || github.repository_owner }}";
+          const TOKEN = "${{ secrets.GITHUB_TOKEN }}";
+          const OLDER_THAN_DAYS = ${{ github.event.inputs.olderThan || 7 }};
 
-          # Tags to preserve
-          PRESERVE_PATTERNS = [
-              r'^latest$',                      # latest tag
-              r'^v?\d+\.\d+\.\d+',              # Semantic versions like v1.2.3 or 1.2.3
-              r'^v?\d+\.\d+',                   # Shortened versions like v1.2 or 1.2
-              r'^v?\d+$',                       # Major versions like v1 or 1
-              r'^development$',                 # development tag
-              r'^pr-\d+',                       # PR tags like pr-123
-              r'^main$',                        # main branch tag
-              r'^master$',                      # master branch tag
-              r'^stable$',                      # stable tag
-              r'^beta$',                        # beta tag
-              r'^alpha$',                       # alpha tag
-              r'^rc-\d+',                       # Release candidates like rc-1
-          ]
+          // Tags to preserve
+          const PRESERVE_PATTERNS = [
+            /^latest$/,                      // latest tag
+            /^v?\d+\.\d+\.\d+/,              // Semantic versions like v1.2.3 or 1.2.3
+            /^v?\d+\.\d+/,                   // Shortened versions like v1.2 or 1.2
+            /^v?\d+$/,                       // Major versions like v1 or 1
+            /^development$/,                 // development tag
+            /^pr-\d+/,                       // PR tags like pr-123
+            /^main$/,                        // main branch tag
+            /^master$/,                      // master branch tag
+            /^stable$/,                      // stable tag
+            /^beta$/,                        // beta tag
+            /^alpha$/,                       // alpha tag
+            /^rc-\d+/,                       // Release candidates like rc-1
+          ];
 
-          # GitHub API URLs
-          if "github" in REGISTRY.lower() or REGISTRY == "ghcr.io":
-              # GitHub Container Registry
-              API_URL = "https://api.github.com"
-              PACKAGES_URL = f"{API_URL}/users/{ORG}/packages/container"
-          else:
-              print(f"Custom registry {REGISTRY} not supported yet")
-              sys.exit(1)
+          // Statistics
+          let deletedCount = 0;
+          let preservedCount = 0;
+          let failedCount = 0;
 
-          headers = {
-              "Accept": "application/vnd.github+json",
-              "Authorization": f"Bearer {TOKEN}",
-              "X-GitHub-Api-Version": "2022-11-28"
+          // GitHub API URLs
+          let API_URL;
+          let PACKAGES_URL;
+
+          if (REGISTRY.toLowerCase().includes("github") || REGISTRY === "ghcr.io") {
+            API_URL = "https://api.github.com";
+            PACKAGES_URL = `${API_URL}/users/${ORG}/packages/container`;
+          } else {
+            console.error(`Custom registry ${REGISTRY} not supported yet`);
+            process.exit(1);
           }
 
-          def is_digest_tag(tag):
-              """Check if a tag is a digest-based tag (sha256)"""
-              return tag.startswith('sha256-') or re.match(r'^[0-9a-f]{64}$', tag) is not None
+          const headers = {
+            'Accept': 'application/vnd.github+json',
+            'Authorization': `Bearer ${TOKEN}`,
+            'X-GitHub-Api-Version': '2022-11-28',
+            'User-Agent': 'GitHub-Container-Cleanup'
+          };
 
-          def is_preserved_tag(tag):
-              """Check if a tag should be preserved based on our patterns"""
-              for pattern in PRESERVE_PATTERNS:
-                  if re.match(pattern, tag):
-                      return True
-              return False
+          /**
+           * Make an HTTP request to the GitHub API
+           */
+          function makeRequest(url, method = 'GET') {
+            return new Promise((resolve, reject) => {
+              const options = {
+                method,
+                headers
+              };
 
-          def get_packages():
-              """Get all container packages"""
-              packages = []
-              page = 1
+              const req = https.request(url, options, (res) => {
+                let data = '';
+                
+                res.on('data', (chunk) => {
+                  data += chunk;
+                });
+                
+                res.on('end', () => {
+                  if (res.statusCode >= 200 && res.statusCode < 300) {
+                    try {
+                      // Only parse as JSON for non-204 responses
+                      const result = res.statusCode === 204 ? { success: true } : JSON.parse(data);
+                      resolve({ statusCode: res.statusCode, data: result });
+                    } catch (error) {
+                      reject(new Error(`Failed to parse response: ${error.message}`));
+                    }
+                  } else {
+                    reject(new Error(`Request failed with status code ${res.statusCode}: ${data}`));
+                  }
+                });
+              });
               
-              while True:
-                  response = requests.get(f"{PACKAGES_URL}?page={page}&per_page=100", headers=headers)
-                  if response.status_code != 200:
-                      print(f"Error fetching packages: {response.status_code}")
-                      print(response.text)
-                      return packages
-                      
-                  page_packages = response.json()
-                  if not page_packages:
-                      break
-                      
-                  packages.extend(page_packages)
-                  page += 1
-                  
-              return packages
-
-          def get_package_versions(package_name):
-              """Get all versions for a package"""
-              url = f"{PACKAGES_URL}/{package_name}/versions"
-              response = requests.get(url, headers=headers)
+              req.on('error', (error) => {
+                reject(error);
+              });
               
-              if response.status_code != 200:
-                  print(f"Error fetching versions for {package_name}: {response.status_code}")
-                  return []
-                  
-              return response.json()
-              
-          def should_delete_version(version):
-              """Determine if a version should be deleted based on its tags"""
-              tags = version.get("metadata", {}).get("container", {}).get("tags", [])
-              
-              # Case 1: No tags at all (untagged)
-              if not tags:
-                  return True
-                  
-              # Case 2: Check if all tags are digest-based or non-preserved
-              return all(is_digest_tag(tag) or not is_preserved_tag(tag) for tag in tags)
+              req.end();
+            });
+          }
 
-          def delete_version(package_name, version_id):
-              """Delete a package version"""
-              url = f"{PACKAGES_URL}/{package_name}/versions/{version_id}"
+          /**
+           * Check if a tag is a digest-based tag (sha256)
+           */
+          function isDigestTag(tag) {
+            return tag.startsWith('sha256-') || /^[0-9a-f]{64}$/.test(tag);
+          }
+
+          /**
+           * Check if a tag should be preserved based on our patterns
+           */
+          function isPreservedTag(tag) {
+            return PRESERVE_PATTERNS.some(pattern => pattern.test(tag));
+          }
+
+          /**
+           * Get all container packages
+           */
+          async function getPackages() {
+            let packages = [];
+            let page = 1;
+            
+            while (true) {
+              try {
+                const response = await makeRequest(`${PACKAGES_URL}?page=${page}&per_page=100`);
+                const pagePackages = response.data;
+                
+                if (!pagePackages || pagePackages.length === 0) {
+                  break;
+                }
+                
+                packages = packages.concat(pagePackages);
+                page++;
+              } catch (error) {
+                console.error(`Error fetching packages: ${error.message}`);
+                break;
+              }
+            }
+            
+            return packages;
+          }
+
+          /**
+           * Get all versions for a package
+           */
+          async function getPackageVersions(packageName) {
+            try {
+              const response = await makeRequest(`${PACKAGES_URL}/${packageName}/versions`);
+              return response.data;
+            } catch (error) {
+              console.error(`Error fetching versions for ${packageName}: ${error.message}`);
+              return [];
+            }
+          }
+
+          /**
+           * Determine if a version should be deleted based on its tags
+           */
+          function shouldDeleteVersion(version) {
+            const tags = version?.metadata?.container?.tags || [];
+            
+            // Case 1: No tags at all (untagged)
+            if (tags.length === 0) {
+              return true;
+            }
+            
+            // Case 2: Check if all tags are digest-based or non-preserved
+            return tags.every(tag => isDigestTag(tag) || !isPreservedTag(tag));
+          }
+
+          /**
+           * Delete a package version
+           */
+          async function deleteVersion(packageName, versionId) {
+            try {
+              if (DRY_RUN) {
+                console.log(`[DRY RUN] Would delete ${packageName} version ${versionId}`);
+                return true;
+              }
               
-              if DRY_RUN:
-                  print(f"[DRY RUN] Would delete {package_name} version {version_id}")
-                  return True
-                  
-              response = requests.delete(url, headers=headers)
-              success = response.status_code == 204
+              const response = await makeRequest(`${PACKAGES_URL}/${packageName}/versions/${versionId}`, 'DELETE');
+              const success = response.statusCode === 204;
               
-              if success:
-                  print(f"✅ Deleted {package_name} version {version_id}")
-              else:
-                  print(f"❌ Failed to delete {package_name} version {version_id}: {response.status_code}")
-                  print(response.text)
-                  
-              return success
-
-          # Main cleanup logic
-          print(f"{'[DRY RUN] ' if DRY_RUN else ''}Starting cleanup in {ORG}")
-          packages = get_packages()
-          print(f"Found {len(packages)} packages")
-
-          deleted_count = 0
-          preserved_count = 0
-          failed_count = 0
-
-          for package in packages:
-              package_name = package['name']
-              print(f"\nProcessing package: {package_name}")
+              if (success) {
+                console.log(`✅ Deleted ${packageName} version ${versionId}`);
+              } else {
+                console.log(`❌ Failed to delete ${packageName} version ${versionId}`);
+              }
               
-              versions = get_package_versions(package_name)
-              print(f"  Found {len(versions)} versions")
+              return success;
+            } catch (error) {
+              console.error(`Error deleting ${packageName} version ${versionId}: ${error.message}`);
+              return false;
+            }
+          }
+
+          /**
+           * Format tag info for logging
+           */
+          function formatTagInfo(tags) {
+            if (!tags || tags.length === 0) {
+              return "no tags";
+            }
+            
+            const preservedTags = tags.filter(tag => isPreservedTag(tag));
+            const digestTags = tags.filter(tag => isDigestTag(tag));
+            const otherTags = tags.filter(tag => !isDigestTag(tag) && !isPreservedTag(tag));
+            
+            let tagInfo = `${tags.length} tags: `;
+            
+            if (preservedTags.length > 0) {
+              tagInfo += `${preservedTags.length} preserved, `;
+            }
+            
+            if (digestTags.length > 0) {
+              tagInfo += `${digestTags.length} digest, `;
+            }
+            
+            if (otherTags.length > 0) {
+              tagInfo += `${otherTags.length} other, `;
+            }
+            
+            return tagInfo.replace(/, $/, '');
+          }
+
+          /**
+           * Main cleanup function
+           */
+          async function cleanup() {
+            console.log(`${DRY_RUN ? '[DRY RUN] ' : ''}Starting cleanup in ${ORG}`);
+            
+            const packages = await getPackages();
+            console.log(`Found ${packages.length} packages`);
+            
+            for (const pkg of packages) {
+              const packageName = pkg.name;
+              console.log(`\nProcessing package: ${packageName}`);
               
-              for version in versions:
-                  version_id = version['id']
-                  created_at = datetime.strptime(version['created_at'], "%Y-%m-%dT%H:%M:%SZ")
-                  tags = version.get("metadata", {}).get("container", {}).get("tags", [])
-                  
-                  # Check age if OLDER_THAN_DAYS is specified
-                  if OLDER_THAN_DAYS > 0:
-                      if datetime.utcnow() - created_at < timedelta(days=OLDER_THAN_DAYS):
-                          print(f"  Skipping {version_id} - too recent ({created_at.isoformat()})")
-                          preserved_count += 1
-                          continue
-                  
-                  # Analyze tags
-                  if not tags:
-                      tag_info = "no tags"
-                  else:
-                      preserved_tags = [t for t in tags if is_preserved_tag(t)]
-                      digest_tags = [t for t in tags if is_digest_tag(t)]
-                      other_tags = [t for t in tags if not is_digest_tag(t) and not is_preserved_tag(t)]
-                      
-                      tag_info = f"{len(tags)} tags: "
-                      if preserved_tags:
-                          tag_info += f"{len(preserved_tags)} preserved, "
-                      if digest_tags:
-                          tag_info += f"{len(digest_tags)} digest, "
-                      if other_tags:
-                          tag_info += f"{len(other_tags)} other, "
-                      tag_info = tag_info.rstrip(", ")
-                  
-                  # Check if we should delete this version
-                  if should_delete_version(version):
-                      print(f"  Deleting version {version_id} ({tag_info}) from {created_at.isoformat()}")
-                      if delete_version(package_name, version_id):
-                          deleted_count += 1
-                      else:
-                          failed_count += 1
-                  else:
-                      print(f"  Preserving version {version_id} ({tag_info}) from {created_at.isoformat()}")
-                      preserved_count += 1
+              const versions = await getPackageVersions(packageName);
+              console.log(`  Found ${versions.length} versions`);
+              
+              for (const version of versions) {
+                const versionId = version.id;
+                const createdAt = new Date(version.created_at);
+                const tags = version?.metadata?.container?.tags || [];
+                
+                // Check age if OLDER_THAN_DAYS is specified
+                if (OLDER_THAN_DAYS > 0) {
+                  const ageInDays = (new Date() - createdAt) / (1000 * 60 * 60 * 24);
+                  if (ageInDays < OLDER_THAN_DAYS) {
+                    console.log(`  Skipping ${versionId} - too recent (${createdAt.toISOString()})`);
+                    preservedCount++;
+                    continue;
+                  }
+                }
+                
+                const tagInfo = formatTagInfo(tags);
+                
+                // Check if we should delete this version
+                if (shouldDeleteVersion(version)) {
+                  console.log(`  Deleting version ${versionId} (${tagInfo}) from ${createdAt.toISOString()}`);
+                  const success = await deleteVersion(packageName, versionId);
+                  if (success) {
+                    deletedCount++;
+                  } else {
+                    failedCount++;
+                  }
+                } else {
+                  console.log(`  Preserving version ${versionId} (${tagInfo}) from ${createdAt.toISOString()}`);
+                  preservedCount++;
+                }
+              }
+            }
+            
+            console.log(`\nCleanup summary:`);
+            console.log(`  Deleted: ${deletedCount} versions`);
+            console.log(`  Preserved: ${preservedCount} versions`);
+            console.log(`  Failed: ${failedCount} deletions`);
+            console.log(`  ${DRY_RUN ? '[DRY RUN] No actual deletions performed' : 'Cleanup completed'}`);
+            
+            // Set output for GitHub Actions
+            const envFile = process.env.GITHUB_ENV;
+            if (envFile) {
+              fs.appendFileSync(envFile, `DELETED_COUNT=${deletedCount}\n`);
+              fs.appendFileSync(envFile, `PRESERVED_COUNT=${preservedCount}\n`);
+              fs.appendFileSync(envFile, `FAILED_COUNT=${failedCount}\n`);
+            }
+          }
 
-          print(f"\nCleanup summary:")
-          print(f"  Deleted: {deleted_count} versions")
-          print(f"  Preserved: {preserved_count} versions")
-          print(f"  Failed: {failed_count} deletions")
-          print(f"  {'[DRY RUN] No actual deletions performed' if DRY_RUN else 'Cleanup completed'}")
-
-          # Set output for GitHub Actions
-          with open(os.environ.get('GITHUB_ENV', ''), 'a') as f:
-              f.write(f"DELETED_COUNT={deleted_count}\n")
-              f.write(f"PRESERVED_COUNT={preserved_count}\n")
-              f.write(f"FAILED_COUNT={failed_count}\n")
+          // Run the cleanup
+          cleanup().catch(error => {
+            console.error(`Unhandled error during cleanup: ${error.message}`);
+            process.exit(1);
+          });
           EOF
 
       - name: Run cleanup script
-        run: python3 cleanup.py
+        run: node cleanup.js
 
       - name: Create Summary
         if: always()
