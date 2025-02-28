@@ -5,17 +5,20 @@
 	import { slide } from 'svelte/transition';
 	import { Button } from './ui/button';
 	import * as Card from './ui/card';
+	import { Badge } from '$lib/components/ui/badge';
 
 	let {
 		id,
 		title,
 		description,
+		lastSynced,
 		defaultExpanded = false,
 		children
 	}: {
 		id: string;
 		title: string;
 		description?: string;
+		lastSynced?: string;
 		defaultExpanded?: boolean;
 		children: Snippet;
 	} = $props();
@@ -48,14 +51,29 @@
 
 <Card.Root>
 	<Card.Header class="cursor-pointer rounded-lg" onclick={toggleExpanded}>
-		<div class="flex items-center justify-between">
+		<div data-testid="repository-row" class="flex items-center justify-between">
 			<div>
-				<Card.Title>{title}</Card.Title>
+				<div class="flex flex-wrap items-center gap-2">
+					<Card.Title>
+						{title}
+					</Card.Title>
+					{#if title === 'library'}
+						<Badge variant="outline" class="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 h-6 min-w-35 px-4 text-sm justify-center">
+							<span class="text-xs font-medium">Default Namespace</span>
+						</Badge>
+					{/if}
+				</div>
 				{#if description}
-					<Card.Description>{description}</Card.Description>
+					<Card.Description>
+						{description}
+						{#if lastSynced}
+							<br />
+							<span class="text-xs text-muted-foreground">{lastSynced}</span>
+						{/if}</Card.Description
+					>
 				{/if}
 			</div>
-			<Button class="ml-10 h-8 p-3" variant="ghost" aria-label="Expand card">
+			<Button class="ml-10 h-8 p-3 shrink-0" variant="ghost" aria-label="Expand card">
 				<LucideChevronDown class={cn('h-5 w-5 transition-transform duration-200', expanded && 'rotate-180 transform')} />
 			</Button>
 		</div>

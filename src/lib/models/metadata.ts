@@ -12,4 +12,6 @@ export type ImageMetadata = {
 	description: string;
 	contentDigest: string;
 	entrypoint: string;
+	indexDigest: string;
+	isOCI: boolean;
 };

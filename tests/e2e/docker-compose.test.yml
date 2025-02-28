@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  registry:
+    image: registry:2
+    ports:
+      - "5001:5000"
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: true
+      REGISTRY_VALIDATION_DISABLED: true
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '[http://localhost:3000]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Methods: '[HEAD,GET,OPTIONS,DELETE]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Credentials: '[true]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Headers: '[Authorization,Accept,Cache-Control]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Expose-Headers: '[Docker-Content-Digest]'
+    volumes:
+      - registry-data:/var/lib/registry
+
+volumes:
+  registry-data:

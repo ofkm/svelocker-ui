@@ -12,7 +12,14 @@ type ExtendedRepoImage = RepoImage & {
 export const columns: ColumnDef<ExtendedRepoImage>[] = [
 	{
 		accessorKey: 'name',
-		header: 'Image Name'
+		header: 'Image Name',
+		accessorFn: (row) => {
+			// Extract just the image name part
+			if (row.name && row.name.includes('/')) {
+				return row.name.split('/').pop();
+			}
+			return row.name;
+		}
 	},
 	{
 		accessorKey: 'fullName',
@@ -23,10 +30,10 @@ export const columns: ColumnDef<ExtendedRepoImage>[] = [
 		header: 'Tags',
 		cell: ({ row }) => {
 			return renderComponent(TagDropdownActions, {
-				tags: row.original.tags,
+				tags: row.original.tags || [],
 				data: row.original,
 				imageFullName: row.original.fullName,
-				imageName: row.original.name
+				imageName: row.original.name.replace(/[^\w]/g, '-')
 			});
 		}
 	}

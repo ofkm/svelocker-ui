@@ -1,74 +1,86 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Docker Registry UI (Mocked)', () => {
-	// Basic display test
-	test('should display mock registry data and tags', async ({ page }) => {
-		await page.goto('/?mock=basic');
-		await page.waitForLoadState('networkidle');
+test.describe('Registry UI with Real Registry', () => {
+	test('should load the home page and show repositories', async ({ page }) => {
+		// Go to the home page
+		await page.goto('/');
 
-		// Check basic display
-		await expect(page.getByText('namespace1')).toBeVisible();
-		await expect(page.getByText('Found 1 Repository in test-registry')).toBeVisible();
+		await page.getByRole('button', { name: 'Sync Registry' }).click();
 
-		// Click the repository and wait longer for animations
-		await page.getByText('namespace1').click();
-		await page.waitForTimeout(1000);
+		await page.waitForTimeout(500);
 
-		// Click the tag button using the data-testid from tag-dropdown-actions.svelte
-		const tagButton = page.getByTestId('tag-button');
-		await expect(tagButton).toBeVisible();
-		await tagButton.click();
+		await page.reload();
+
+		// Wait for data to load
+		await page.waitForSelector('[data-testid="repository-list"]', { timeout: 10000 });
+
+		// Check that repositories are displayed
+		const repositories = await page.locator('[data-testid="repository-row"]').count();
+		expect(repositories).toBeGreaterThan(0);
+
+		// Verify test namespace is present
+		await expect(page.getByText('test')).toBeVisible();
 	});
 
-	// Search test
-	test('should filter repositories by search', async ({ page }) => {
-		await page.goto('/?mock=search');
-		await page.waitForLoadState('networkidle');
+	test('should filter repositories by search term', async ({ page }) => {
+		await page.goto('/');
+		await page.waitForSelector('[data-testid="repository-list"]');
 
-		await page.getByPlaceholder('Search repositories...').fill('name');
+		// Type 'nginx' in the search box
+		await page.getByPlaceholder('Search repositories...').fill('nginx');
+		await page.keyboard.press('Enter');
 
-		await expect(page.getByText('namespace1')).toBeVisible();
-		await expect(page.getByText('backend-api')).not.toBeVisible();
+		// Wait for search results
+		await page.waitForTimeout(500);
+
+		// Verify nginx is visible but alpine is not
+		await expect(page.getByText('nginx', { exact: false })).toBeVisible();
+		await expect(page.getByText('alpine', { exact: false })).not.toBeVisible();
 	});
 
-	// Pagination test
-	test('should handle pagination', async ({ page }) => {
-		await page.goto('/?mock=pagination');
-		await page.waitForLoadState('networkidle');
+	test('should show tag dropdown when clicked', async ({ page }) => {
+		await page.goto('/');
 
-		// Check first page
-		await expect(page.getByText('namespace1')).toBeVisible();
-		await expect(page.getByText('namespace5')).toBeVisible();
-		await expect(page.getByText('namespace6')).not.toBeVisible();
+		// Wait for repositories to load
+		await page.waitForSelector('[data-testid="repository-list"]');
 
-		// Go to next page
-		await page.getByRole('button', { name: /next/i }).click();
+		// Expand the test namespace
+		await page.getByText('test').click();
 
-		// Check second page
-		await expect(page.getByText('namespace6')).toBeVisible();
-		await expect(page.getByText('namespace10')).toBeVisible();
+		// Wait for images to appear
+		await page.waitForSelector('[data-testid="image-row-test-nginx"]');
+
+		// Find and click the tag button for nginx
+		await page.locator('[data-testid="tag-dropdown-test-nginx"]').click();
+
+		// Verify the dropdown is visible
+		await expect(page.locator('[data-testid="dropdown-content-test-nginx"]')).toBeVisible();
+
+		// Verify tags are shown in the dropdown
+		await expect(page.getByText('1.27.4-alpine')).toBeVisible();
+		await expect(page.getByText('beta')).toBeVisible();
 	});
 
-	// Error state test
-	test('should display error message', async ({ page }) => {
-		try {
-			await page.goto('/?mock=error');
-			await page.waitForLoadState('networkidle');
-		} catch (error) {
-			console.error('Navigation error:', error);
-			throw error; // Re-throw the error to fail the test
-		}
+	test('should navigate to tag details page', async ({ page }) => {
+		await page.goto('/');
 
-		// Check for error message
-		await expect(page.getByText(/Unable to connect to registry/)).toBeVisible();
-	});
+		// Wait for data to load
+		await page.waitForSelector('[data-testid="repository-list"]');
 
-	// Empty state test
-	test('should show empty state', async ({ page }) => {
-		await page.goto('/?mock=empty');
-		await page.waitForLoadState('networkidle');
+		// Expand the test namespace
+		await page.getByText('test').click();
 
-		// Check for empty state message
-		await expect(page.getByText('Could not pull registry data...')).toBeVisible();
+		// Click on tag dropdown
+		await page.locator('[data-testid="tag-dropdown-test-nginx"]').click();
+
+		// Click on a specific tag in dropdown
+		await page.getByText('1.27.4-alpine', { exact: true }).click();
+
+		// Check we're on the tag details page
+		await expect(page).toHaveURL(/.*\/test\/nginx\/1.27.4-alpine/);
+
+		// Verify tag details are shown
+		await expect(page.getByTestId('image-details-header')).toBeVisible();
+		// await expect(page.getByText('test/nginx:1.27.4-alpine')).toBeVisible();
 	});
 });

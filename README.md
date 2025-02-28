@@ -4,15 +4,17 @@
 
 ### Main List View:
 
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/09478366-68ed-43e2-8298-e9feacf50c1c" />
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/ba7348d7-f366-40d7-8571-fdd420c6d353" />
 
 ### Details View:
 
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/8256f3df-eac2-4c03-a428-2bc222cf91af" />
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/3c5c248a-0abc-48a3-be24-fb9349064262" />
 
 </div>
 
-> This project is currently in development and items, themes, and features may change or not be available.
+
+> [!IMPORTANT]
+> This project is currently in development. Features, Themes, and other items may not be available or are subject to change.
 
 ## Features:
 
@@ -21,6 +23,7 @@
 - Connects to Local Registries using the official [distribution/registry](https://hub.docker.com/_/registry) container image.
 - Delete Image Tags from the UI
 - SQLite Cache Layer for registry data
+- View and Copy the Dockerfile from the UI
 
 ## Get Started
 

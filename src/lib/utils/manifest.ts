@@ -1,11 +1,29 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import type { ImageMetadata } from '$lib/models/metadata.ts';
+import type { ImageTag } from '$lib/models/tag.ts';
+import type { RepoImage } from '$lib/models/image.ts';
 import { env } from '$env/dynamic/public';
 import { Buffer } from 'buffer';
 import { Logger } from '$lib/services/logger';
 import { calculateSha256, filterAttestationManifests } from '$lib/utils/oci-manifest';
 
-const logger = Logger.getInstance('ManifestUtils');
+/**
+ * Creates authentication headers for registry requests
+ */
+function getAuthHeaders(): Record<string, string> {
+	const auth = Buffer.from(`${env.PUBLIC_REGISTRY_USERNAME}:${env.PUBLIC_REGISTRY_PASSWORD}`).toString('base64');
+	return {
+		Authorization: `Basic ${auth}`,
+		Accept: 'application/json'
+	};
+}
+
+/**
+ * Extract repository name from full path
+ */
+function extractRepoName(fullRepoPath: string, defaultName: string = ''): string {
+	return fullRepoPath.split('/').pop() || defaultName;
+}
 
 export async function fetchDockerMetadataAxios(registryUrl: string, repo: string, tag: string): Promise<ImageMetadata | undefined> {
 	const logger = Logger.getInstance('ManifestUtils');
@@ -23,11 +41,22 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 		const manifest = manifestResponse.data;
 		let contentDigest = manifestResponse.headers['docker-content-digest'];
 		let configDigest;
+		let indexDigest;
 		let totalSize = 0;
+		let isOCI = false;
 
-		// Handle OCI manifest
+		// Store the deletion digest in indexDigest for both types
+		indexDigest = manifestResponse.headers['docker-content-digest']?.replace(/"/g, '');
+		// logger.info(`Original manifest digest: ${indexDigest}`);
+
+		// For OCI manifests
 		if (manifest.mediaType === 'application/vnd.oci.image.index.v1+json') {
-			logger.info('OCI manifest detected');
+			isOCI = true;
+			// logger.info('OCI manifest detected');
+
+			// Remove any quotes from the digest
+			indexDigest = manifestResponse.headers['docker-content-digest'].replace(/"/g, '');
+			// logger.info(`Index Digest: ${indexDigest}`);
 
 			// Get the first non-attestation manifest
 			const platformManifest = manifest.manifests.find((m: any) => !m.annotations?.['vnd.docker.reference.type']);
@@ -57,11 +86,16 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 			const formattedManifest = JSON.stringify(manifest);
 			const filteredManifest = await filterAttestationManifests(formattedManifest);
 			const hash = await calculateSha256(filteredManifest);
-			logger.info(`Calculated manifest hash: ${hash}`);
+			// logger.info(`Calculated manifest hash: ${hash}`);
 			contentDigest = hash;
 		} else {
 			// Handle regular Docker manifest
+			isOCI = false;
 			configDigest = manifest.config?.digest;
+
+			// Ensure we have a contentDigest for non-OCI manifests
+			contentDigest = manifestResponse.headers['docker-content-digest']?.replace(/"/g, '') || manifest.config?.digest;
+
 			// Calculate size for regular Docker manifest
 			totalSize = manifest.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
 		}
@@ -107,11 +141,85 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 			command: cmd,
 			description: description,
 			contentDigest: contentDigest,
-			entrypoint: entrypoint
+			entrypoint: entrypoint,
+			indexDigest: indexDigest,
+			isOCI: isOCI
 		};
 	} catch (error) {
 		logger.error(`Error fetching metadata for ${repo}:${tag}:`, error);
 		return undefined; // Return undefined in case of an error
+	}
+}
+
+export async function getDockerTagsNew(registryUrl: string, repo: string): Promise<RepoImage> {
+	const logger = Logger.getInstance('TagUtils');
+	logger.debug(`Fetching tags for repository: ${repo}`);
+
+	try {
+		// Fetch tags list from registry
+		const response = await axios.get(`${registryUrl}/v2/${repo}/tags/list`, {
+			headers: getAuthHeaders()
+		});
+
+		const data = response.data;
+
+		// Extract and validate repository name
+		const name = data.name || extractRepoName(repo);
+		if (!name) {
+			logger.error(`Invalid repository name for ${repo}`);
+			throw new Error('Invalid repository name');
+		}
+
+		// Process tags if available
+		let tags: ImageTag[] = [];
+		if (Array.isArray(data.tags) && data.tags.length > 0) {
+			logger.debug(`Found ${data.tags.length} tags for ${repo}`);
+
+			// Fetch metadata for each tag in parallel
+			interface FetchTagMetadataResult {
+				name: string;
+				metadata: ImageMetadata | undefined;
+			}
+
+			tags = await Promise.all(
+				data.tags.map(async (tag: string): Promise<ImageTag> => {
+					try {
+						const metadata: ImageMetadata | undefined = await fetchDockerMetadataAxios(registryUrl, repo, tag);
+						return { name: tag, metadata };
+					} catch (error) {
+						logger.error(`Error fetching metadata for ${repo}:${tag}:`, error instanceof Error ? error.message : String(error));
+						return { name: tag, metadata: undefined };
+					}
+				})
+			);
+		} else {
+			logger.info(`No tags found for repository ${repo}`);
+		}
+
+		// Return complete repository data
+		return {
+			name,
+			fullName: repo,
+			tags
+		};
+	} catch (error) {
+		// Handle errors gracefully
+		if (error instanceof AxiosError) {
+			logger.error(`Network error fetching tags for ${repo}: ${error.message}`, {
+				status: error.response?.status,
+				data: error.response?.data
+			});
+		} else {
+			logger.error(`Error fetching repo images for ${repo}:`, error instanceof Error ? error.message : String(error));
+		}
+
+		// Return fallback structure with empty tags
+		const fallbackName = extractRepoName(repo, 'unknown');
+		return {
+			name: fallbackName,
+			fullName: repo,
+			tags: []
+		};
 	}
 }
 
