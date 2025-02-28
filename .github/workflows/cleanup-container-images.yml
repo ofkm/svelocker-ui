@@ -18,9 +18,9 @@ on:
         default: 'ghcr.io'
       organization:
         description: 'Organization or username'
-        required: true
+        required: false
         type: string
-        default: ${{ github.repository_owner }}
+        default: ''
       olderThan:
         description: 'Only delete images older than X days (0 for all)'
         type: number
