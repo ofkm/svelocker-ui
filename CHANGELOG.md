@@ -1,3 +1,16 @@
+## [0.23.6](https://github.com/kmendell/svelocker-ui/compare/v0.23.5...v0.23.6) (2025-02-28)
+
+### Features
+
+* **details:** add copy run command button ([#93](https://github.com/kmendell/svelocker-ui/issues/93)) ([d702b8f](https://github.com/kmendell/svelocker-ui/commit/d702b8f013032792f1bf0f5a0a06c910ca6e4625))
+* **tags:** add limit of 50 tags to be fetched by default ([#94](https://github.com/kmendell/svelocker-ui/issues/94)) ([8a7657c](https://github.com/kmendell/svelocker-ui/commit/8a7657cf11f52c12a07460dce6c30c58efaf8489))
+
+### Bug Fixes
+
+* browser tab title not correct on details page reload ([c4660f9](https://github.com/kmendell/svelocker-ui/commit/c4660f929ad123d1c67920ec512657c446e9a261))
+* change tags/manifest logs to debug only ([18a85e2](https://github.com/kmendell/svelocker-ui/commit/18a85e26db71b47ea08650d37399f719b1861cf6))
+* **reactive-reload:** make sure repo cards get updated on resync ([#92](https://github.com/kmendell/svelocker-ui/issues/92)) ([8ee1b17](https://github.com/kmendell/svelocker-ui/commit/8ee1b17a2922c655dd3374565c37fb683786f35b))
+* **tag-dropdown:** no tags found label ([#91](https://github.com/kmendell/svelocker-ui/issues/91)) ([fe7d19c](https://github.com/kmendell/svelocker-ui/commit/fe7d19c353df6e94db268e25b70aee4769cf47fe))
 ## [0.23.5](https://github.com/kmendell/svelocker-ui/compare/v0.23.4...v0.23.5) (2025-02-27)
 
 ### Features
