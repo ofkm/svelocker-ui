@@ -153,7 +153,7 @@ export async function fetchDockerMetadataAxios(registryUrl: string, repo: string
 
 export async function getDockerTagsNew(registryUrl: string, repo: string): Promise<RepoImage> {
 	const logger = Logger.getInstance('TagUtils');
-	logger.info(`Fetching tags for repository: ${repo}`);
+	logger.debug(`Fetching tags for repository: ${repo}`);
 
 	try {
 		// Fetch tags list from registry
@@ -173,7 +173,7 @@ export async function getDockerTagsNew(registryUrl: string, repo: string): Promi
 		// Process tags if available
 		let tags: ImageTag[] = [];
 		if (Array.isArray(data.tags) && data.tags.length > 0) {
-			logger.info(`Found ${data.tags.length} tags for ${repo}`);
+			logger.debug(`Found ${data.tags.length} tags for ${repo}`);
 
 			// Fetch metadata for each tag in parallel
 			interface FetchTagMetadataResult {

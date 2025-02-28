@@ -55,7 +55,7 @@ export async function getDockerTagsNew(registryUrl: string, repo: string): Promi
 		// Process tags if available
 		let tags: ImageTag[] = [];
 		if (Array.isArray(data.tags) && data.tags.length > 0) {
-			logger.info(`Found ${data.tags.length} tags for ${repo}`);
+			logger.debug(`Found ${data.tags.length} tags for ${repo}`);
 
 			// Fetch metadata for each tag in parallel
 			// Define interfaces for type safety

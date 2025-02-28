@@ -29,9 +29,6 @@ export const columns: ColumnDef<ExtendedRepoImage>[] = [
 		id: 'tags',
 		header: 'Tags',
 		cell: ({ row }) => {
-			console.log('Rendering tag dropdown for row:', row.original);
-			console.log('Tags data:', row.original.tags);
-
 			return renderComponent(TagDropdownActions, {
 				tags: row.original.tags || [],
 				data: row.original,
