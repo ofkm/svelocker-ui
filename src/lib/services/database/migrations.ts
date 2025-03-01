@@ -88,7 +88,6 @@ export const migrations: Migration[] = [
 		  );
 		`
 	},
-	// Add to migrations array
 	{
 		version: 4,
 		description: 'Add fullName index to images for faster lookups',

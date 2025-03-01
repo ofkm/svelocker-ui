@@ -145,7 +145,6 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 			RepositoryModel.updateLastSynced(repoId);
 		}
 
-		// Rest of your existing code...
 	} catch (mainError) {
 		logger.error(`Error in syncImageTags for image ${imageId}:`, mainError);
 	}
