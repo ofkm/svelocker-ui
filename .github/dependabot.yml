@@ -10,20 +10,20 @@ updates:
     schedule:
       interval: 'daily'
     # Group production dependencies together
-    groups:
-      production-dependencies:
-        dependency-type: 'production'
-        patterns:
-          - '*'
-        update-types:
-          - 'minor'
-          - 'patch'
+    # groups:
+    #   production-dependencies:
+    #     dependency-type: 'production'
+    #     patterns:
+    #       - '*'
+    #     update-types:
+    #       - 'minor'
+    #       - 'patch'
 
-      # Group development dependencies together
-      development-dependencies:
-        dependency-type: 'development'
-        patterns:
-          - '*'
-        update-types:
-          - 'minor'
-          - 'patch'
+    #   # Group development dependencies together
+    #   development-dependencies:
+    #     dependency-type: 'development'
+    #     patterns:
+    #       - '*'
+    #     update-types:
+    #       - 'minor'
+    #       - 'patch'
