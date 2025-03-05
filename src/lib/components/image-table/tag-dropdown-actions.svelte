@@ -97,29 +97,6 @@
 					</div>
 				{/if}
 			{/if}
-
-			<!-- {#each $paginatedTags as tag}
-				<DropdownMenu.Item role="menuitem" class="font-bold flex items-center justify-center">
-					<a href="/details/{imageFullName.includes('/') ? imageFullName : `library/${imageFullName}`}/{tag.name}" class={tag.name === 'latest' ? 'text-green-400' : ''}>
-						{tag.name}
-					</a>
-				</DropdownMenu.Item>
-			{/each} -->
-
-			{#if $sortedTags.length > TAGS_PER_PAGE}
-				<DropdownMenu.Separator />
-				<div class="flex justify-between px-2 py-1">
-					<Button variant="ghost" size="icon" class="h-7 w-7" disabled={$currentPage === 1} onclick={prevPage}>
-						<ChevronLeft class="h-4 w-4" />
-					</Button>
-					<span class="text-xs flex items-center">
-						Page {$currentPage} of {$totalPages}
-					</span>
-					<Button variant="ghost" size="icon" class="h-7 w-7" disabled={$currentPage === $totalPages} onclick={nextPage}>
-						<ChevronRight class="h-4 w-4" />
-					</Button>
-				</div>
-			{/if}
 		</DropdownMenu.Group>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
