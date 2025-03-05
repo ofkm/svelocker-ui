@@ -1,3 +1,8 @@
+## [0.23.8](https://github.com/kmendell/svelocker-ui/compare/v0.23.7...v0.23.8) (2025-03-05)
+
+### Bug Fixes
+
+* tag pagination showing duplicate ([e3c399b](https://github.com/kmendell/svelocker-ui/commit/e3c399b38e6b315ec951e7a83ff37deec6ba2790))
 ## [0.23.7](https://github.com/kmendell/svelocker-ui/compare/v0.23.6...v0.23.7) (2025-02-28)
 
 ### Bug Fixes
