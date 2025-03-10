@@ -15,7 +15,6 @@ on:
 
 jobs:
   e2e-tests:
-    # runs-on: ubuntu-latest
     runs-on: self-hosted
 
     steps:
@@ -25,11 +24,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 22 # Or your preferred version
+          node-version: 22
 
       - name: Get node_modules cache key
         id: node-modules-cache-key
-        run: echo "::set-output name=key::${{ runner.os }}-${{ hashFiles('bun.lock') }}"
+        run: echo "::set-output name=key::${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}"
 
       - name: Cache node_modules
         uses: actions/cache@v3
@@ -43,9 +42,6 @@ jobs:
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
-
-      # - name: Install Docker
-      #   run: wget -O docker.sh https://get.docker.com && sh docker.sh
 
       - name: Run E2E tests
         run: npm run test:e2e

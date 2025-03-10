@@ -17,78 +17,6 @@ export async function initDatabase(): Promise<void> {
 	logger.info('Database initialized successfully');
 }
 
-// Sync registry data to database - delta approach
-export async function syncFromRegistry(registryData: RegistryRepo[]): Promise<void> {
-	logger.info(`Starting delta sync for ${registryData.length} repositories`);
-
-	try {
-		// Use transaction for better performance and atomicity
-		db.transaction(() => {
-			// Track stats for logging
-			const stats = {
-				addedRepos: 0,
-				updatedRepos: 0,
-				removedRepos: 0,
-				addedImages: 0,
-				updatedImages: 0,
-				removedImages: 0,
-				addedTags: 0,
-				updatedTags: 0,
-				removedTags: 0
-			};
-
-			// 1. Get existing repositories
-			const existingRepos = RepositoryModel.getAll();
-			const existingRepoMap = new Map(existingRepos.map((r) => [r.name, r]));
-
-			// 2. Track repositories found in the registry data
-			const foundRepoNames = new Set<string>();
-
-			// 3. Process each repository
-			for (const repo of registryData) {
-				const repoName = repo.name || 'library';
-				foundRepoNames.add(repoName);
-
-				// Check if repository exists
-				let repoId: number;
-				const existingRepo = existingRepoMap.get(repoName);
-
-				if (existingRepo) {
-					// Update existing repository
-					repoId = existingRepo.id;
-					RepositoryModel.updateLastSynced(repoId);
-					stats.updatedRepos++;
-				} else {
-					// Create new repository
-					repoId = RepositoryModel.create(repoName);
-					stats.addedRepos++;
-				}
-
-				// Process images for this repository
-				syncRepoImages(repoId, repo.images, stats);
-			}
-
-			// 4. Remove repositories that no longer exist in the registry
-			// Only if we have a complete registry dataset
-			if (registryData.length > 0) {
-				for (const [repoName, repo] of existingRepoMap) {
-					if (!foundRepoNames.has(repoName)) {
-						RepositoryModel.delete(repo.id);
-						stats.removedRepos++;
-					}
-				}
-			}
-
-			logger.info(`Delta sync stats: ` + `Repositories: +${stats.addedRepos} ~${stats.updatedRepos} -${stats.removedRepos}, ` + `Images: +${stats.addedImages} ~${stats.updatedImages} -${stats.removedImages}, ` + `Tags: +${stats.addedTags} ~${stats.updatedTags} -${stats.removedTags}`);
-		})();
-
-		logger.info('Registry data synchronized successfully (delta sync)');
-	} catch (error) {
-		logger.error('Failed to sync registry data', error);
-		throw error;
-	}
-}
-
 // Helper function to sync images for a repository
 function syncRepoImages(repoId: number, images: { name: string; fullName: string; tags: any[] }[], stats: any): void {
 	// 1. Get existing images
@@ -109,17 +37,20 @@ function syncRepoImages(repoId: number, images: { name: string; fullName: string
 		const existingImage = existingImageMap.get(imageFullName);
 
 		if (existingImage) {
-			// Update existing image
+			// Existing image - no need to update as images don't have changeable properties
+			// except for tags which are handled separately
 			imageId = existingImage.id;
-			stats.updatedImages++;
 		} else {
 			// Create new image
 			imageId = ImageModel.create(repoId, imageName, imageFullName);
 			stats.addedImages++;
+
+			// Since we added a new image, update repository last_synced
+			RepositoryModel.updateLastSynced(repoId);
 		}
 
-		// Process tags for this image
-		syncImageTags(imageId, image.tags, stats);
+		// Process tags for this image - pass repoId to allow updating last_synced
+		syncImageTags(imageId, image.tags, stats, repoId);
 	}
 
 	// 4. Remove images that no longer exist in the registry
@@ -132,7 +63,9 @@ function syncRepoImages(repoId: number, images: { name: string; fullName: string
 }
 
 // Helper function to sync tags for an image
-function syncImageTags(imageId: number, tags: { name: string; digest: string; metadata?: any }[], stats: any): void {
+function syncImageTags(imageId: number, tags: { name: string; digest: string; metadata?: any }[], stats: any, repoId: number): void {
+	let changesDetected = false;
+
 	try {
 		// 1. Get existing tags
 		const existingTags = TagModel.getByImageId(imageId);
@@ -152,19 +85,23 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 			const existingTag = existingTagMap.get(tag.name);
 
 			if (existingTag) {
-				// Only update if the digest has changed
-				if (existingTag.digest !== digest) {
+				// Only update if the digest has changed or other metadata needs updating
+				const digestChanged = existingTag.digest !== digest;
+				const metadataChanged = existingTag.metadata && tag.metadata && JSON.stringify(existingTag.metadata) !== JSON.stringify(tag.metadata);
+
+				if (digestChanged || metadataChanged) {
 					try {
-						// Delete the old tag and create a new one
-						// This ensures related metadata is properly updated
+						// Your existing update logic
 						TagModel.delete(existingTag.id);
 						const tagId = TagModel.create(imageId, tag.name, digest);
 
-						// Update metadata if available
 						if (tag.metadata) {
 							TagModel.saveMetadata(tagId, tag.metadata);
 						}
 						stats.updatedTags++;
+
+						// Mark that we detected changes
+						changesDetected = true;
 					} catch (error) {
 						logger.error(`Error updating tag ${tag.name}:`, error);
 					}
@@ -179,6 +116,9 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 						TagModel.saveMetadata(tagId, tag.metadata);
 					}
 					stats.addedTags++;
+
+					// Mark that we detected changes
+					changesDetected = true;
 				} catch (error) {
 					logger.error(`Error creating tag ${tag.name}:`, error);
 				}
@@ -191,11 +131,20 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 				try {
 					TagModel.delete(tag.id);
 					stats.removedTags++;
+
+					// Mark that we detected changes
+					changesDetected = true;
 				} catch (error) {
 					logger.error(`Error deleting tag ${tagName}:`, error);
 				}
 			}
 		}
+
+		// If any changes were detected, update the repository last_synced time
+		if (changesDetected) {
+			RepositoryModel.updateLastSynced(repoId);
+		}
+
 	} catch (mainError) {
 		logger.error(`Error in syncImageTags for image ${imageId}:`, mainError);
 	}
@@ -291,14 +240,14 @@ export async function incrementalSync(registryData: RegistryRepo[], options = { 
 	// 3. Version mismatch detected
 	if (repoCount === 0 || options.forceFullSync) {
 		logger.info('Performing full sync (empty DB or forced sync)');
-		return syncFromRegistry(registryData);
+		return deltaSync(registryData);
 	}
 
 	// Check if there are pending migrations
 	// Using non-async function now
 	if (dbInfo.version < getLatestMigrationVersion()) {
 		logger.info('Performing full sync due to schema version mismatch');
-		return syncFromRegistry(registryData);
+		return deltaSync(registryData);
 	}
 
 	// Otherwise, perform delta sync
@@ -360,26 +309,31 @@ async function deltaSync(registryData: RegistryRepo[]): Promise<void> {
 
 			// 3. Process each repository
 			for (const repo of registryData) {
-				const repoName = repo.name || 'library';
-				foundRepoNames.add(repoName);
+				db.transaction(() => {
+					const repoName = repo.name || 'library';
+					foundRepoNames.add(repoName);
 
-				// Check if repository exists
-				let repoId: number;
-				const existingRepo = existingRepoMap.get(repoName);
+					// Check if repository exists
+					let repoId: number;
+					const existingRepo = existingRepoMap.get(repoName);
 
-				if (existingRepo) {
-					// Update existing repository
-					repoId = existingRepo.id;
-					RepositoryModel.updateLastSynced(repoId);
-					stats.updatedRepos++;
-				} else {
-					// Create new repository
-					repoId = RepositoryModel.create(repoName);
-					stats.addedRepos++;
-				}
+					if (existingRepo) {
+						repoId = existingRepo.id;
+						// Only update if needed (e.g., if last_synced needs updating)
+						const needsUpdate = shouldUpdateRepo(existingRepo, repo);
+						if (needsUpdate) {
+							RepositoryModel.updateLastSynced(repoId);
+							stats.updatedRepos++;
+						}
+					} else {
+						// Create new repository
+						repoId = RepositoryModel.create(repoName);
+						stats.addedRepos++;
+					}
 
-				// Process images for this repository
-				syncRepoImages(repoId, repo.images, stats);
+					// Process images for this repository
+					syncRepoImages(repoId, repo.images, stats);
+				})();
 			}
 
 			// 4. Remove repositories that no longer exist in the registry
@@ -432,6 +386,14 @@ async function deltaSync(registryData: RegistryRepo[]): Promise<void> {
 		logger.error('Failed to sync registry data', error);
 		throw error;
 	}
+}
+
+function shouldUpdateRepo(existingRepo: any, newRepo: any): boolean {
+	// Define your criteria for updating repos
+	// For example, update timestamp every N hours
+	const lastSyncTime = new Date(existingRepo.last_synced).getTime();
+	const hoursSinceLastSync = (Date.now() - lastSyncTime) / (1000 * 60 * 60);
+	return hoursSinceLastSync > 24; // Only update once per day
 }
 
 // Track sync status

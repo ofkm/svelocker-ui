@@ -55,3 +55,4 @@ svelockerui.db-journal
 *.db
 *.db-shm
 *.db-wal
+.vscode/settings.json
