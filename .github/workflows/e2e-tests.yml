@@ -15,6 +15,9 @@ on:
 
 jobs:
   e2e-tests:
+    permissions:
+      contents: read
+      pull-requests: write
     runs-on: self-hosted
 
     steps:
