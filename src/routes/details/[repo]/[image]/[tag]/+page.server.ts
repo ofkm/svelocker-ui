@@ -2,6 +2,8 @@ import { error } from '@sveltejs/kit';
 import { db } from '$lib/services/database/connection';
 import { Logger } from '$lib/services/logger';
 import type { PageServerLoad } from './$types';
+import type { TagMetadata } from '$lib/services/database/types';
+import { parseJSON, parseCommandOrEntrypoint } from '$lib/services/database/models/tag';
 
 export const load: PageServerLoad = async ({ params, url }) => {
 	const logger = Logger.getInstance('TagDetails');
@@ -60,7 +62,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			throw error(404, `Image ${imageName} not found in ${repoName}`);
 		}
 
-		// Get all tags for this image
+		// Get all tags for this image with proper typing
 		const tags = db
 			.prepare(
 				`
@@ -75,7 +77,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
             ORDER BY t.name = 'latest' DESC, t.name ASC
         `
 			)
-			.all(image.id);
+			.all(image.id) as TagMetadata[];
 
 		// Find the specific tag
 		const tagIndex = tags.findIndex((t) => t.name === tagName);
@@ -85,24 +87,24 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			throw error(404, `Tag ${tagName} not found for ${repoName}/${imageName}`);
 		}
 
-		// Process the tags to match the expected format
+		// Process the tags with proper type handling
 		const formattedTags = tags.map((tag) => ({
 			name: tag.name,
 			metadata: {
-				created: tag.created_at,
-				os: tag.os,
-				architecture: tag.architecture,
-				author: tag.author,
-				dockerFile: tag.dockerFile,
-				exposedPorts: tag.exposedPorts ? JSON.parse(tag.exposedPorts) : [],
-				totalSize: tag.totalSize,
-				workDir: tag.workDir,
-				command: tag.command ? (tag.command.startsWith('[') ? JSON.parse(tag.command) : tag.command) : null,
-				description: tag.description,
-				contentDigest: tag.contentDigest,
-				entrypoint: tag.entrypoint ? (tag.entrypoint.startsWith('[') ? JSON.parse(tag.entrypoint) : tag.entrypoint) : null,
-				isOCI: tag.isOCI === 1,
-				indexDigest: tag.indexDigest
+				created: tag.created_at || undefined,
+				os: tag.os || undefined,
+				architecture: tag.architecture || undefined,
+				author: tag.author || undefined,
+				dockerFile: tag.dockerFile || undefined,
+				exposedPorts: parseJSON(tag.exposedPorts, []),
+				totalSize: tag.totalSize || undefined,
+				workDir: tag.workDir || undefined,
+				command: parseCommandOrEntrypoint(tag.command),
+				description: tag.description || undefined,
+				contentDigest: tag.contentDigest || undefined,
+				entrypoint: parseCommandOrEntrypoint(tag.entrypoint),
+				isOCI: tag.isOCI ? Boolean(tag.isOCI) : undefined,
+				indexDigest: tag.indexDigest || undefined
 			}
 		}));
 

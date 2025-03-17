@@ -21,6 +21,9 @@
 
 	const tagsStore = readable(tags);
 
+	// Add this line to track the open state
+	const open = writable(false);
+
 	// Pagination state
 	const TAGS_PER_PAGE = 3;
 	const currentPage = writable(1);
@@ -57,9 +60,9 @@
 	const dropdownId = `tag-dropdown-${imageFullName.replace(/[^\w]/g, '-')}`;
 </script>
 
-<DropdownMenu.Root>
+<DropdownMenu.Root bind:open={$open}>
 	<DropdownMenu.Trigger>
-		<Button data-testid={`tag-dropdown-${imageName}`} data-dropdown-id={dropdownId} data-state={open ? 'open' : 'closed'} variant="ghost" size="icon" class="relative size-8 p-0">
+		<Button data-testid={`tag-dropdown-${imageName}`} data-dropdown-id={dropdownId} data-state={$open ? 'open' : 'closed'} variant="ghost" size="icon" class="relative size-8 p-0">
 			<span class="sr-only">Open menu</span>
 			<Tag />
 		</Button>
