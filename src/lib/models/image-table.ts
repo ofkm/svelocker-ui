@@ -4,7 +4,7 @@ import { renderComponent } from '$lib/components/ui/data-table/index.js';
 import TagDropdownActions from '$lib/components/image-table/tag-dropdown-actions.svelte';
 
 // Extend RepoImage type to include the new properties
-type ExtendedRepoImage = RepoImage & {
+export type ExtendedRepoImage = RepoImage & {
 	repo: string;
 	repoIndex: number;
 };

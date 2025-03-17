@@ -85,9 +85,14 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 			const existingTag = existingTagMap.get(tag.name);
 
 			if (existingTag) {
-				// Only update if the digest has changed or other metadata needs updating
+				// Only update if the digest has changed
 				const digestChanged = existingTag.digest !== digest;
-				const metadataChanged = existingTag.metadata && tag.metadata && JSON.stringify(existingTag.metadata) !== JSON.stringify(tag.metadata);
+
+				// Get metadata for existing tag
+				const existingTagWithMeta = TagModel.getWithMetadata(existingTag.id);
+
+				// Check if metadata has changed by comparing the existing metadata with the new one
+				const metadataChanged = existingTagWithMeta?.metadata && tag.metadata && JSON.stringify(existingTagWithMeta.metadata) !== JSON.stringify(tag.metadata);
 
 				if (digestChanged || metadataChanged) {
 					try {
@@ -144,7 +149,6 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 		if (changesDetected) {
 			RepositoryModel.updateLastSynced(repoId);
 		}
-
 	} catch (mainError) {
 		logger.error(`Error in syncImageTags for image ${imageId}:`, mainError);
 	}
@@ -260,13 +264,27 @@ function getLatestMigrationVersion(): number {
 	return migrations[migrations.length - 1].version;
 }
 
-// Get the last sync time from the database
-export function getLastSyncTime() {
+// Define an interface for the result
+interface SettingValue {
+	value: string;
+}
+
+// Update the function to specify return type and parse the value
+export function getLastSyncTime(): { value: number } | undefined {
 	try {
-		return db.prepare('SELECT value FROM settings WHERE key = ?').get('last_sync_time');
+		const result = db.prepare('SELECT value FROM settings WHERE key = ?').get('last_sync_time') as SettingValue | undefined;
+
+		if (!result) {
+			return undefined;
+		}
+
+		// Parse the string value to a number
+		return {
+			value: parseInt(result.value, 10)
+		};
 	} catch (error) {
 		logger.error('Error getting last sync time:', error);
-		return null;
+		return undefined;
 	}
 }
 

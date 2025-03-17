@@ -1,9 +1,9 @@
 <script lang="ts">
 	import RepoCard from '$lib/components/RepoCard.svelte';
-	import { writable } from 'svelte/store';
+	import { writable, derived } from 'svelte/store';
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
 	import { Input } from '$lib/components/ui/input';
-	import { Search, AlertCircle } from 'lucide-svelte';
+	import { Search, AlertCircle, RefreshCw } from 'lucide-svelte';
 	import type { PageProps } from './$types';
 	import { env } from '$env/dynamic/public';
 	import SyncButton from '$lib/components/SyncButton.svelte';
@@ -12,13 +12,13 @@
 	import { lastSyncTimestamp, isSyncing } from '$lib/stores/sync-store';
 
 	let { data }: PageProps = $props();
-	const isHealthy = data.healthStatus.isHealthy;
+	const isHealthy = data.healthStatus?.isHealthy;
 	const searchQuery = writable('');
 
 	// Store for loaded data
 	const repositories = writable<RegistryRepo[]>([]);
 	const isLoading = writable(true);
-	const totalCount = writable(data.repoMetadata?.count || 0);
+	const totalCount = writable(0); // Initialize with 0
 
 	// Constants
 	const ITEMS_PER_PAGE = 5;
@@ -39,9 +39,14 @@
 		}
 	}
 
-	// Reactive values using runes
-	const filteredData = $derived($repositories);
-	const totalPages = $derived(Math.ceil($totalCount / ITEMS_PER_PAGE));
+	// Reactive values
+	// const filteredData = $derived($repositories);
+	// const totalPages = $derived(Math.ceil($totalCount / ITEMS_PER_PAGE));
+
+	// Reactively compute total pages
+	const totalPagesStore = derived(totalCount, ($totalCount) => {
+		return Math.ceil($totalCount / ITEMS_PER_PAGE);
+	});
 
 	// Handle page navigation
 	function prevPage() {
@@ -49,11 +54,11 @@
 	}
 
 	function nextPage() {
-		currentPage.update((n) => Math.min($totalPages, n + 1));
+		currentPage.update((n) => Math.min($totalPagesStore, n + 1));
 	}
 
 	function goToPage(page: number) {
-		if (page >= 1 && page <= $totalPages) {
+		if (page >= 1 && page <= $totalPagesStore) {
 			currentPage.set(page);
 		}
 	}

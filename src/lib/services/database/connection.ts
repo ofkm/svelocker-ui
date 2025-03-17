@@ -7,8 +7,11 @@ import { Logger } from '$lib/services/logger';
 
 const logger = Logger.getInstance('DBConnection');
 
-function sqlLogger(sql: string): void {
-	logger.debug(`SQL: ${sql}`);
+// Update the sqlLogger function to accept the correct parameter types
+function sqlLogger(message?: unknown, ...additionalArgs: unknown[]): void {
+	if (typeof message === 'string') {
+		logger.debug(`SQL: ${message}`);
+	}
 }
 
 // Database configuration

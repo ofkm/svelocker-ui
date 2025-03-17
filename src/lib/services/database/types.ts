@@ -42,6 +42,7 @@ export interface Tag {
 	imageId: number;
 	name: string;
 	digest: string;
+	metadata?: TagMetadata;
 }
 
 export interface TagMetadata {
@@ -56,11 +57,12 @@ export interface TagMetadata {
 	command?: string | string[] | null;
 	description?: string | null;
 	contentDigest?: string | null;
+	configDigest?: string;
 	entrypoint?: string | string[] | null;
 	isOCI?: boolean | null;
 	indexDigest?: string | null;
 }
 
 export interface TagWithMetadata extends Tag {
-	metadata: TagMetadata;
+	metadata?: TagMetadata;
 }
