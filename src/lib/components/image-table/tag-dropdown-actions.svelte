@@ -5,7 +5,7 @@
 	import type { ImageTag } from '$lib/models/tag.ts';
 	import { derived } from 'svelte/store';
 	import { readable, writable } from 'svelte/store';
-	import type { RegistryRepo } from '$lib/models/repo';
+	import type { ExtendedRepoImage } from '$lib/models/image-table';
 
 	let {
 		tags,
@@ -14,7 +14,7 @@
 		imageName
 	}: {
 		tags: ImageTag[];
-		data: RegistryRepo[];
+		data: ExtendedRepoImage; // Change from RegistryRepo[] to ExtendedRepoImage
 		imageFullName: string;
 		imageName: string;
 	} = $props();

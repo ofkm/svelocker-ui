@@ -10,6 +10,13 @@ import { env } from '$env/dynamic/public';
 
 const logger = Logger.getInstance('DeleteAPI');
 
+interface TagToDelete {
+	id: number;
+	image_id: number;
+	name: string;
+	fullName: string;
+}
+
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const { registryUrl, repo, digest, manifestType } = await request.json();
@@ -53,7 +60,7 @@ export const POST: RequestHandler = async ({ request }) => {
           OR tm.contentDigest = ?
         `
 					)
-					.all(cleanDigest, cleanDigest, cleanDigest);
+					.all(cleanDigest, cleanDigest, cleanDigest) as TagToDelete[];
 
 				if (tagsToDelete.length === 0) {
 					logger.warn(`No tags found in database with digest ${cleanDigest}`);

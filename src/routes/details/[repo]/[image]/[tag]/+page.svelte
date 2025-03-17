@@ -214,15 +214,15 @@
 					{#if currentTag?.metadata}
 						<div class="grid gap-6">
 							<div class="grid grid-cols-2 gap-6">
-								<MetadataItem label="OS" icon={AppWindowMac} value={currentTag.metadata.os} />
-								<MetadataItem label="Arch" icon={CircuitBoard} value={currentTag.metadata.architecture} />
-								<MetadataItem label="Created" icon={CalendarCog} value={currentTag.metadata.created ? (convertTimeString(currentTag.metadata.created) ?? '') : ''} />
-								<MetadataItem label="Author" icon={UserPen} value={currentTag.metadata.author ?? ''} />
-								<MetadataItem label="Exposed Ports" icon={EthernetPort} value={Array.isArray(currentTag.metadata.exposedPorts) ? currentTag.metadata.exposedPorts.join(', ') : currentTag.metadata.exposedPorts} />
-								<MetadataItem label="Container Size" icon={Scaling} value={currentTag.metadata.totalSize} />
-								<MetadataItem label="Working Directory" icon={FolderCode} value={currentTag.metadata.workDir} />
-								<MetadataItem label="Command" icon={Terminal} value={currentTag.metadata.command} />
-								<MetadataItem label="Entrypoint" icon={Terminal} value={currentTag.metadata.entrypoint} />
+								<MetadataItem label="OS" icon={AppWindowMac} value={currentTag.metadata?.os || 'Unknown'} />
+								<MetadataItem label="Arch" icon={CircuitBoard} value={currentTag.metadata?.architecture || 'Unknown'} />
+								<MetadataItem label="Created" icon={CalendarCog} value={currentTag.metadata?.created ? convertTimeString(currentTag.metadata.created) || 'Unknown' : 'Unknown'} />
+								<MetadataItem label="Author" icon={UserPen} value={currentTag.metadata?.author || 'Unknown'} />
+								<MetadataItem label="Exposed Ports" icon={EthernetPort} value={Array.isArray(currentTag.metadata?.exposedPorts) && currentTag.metadata.exposedPorts.length > 0 ? currentTag.metadata.exposedPorts.join(', ') : 'None'} />
+								<MetadataItem label="Container Size" icon={Scaling} value={currentTag.metadata?.totalSize || 'Unknown'} />
+								<MetadataItem label="Working Directory" icon={FolderCode} value={currentTag.metadata?.workDir || 'Unknown'} />
+								<MetadataItem label="Command" icon={Terminal} value={typeof currentTag.metadata?.command === 'object' ? JSON.stringify(currentTag.metadata.command) : currentTag.metadata?.command || 'Unknown'} />
+								<MetadataItem label="Entrypoint" icon={Terminal} value={typeof currentTag.metadata?.entrypoint === 'object' ? JSON.stringify(currentTag.metadata.entrypoint) : currentTag.metadata?.entrypoint || 'Unknown'} />
 							</div>
 						</div>
 					{/if}
