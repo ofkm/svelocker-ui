@@ -2,8 +2,30 @@ import { error } from '@sveltejs/kit';
 import { db } from '$lib/services/database/connection';
 import { Logger } from '$lib/services/logger';
 import type { PageServerLoad } from './$types';
-import type { TagMetadata } from '$lib/services/database/types';
+import type { TagMetadata, Image, Repository, TagWithMetadata, Tag } from '$lib/services/database/types';
 import { parseJSON, parseCommandOrEntrypoint } from '$lib/services/database/models/tag';
+
+// Create a proper interface for the database query result
+interface TagQueryResult {
+	id: number;
+	name: string;
+	digest: string;
+	image_id?: number; // From tags table
+	created_at?: string;
+	os?: string;
+	architecture?: string;
+	author?: string;
+	dockerFile?: string;
+	exposedPorts?: string;
+	totalSize?: number;
+	workDir?: string;
+	command?: string;
+	description?: string;
+	contentDigest?: string;
+	entrypoint?: string;
+	isOCI?: number; // SQLite stores boolean as 0/1
+	indexDigest?: string;
+}
 
 export const load: PageServerLoad = async ({ params, url }) => {
 	const logger = Logger.getInstance('TagDetails');
@@ -24,7 +46,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
             WHERE name = ?
         `
 			)
-			.get(repoName);
+			.get(repoName) as Repository;
 
 		if (!repository) {
 			// Try library namespace as fallback for root-level images
@@ -36,7 +58,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
                 WHERE name = 'library'
             `
 				)
-				.get();
+				.get() as Repository;
 
 			if (!libraryRepo) {
 				logger.error(`Repository ${repoName} not found`);
@@ -55,18 +77,18 @@ export const load: PageServerLoad = async ({ params, url }) => {
             WHERE repository_id = ? AND (name = ? OR fullName = ? OR fullName = ?)
         `
 			)
-			.get(repository.id, imageName, `${repoName}/${imageName}`, imageName);
+			.get(repository.id, imageName, `${repoName}/${imageName}`, imageName) as Image;
 
 		if (!image) {
 			logger.error(`Image ${imageName} not found in ${repoName}`);
 			throw error(404, `Image ${imageName} not found in ${repoName}`);
 		}
 
-		// Get all tags for this image with proper typing
-		const tags = db
+		// Get all tags for this image
+		const dbTags = db
 			.prepare(
 				`
-            SELECT t.id, t.name, t.digest,
+            SELECT t.id, t.name, t.digest, t.image_id,
                 tm.created_at, tm.os, tm.architecture, tm.author, 
                 tm.dockerFile, tm.exposedPorts, tm.totalSize, tm.workDir,
                 tm.command, tm.description, tm.contentDigest,
@@ -77,35 +99,47 @@ export const load: PageServerLoad = async ({ params, url }) => {
             ORDER BY t.name = 'latest' DESC, t.name ASC
         `
 			)
-			.all(image.id) as TagMetadata[];
+			.all(image.id) as TagQueryResult[];
 
-		// Find the specific tag
+		// Transform the raw database results into TagWithMetadata objects
+		const tags: TagWithMetadata[] = dbTags.map((row: TagQueryResult) => {
+			const tag: TagWithMetadata = {
+				id: row.id,
+				imageId: row.image_id || image.id, // Use image.id as fallback
+				name: row.name,
+				digest: row.digest
+			};
+
+			// Only add metadata if the row contains metadata information
+			if (row.created_at || row.os || row.architecture || row.author || row.dockerFile || row.exposedPorts || row.totalSize || row.workDir || row.command || row.description || row.contentDigest || row.entrypoint || row.isOCI !== undefined || row.indexDigest) {
+				tag.metadata = {
+					created: row.created_at || undefined,
+					os: row.os || undefined,
+					architecture: row.architecture || undefined,
+					author: row.author || undefined,
+					dockerFile: row.dockerFile || undefined,
+					exposedPorts: row.exposedPorts ? parseJSON(row.exposedPorts, []) : [],
+					totalSize: row.totalSize || undefined,
+					workDir: row.workDir || undefined,
+					command: row.command ? parseCommandOrEntrypoint(row.command) : null,
+					description: row.description || undefined,
+					contentDigest: row.contentDigest || undefined,
+					entrypoint: row.entrypoint ? parseCommandOrEntrypoint(row.entrypoint) : null,
+					isOCI: row.isOCI !== undefined ? Boolean(row.isOCI) : undefined,
+					indexDigest: row.indexDigest || undefined
+				};
+			}
+
+			return tag;
+		});
+
+		// Find the tag index
 		const tagIndex = tags.findIndex((t) => t.name === tagName);
 
-		if (tagIndex === -1) {
-			logger.error(`Tag ${tagName} not found for ${repoName}/${imageName}`);
-			throw error(404, `Tag ${tagName} not found for ${repoName}/${imageName}`);
-		}
-
-		// Process the tags with proper type handling
+		// Format the tags for the response, safely accessing the metadata
 		const formattedTags = tags.map((tag) => ({
 			name: tag.name,
-			metadata: {
-				created: tag.created_at || undefined,
-				os: tag.os || undefined,
-				architecture: tag.architecture || undefined,
-				author: tag.author || undefined,
-				dockerFile: tag.dockerFile || undefined,
-				exposedPorts: parseJSON(tag.exposedPorts, []),
-				totalSize: tag.totalSize || undefined,
-				workDir: tag.workDir || undefined,
-				command: parseCommandOrEntrypoint(tag.command),
-				description: tag.description || undefined,
-				contentDigest: tag.contentDigest || undefined,
-				entrypoint: parseCommandOrEntrypoint(tag.entrypoint),
-				isOCI: tag.isOCI ? Boolean(tag.isOCI) : undefined,
-				indexDigest: tag.indexDigest || undefined
-			}
+			metadata: tag.metadata || {} // Use empty object as fallback
 		}));
 
 		const isLatest = tagName === 'latest';

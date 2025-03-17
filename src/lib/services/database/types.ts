@@ -62,5 +62,5 @@ export interface TagMetadata {
 }
 
 export interface TagWithMetadata extends Tag {
-	metadata: TagMetadata;
+	metadata?: TagMetadata;
 }
