@@ -58,8 +58,8 @@ fi
 
 # Generate changelog
 echo "Generating changelog..."
-conventional-changelog -p conventionalcommits -i CHANGELOG.md -s --commit-path . --lerna-package . -t "" --config ./changelog.config.js
-# conventional-changelog -p conventionalcommits -i CHANGELOG.md -s --commit-path . --lerna-package . -t "" 
+# conventional-changelog -p conventionalcommits -i CHANGELOG.md -s --commit-path . --lerna-package . -t "" --config ./changelog.config.js
+conventional-changelog -p conventionalcommits -i CHANGELOG.md -s
 git add CHANGELOG.md
 
 # Commit the changes with the new version
