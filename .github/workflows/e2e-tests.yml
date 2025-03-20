@@ -18,7 +18,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    runs-on: blacksmith-8vcpu-ubuntu-2204
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
