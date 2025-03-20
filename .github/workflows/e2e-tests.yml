@@ -18,14 +18,14 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    runs-on: self-hosted
+    runs-on: ubuntu-2204
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: useblacksmith/setup-node@v5
+        uses: actions/setup-node@v3
         with:
           node-version: 22
 
@@ -34,7 +34,7 @@ jobs:
         run: echo "::set-output name=key::${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}"
 
       - name: Cache node_modules
-        uses: useblacksmith/cache@v5
+        uses: actions/cache@v3
         id: node-modules-cache
         with:
           path: node_modules
