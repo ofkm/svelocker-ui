@@ -87,7 +87,7 @@ if [ -z "$CHANGELOG" ]; then
 fi
 
 echo "Creating GitHub release..."
-gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes "$CHANGELOG" --discussion-category "Announcements"
+gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes-from-tag
 
 if [ $? -eq 0 ]; then
     echo "GitLab release created successfully."
