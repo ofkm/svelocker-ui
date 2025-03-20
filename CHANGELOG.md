@@ -1,3 +1,4 @@
+## [0.23.13](https://github.com/kmendell/svelocker-ui/compare/v0.23.12...v0.23.13) (2025-03-20)
 ## [0.23.12](https://github.com/kmendell/svelocker-ui/compare/v0.23.11...v0.23.12) (2025-03-20)
 ## [0.23.8](https://github.com/kmendell/svelocker-ui/compare/v0.23.7...v0.23.8) (2025-03-05)
 
