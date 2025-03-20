@@ -77,15 +77,6 @@ if ! command -v gh &>/dev/null; then
     exit 1
 fi
 
-# Extract the changelog content for the latest release
-echo "Extracting changelog content for version $NEW_VERSION..."
-CHANGELOG=$(awk '/^## / {if (NR > 1) exit} NR > 1 {print}' CHANGELOG.md | awk 'NR > 2 || NF {print}')
-
-if [ -z "$CHANGELOG" ]; then
-    echo "Error: Could not extract changelog for version $NEW_VERSION."
-    exit 1
-fi
-
 echo "Creating GitHub release..."
 gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes-from-tag
 
