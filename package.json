@@ -1,7 +1,7 @@
 {
   "name": "svelocker-ui",
   "private": true,
-  "version": "0.23.11",
+  "version": "0.23.12",
   "type": "module",
   "scripts": {
     "dev": "vite dev --host",
