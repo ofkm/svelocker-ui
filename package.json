@@ -42,7 +42,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.28.0",
-    "vaul-svelte": "^1.0.0-next.6",
+    "vaul-svelte": "^1.0.0-next.7",
     "vite": "^6.2.3"
   },
   "dependencies": {
