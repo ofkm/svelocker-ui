@@ -1,5 +1,4 @@
 <script lang="ts">
-	import RepoCard from '$lib/components/RepoCard.svelte';
 	import { writable, derived } from 'svelte/store';
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
 	import { Input } from '$lib/components/ui/input';
