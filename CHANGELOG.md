@@ -1,3 +1,9 @@
+## [0.24.1](https://github.com/kmendell/svelocker-ui/compare/v0.24.0...v0.24.1) (2025-03-28)
+
+### Bug Fixes
+
+* link for tag incorrect on repo details page ([4b31d27](https://github.com/kmendell/svelocker-ui/commit/4b31d27fe1b75a7da6c158083aca2ea9d63be507))
+* repo details page not loading ([1c4f5eb](https://github.com/kmendell/svelocker-ui/commit/1c4f5ebd7291d3659b03ab6c209cee039736b62e))
 ## [0.24.0](https://github.com/kmendell/svelocker-ui/compare/v0.23.13...v0.24.0) (2025-03-28)
 
 ### Features
