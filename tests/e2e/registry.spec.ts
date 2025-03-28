@@ -68,7 +68,7 @@ test.describe('Registry UI with Real Registry', () => {
 		// Take screenshot for debugging
 		await page.screenshot({ path: 'test-results/repo-cards.png', fullPage: true });
 
-		// Debug: Print data-testids in the page
+		// Debug: Log data-testids
 		console.log('All data-testids found on page:');
 		const allDataTestIds = await page.evaluate(() => {
 			const elements = document.querySelectorAll('[data-testid]');
@@ -76,16 +76,14 @@ test.describe('Registry UI with Real Registry', () => {
 		});
 		console.log(allDataTestIds);
 
-		// Check that nginx image name is visible in the card
+		// Check that nginx image name is visible
 		await expect(page.getByText('nginx', { exact: true })).toBeVisible();
 
-		// Check if the test repo card contains any tag pills at all
-		const tagsInTestRepo = await testRepoCard.locator('a').count();
-		console.log(`Found ${tagsInTestRepo} tag links in test repository card`);
+		// Check the alpine tag is visible (be specific to avoid strict mode violation)
+		await expect(page.locator('[data-testid="tag-pill-test-test-nginx-1-27-4-alpine"]')).toBeVisible({ timeout: 10000 });
 
-		// Try a more general selector for the tags
-		await expect(testRepoCard.locator('a').filter({ hasText: '1.27.4-alpine' })).toBeVisible({ timeout: 10000 });
-		await expect(testRepoCard.locator('a').filter({ hasText: 'beta' })).toBeVisible({ timeout: 10000 });
+		// Check a beta tag is visible (now using a specific tag pill instead of filtering)
+		await expect(page.locator('[data-testid="tag-pill-test-test-nginx-beta"]')).toBeVisible({ timeout: 10000 });
 	});
 
 	test('should navigate to tag details page', async ({ page }) => {
@@ -97,13 +95,13 @@ test.describe('Registry UI with Real Registry', () => {
 		// Wait for repo cards to appear
 		await page.waitForSelector('[data-testid^="repository-card-"]', { timeout: 15000 });
 
-		// Try to find the tag link by text content instead of data-testid
-		const alpineTagLink = page.locator('a', { hasText: '1.27.4-alpine' }).first();
+		// Use a specific data-testid to find the tag link
+		const alpineTagLink = page.locator('[data-testid="tag-pill-test-test-nginx-1-27-4-alpine"]');
 		await alpineTagLink.waitFor({ timeout: 10000 });
 		await alpineTagLink.click();
 
-		// Check we're on the tag details page
-		await expect(page).toHaveURL(/.*\/details\/test\/nginx\/1.27.4-alpine/);
+		// Check we're on the tag details page - update the regex to match the actual URL structure
+		await expect(page).toHaveURL(/.*\/details\/test\/test\/nginx\/1.27.4-alpine/);
 
 		// Verify tag details are shown
 		await expect(page.getByTestId('image-details-header')).toBeVisible();
