@@ -110,7 +110,7 @@ test.describe('Registry UI with Real Registry', () => {
 		await page.screenshot({ path: 'test-results/after-click.png' });
 
 		// Check we're on the tag details page - update the regex to match the actual URL structure
-		await expect(page).toHaveURL(/.*\/details\/test\/test\/nginx\/1.27.4-alpine/);
+		await expect(page).toHaveURL(/.*\/details\/test\/nginx\/1.27.4-alpine/);
 
 		// Debug: Log what's on the page
 		console.log('Current URL:', page.url());
