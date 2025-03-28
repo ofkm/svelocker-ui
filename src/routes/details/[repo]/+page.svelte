@@ -1,21 +1,22 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { Home, Slash, Database, ArrowLeft, Layers } from 'lucide-svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import CountBadge from '$lib/components/badges/count-badge.svelte';
 	import TextBadge from '$lib/components/badges/text-badge.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { formatDistanceToNow } from 'date-fns';
-	import { env } from '$env/dynamic/public';
 	import type { PageData } from './$types';
 
-	// Fix: Don't use destructuring with the $props(), access data directly
-	let data: PageData = $props();
-
-	// Helper function to get repository URL path with proper handling of 'library'
-	function getRepoPath(repoName: string): string {
-		return repoName === 'library' ? '' : `${repoName}/`;
+	interface Props {
+		// Props without destructuring
+		data: PageData;
 	}
+
+	let { data }: Props = $props();
+
+	// Standard reactive declarations with safe defaults
+	let repo = $derived(data?.repo || { images: [] });
+	let repoName = $derived(data?.repoName || 'Unknown');
 
 	// Helper to construct correct detail URLs
 	function getDetailUrl(repoName: string, imageName: string, tagName: string): string {
@@ -24,18 +25,10 @@
 		}
 		return `/details/${repoName}/${imageName}/${tagName}`;
 	}
-
-	// Helper to construct correct image URLs
-	function getImageUrl(repoName: string, imageName: string): string {
-		if (repoName === 'library') {
-			return `/details/${imageName}`;
-		}
-		return `/details/${repoName}/${imageName}`;
-	}
 </script>
 
 <svelte:head>
-	<title>Svelocker UI - Repository: {data.repoName}</title>
+	<title>Svelocker UI - Repository: {repoName}</title>
 </svelte:head>
 
 <div class="mx-auto w-full flex-col bg-background">
@@ -55,7 +48,7 @@
 					</Breadcrumb.Separator>
 					<Breadcrumb.Item>
 						<Breadcrumb.Link class="text-foreground font-medium">
-							{data.repoName}
+							{repoName}
 						</Breadcrumb.Link>
 					</Breadcrumb.Item>
 				</Breadcrumb.List>
@@ -69,8 +62,8 @@
 					<div class="flex items-center gap-3">
 						<Database class="h-6 w-6 text-primary/70" />
 						<h2 class="text-3xl font-semibold tracking-tight flex items-center gap-2">
-							{data.repoName}
-							{#if data.repoName === 'library'}
+							{repoName}
+							{#if repoName === 'library'}
 								<TextBadge text="Default Namespace" variant="info" />
 							{/if}
 						</h2>
@@ -78,12 +71,12 @@
 					<div class="flex items-center gap-2.5">
 						<div class="flex items-center gap-2">
 							<span class="text-muted-foreground">Total Images:</span>
-							<span class="font-medium">{data.repo.images.length}</span>
+							<span class="font-medium">{repo?.images?.length || 0}</span>
 						</div>
 						<span class="text-muted-foreground">•</span>
 						<div class="flex items-center gap-2">
 							<span class="text-muted-foreground">Last Synced:</span>
-							<span>{data.repo.lastSynced ? formatDistanceToNow(new Date(data.repo.lastSynced)) + ' ago' : 'Never'}</span>
+							<span>{repo?.lastSynced ? formatDistanceToNow(new Date(repo.lastSynced)) + ' ago' : 'Never'}</span>
 						</div>
 					</div>
 				</div>
@@ -97,14 +90,14 @@
 		<!-- Repository Images List -->
 		<div class="mx-10 mb-16">
 			<div class="space-y-4">
-				{#if data.repo.images.length === 0}
+				{#if !repo?.images || repo.images.length === 0}
 					<div class="p-8 text-center bg-card/50 rounded-xl border border-border/40">
 						<Layers class="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
 						<h3 class="text-lg font-medium">No Images Found</h3>
 						<p class="text-muted-foreground">This repository doesn't have any images yet.</p>
 					</div>
 				{:else}
-					{#each data.repo.images as image}
+					{#each repo.images as image}
 						<div class="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden shadow-sm">
 							<div class="border-b border-border/30 px-5 py-3 bg-muted/10 flex items-center">
 								<h3 class="text-lg font-medium">{image.name}</h3>
@@ -112,12 +105,12 @@
 							</div>
 							<div class="p-5">
 								<div class="flex flex-wrap gap-2">
-									{#if image.tags.length === 0}
+									{#if !image.tags || image.tags.length === 0}
 										<div class="w-full py-3 text-center text-muted-foreground">No tags available for this image</div>
 									{:else}
 										{#each image.tags as tag}
 											<a
-												href={getDetailUrl(data.repoName, image.name, tag.name)}
+												href={getDetailUrl(repoName, image.name, tag.name)}
 												class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors min-w-[2.5rem] text-center
                           {tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-muted/50 text-foreground/80 hover:bg-muted border border-border/40 hover:border-border/60'}"
 											>
