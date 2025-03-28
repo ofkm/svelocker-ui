@@ -1,3 +1,15 @@
+## [0.24.0](https://github.com/kmendell/svelocker-ui/compare/v0.23.13...v0.24.0) (2025-03-28)
+
+### Features
+
+* ui redesign - added repo details page ([9352006](https://github.com/kmendell/svelocker-ui/commit/93520061e3504bad05da35b46c2c3e49691acc29))
+
+### Bug Fixes
+
+* e2e tests ([f44f0c1](https://github.com/kmendell/svelocker-ui/commit/f44f0c13029dcc11f3927888951a617e5b8325da))
+* e2e tests ([4a82e52](https://github.com/kmendell/svelocker-ui/commit/4a82e52e0ef732df2366617f3c00693ec099f565))
+* e2e tests ([b7b9c26](https://github.com/kmendell/svelocker-ui/commit/b7b9c26e0cf9a391e1bba0702c69a627e4a2f3bf))
+* e2e tests ([e31c7f5](https://github.com/kmendell/svelocker-ui/commit/e31c7f5988689ee5be4bacce91d333bf198d8b9f))
 ## [0.23.13](https://github.com/kmendell/svelocker-ui/compare/v0.23.12...v0.23.13) (2025-03-20)
 ## [0.23.12](https://github.com/kmendell/svelocker-ui/compare/v0.23.11...v0.23.12) (2025-03-20)
 ## [0.23.8](https://github.com/kmendell/svelocker-ui/compare/v0.23.7...v0.23.8) (2025-03-05)
