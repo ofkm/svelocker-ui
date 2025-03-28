@@ -112,23 +112,6 @@ test.describe('Registry UI with Real Registry', () => {
 		// Check we're on the tag details page - update the regex to match the actual URL structure
 		await expect(page).toHaveURL(/.*\/details\/test\/nginx\/1.27.4-alpine/);
 
-		// Debug: Log what's on the page
-		console.log('Current URL:', page.url());
-		console.log('All data-testids found on details page:');
-		const allDataTestIds = await page.evaluate(() => {
-			const elements = document.querySelectorAll('[data-testid]');
-			return Array.from(elements).map((el) => el.getAttribute('data-testid'));
-		});
-		console.log(allDataTestIds);
-
-		// Debug: Check if there's an error message on the page
-		const errorMessage = await page.locator('text="Failed to load image details"').count();
-		if (errorMessage > 0) {
-			console.error('Error message found on the page!');
-			const errorText = await page.locator('.text-red-800, .text-red-300').textContent();
-			console.error('Error text:', errorText);
-		}
-
 		// Check for any content that should be on the details page instead of the specific testid
 		try {
 			// Try to find any recognizable element on the details page
