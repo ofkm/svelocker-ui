@@ -42,6 +42,12 @@
 		}
 		return `/details/${repoName}/${imageName}`;
 	}
+
+	// Add a helper function to sanitize names for data-testid
+	function sanitizeForTestId(text: string): string {
+		// Replace any characters that might cause issues in CSS selectors
+		return text.replace(/[^a-zA-Z0-9-]/g, '-');
+	}
 </script>
 
 <div class="repo-card bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden transition-all hover:shadow-md hover:border-border/80 flex flex-col h-full" data-testid="repository-card-{repo.name}">
@@ -64,7 +70,7 @@
 		<!-- Images section -->
 		<div class="space-y-4">
 			{#each repo.images.slice(0, 3) as image, i}
-				<div class="bg-background/60 rounded-lg p-3 border border-border/30">
+				<div class="bg-background/60 rounded-lg p-3 border border-border/30" data-testid="image-container-{sanitizeForTestId(image.name)}">
 					<div class="flex items-center justify-between mb-2">
 						<!-- Display simplified image name -->
 						<h4 class="font-medium text-sm">{getSimpleName(image.name)}</h4>
@@ -76,7 +82,7 @@
 						{#each image.tags.slice(0, 5) as tag}
 							<a
 								href="/details/{getRepoPath(repo.name)}{image.name}/{tag.name}"
-								data-testid="tag-pill-{repo.name}-{image.name}-{tag.name}"
+								data-testid="tag-pill-{repo.name}-{sanitizeForTestId(image.name)}-{sanitizeForTestId(tag.name)}"
 								class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors min-w-[2.5rem] text-center
                   {tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-muted/50 text-foreground/80 hover:bg-muted border border-border/40 hover:border-border/60'}"
 							>

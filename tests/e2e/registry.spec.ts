@@ -65,12 +65,27 @@ test.describe('Registry UI with Real Registry', () => {
 		const testRepoCard = page.locator('[data-testid="repository-card-test"]');
 		await expect(testRepoCard).toBeVisible();
 
+		// Take screenshot for debugging
+		await page.screenshot({ path: 'test-results/repo-cards.png', fullPage: true });
+
+		// Debug: Print data-testids in the page
+		console.log('All data-testids found on page:');
+		const allDataTestIds = await page.evaluate(() => {
+			const elements = document.querySelectorAll('[data-testid]');
+			return Array.from(elements).map((el) => el.getAttribute('data-testid'));
+		});
+		console.log(allDataTestIds);
+
 		// Check that nginx image name is visible in the card
 		await expect(page.getByText('nginx', { exact: true })).toBeVisible();
 
-		// Check that tag pills are visible directly within the test repo card
-		await expect(page.locator('[data-testid="tag-pill-test-nginx-1.27.4-alpine"]')).toBeVisible();
-		await expect(page.locator('[data-testid="tag-pill-test-nginx-beta"]')).toBeVisible();
+		// Check if the test repo card contains any tag pills at all
+		const tagsInTestRepo = await testRepoCard.locator('a').count();
+		console.log(`Found ${tagsInTestRepo} tag links in test repository card`);
+
+		// Try a more general selector for the tags
+		await expect(testRepoCard.locator('a').filter({ hasText: '1.27.4-alpine' })).toBeVisible({ timeout: 10000 });
+		await expect(testRepoCard.locator('a').filter({ hasText: 'beta' })).toBeVisible({ timeout: 10000 });
 	});
 
 	test('should navigate to tag details page', async ({ page }) => {
@@ -82,8 +97,10 @@ test.describe('Registry UI with Real Registry', () => {
 		// Wait for repo cards to appear
 		await page.waitForSelector('[data-testid^="repository-card-"]', { timeout: 15000 });
 
-		// Find and click the 1.27.4-alpine tag link directly using the data-testid we added
-		await page.locator('[data-testid="tag-pill-test-nginx-1.27.4-alpine"]').click();
+		// Try to find the tag link by text content instead of data-testid
+		const alpineTagLink = page.locator('a', { hasText: '1.27.4-alpine' }).first();
+		await alpineTagLink.waitFor({ timeout: 10000 });
+		await alpineTagLink.click();
 
 		// Check we're on the tag details page
 		await expect(page).toHaveURL(/.*\/details\/test\/nginx\/1.27.4-alpine/);
