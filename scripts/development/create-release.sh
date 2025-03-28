@@ -13,7 +13,11 @@ increment_version() {
     local part=$2
 
     IFS='.' read -r -a parts <<<"$version"
-    if [ "$part" == "minor" ]; then
+    if [ "$part" == "major" ]; then
+        parts[0]=$((parts[0] + 1))
+        parts[1]=0
+        parts[2]=0
+    elif [ "$part" == "minor" ]; then
         parts[1]=$((parts[1] + 1))
         parts[2]=0
     elif [ "$part" == "patch" ]; then
@@ -22,16 +26,36 @@ increment_version() {
     echo "${parts[0]}.${parts[1]}.${parts[2]}"
 }
 
-RELEASE_TYPE=$1
+# Determine the release type
+if [ "$1" == "major" ]; then
+    RELEASE_TYPE="major"
+else
+    # Get the latest tag
+    LATEST_TAG=$(git describe --tags --abbrev=0)
 
-if [ "$RELEASE_TYPE" == "minor" ]; then
+    # Check for "feat" or "fix" in the commit messages since the latest tag
+    if git log "$LATEST_TAG"..HEAD --oneline | grep -q "feat"; then
+        RELEASE_TYPE="minor"
+    elif git log "$LATEST_TAG"..HEAD --oneline | grep -q "fix"; then
+        RELEASE_TYPE="patch"
+    else
+        echo "No 'fix' or 'feat' commits found since the latest release. No new release will be created."
+        exit 0
+    fi
+fi
+
+# Increment the version based on the release type
+if [ "$RELEASE_TYPE" == "major" ]; then
+    echo "Performing major release..."
+    NEW_VERSION=$(increment_version $VERSION major)
+elif [ "$RELEASE_TYPE" == "minor" ]; then
     echo "Performing minor release..."
     NEW_VERSION=$(increment_version $VERSION minor)
 elif [ "$RELEASE_TYPE" == "patch" ]; then
     echo "Performing patch release..."
     NEW_VERSION=$(increment_version $VERSION patch)
 else
-    echo "Invalid release type. Please enter either 'minor' or 'patch'."
+    echo "Invalid release type. Please enter either 'major', 'minor', or 'patch'."
     exit 1
 fi
 
@@ -58,7 +82,6 @@ fi
 
 # Generate changelog
 echo "Generating changelog..."
-# conventional-changelog -p conventionalcommits -i CHANGELOG.md -s --commit-path . --lerna-package . -t "" --config ./changelog.config.js
 conventional-changelog -p conventionalcommits -i CHANGELOG.md -s
 git add CHANGELOG.md
 
@@ -72,18 +95,29 @@ git tag "v$NEW_VERSION"
 git push
 git push --tags
 
+# Check if GitHub CLI is installed
 if ! command -v gh &>/dev/null; then
     echo "GitHub CLI (gh) is not installed. Please install it and authenticate using 'gh auth login'."
     exit 1
 fi
 
+# Extract the changelog content for the latest release
+echo "Extracting changelog content for version $NEW_VERSION..."
+CHANGELOG=$(awk '/^## / {if (NR > 1) exit} NR > 1 {print}' CHANGELOG.md | awk 'NR > 2 || NF {print}')
+
+if [ -z "$CHANGELOG" ]; then
+    echo "Error: Could not extract changelog for version $NEW_VERSION."
+    exit 1
+fi
+
+# Create the release on GitHub
 echo "Creating GitHub release..."
-gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes-from-tag
+gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes "$CHANGELOG"
 
 if [ $? -eq 0 ]; then
-    echo "GitLab release created successfully."
+    echo "GitHub release created successfully."
 else
-    echo "Error: Failed to create GitLab release."
+    echo "Error: Failed to create GitHub release."
     exit 1
 fi
 

@@ -154,6 +154,65 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 	}
 }
 
+/**
+ * Get detailed data for a specific repository
+ * @param repoName Name of the repository to fetch
+ * @returns Repository data with all images and tags
+ */
+export async function getRepositoryData(repoName: string): Promise<RegistryRepo | null> {
+	try {
+		logger.debug(`Fetching repository data for: ${repoName}`);
+
+		// Find the repository by name
+		const repo = db.prepare('SELECT id, name, last_synced FROM repositories WHERE name = ?').get(repoName) as { id: number; name: string; last_synced: string } | undefined;
+
+		if (!repo) {
+			logger.warn(`Repository not found: ${repoName}`);
+			return null;
+		}
+
+		// Get all images for this repository using the ImageModel
+		const images = ImageModel.getByRepositoryId(repo.id);
+
+		// For each image, get all tags with their metadata
+		const imagesWithTags = images.map((image) => {
+			// Get tags for this image
+			const tags = TagModel.getByImageId(image.id).map((tag) => {
+				// Get metadata for this tag
+				const tagWithMeta = TagModel.getWithMetadata(tag.id);
+
+				return {
+					id: tag.id,
+					name: tag.name,
+					digest: tag.digest,
+					created: tag.created,
+					image_id: tag.image_id,
+					metadata: tagWithMeta?.metadata || {}
+				};
+			});
+
+			return {
+				id: image.id,
+				name: image.name,
+				fullName: image.fullName,
+				repository_id: image.repository_id,
+				tags
+			};
+		});
+
+		// Return the complete repository data in the expected format
+		return {
+			id: repo.id,
+			name: repo.name,
+			lastSynced: repo.last_synced,
+			images: imagesWithTags
+		};
+	} catch (error) {
+		logger.error(`Failed to get repository data for ${repoName}:`, error);
+		return null;
+	}
+}
+
 // Query repositories with pagination and search
 export async function getRepositories({ page = 1, limit = 10, search = '' }: { page?: number; limit?: number; search?: string }): Promise<{
 	repositories: RegistryRepo[];
@@ -202,21 +261,40 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 					return {
 						name: tag.name,
 						digest: tag.digest,
-						metadata: tagWithMeta?.metadata || {}
+						// Fix the type mismatch by ensuring all required properties are present
+						metadata: tagWithMeta?.metadata
+							? {
+									...tagWithMeta.metadata,
+									// Add required properties with default values if missing
+									configDigest: tagWithMeta.digest,
+									created: tagWithMeta.metadata.created || '',
+									os: tagWithMeta.metadata.os || 'unknown',
+									architecture: tagWithMeta.metadata.architecture || 'unknown',
+									dockerFile: tagWithMeta.metadata.dockerFile || '',
+									exposedPorts: tagWithMeta.metadata.exposedPorts || [],
+									totalSize: tagWithMeta.metadata.totalSize ? String(tagWithMeta.metadata.totalSize) : '0',
+									workDir: tagWithMeta.metadata.workDir || '',
+									command: tagWithMeta.metadata.command || '',
+									description: tagWithMeta.metadata.description || '',
+									contentDigest: tagWithMeta.metadata.contentDigest || '',
+									entrypoint: tagWithMeta.metadata.entrypoint || '',
+									indexDigest: tagWithMeta.metadata.indexDigest || '',
+									isOCI: Boolean(tagWithMeta.metadata.isOCI)
+								}
+							: undefined
 					};
 				});
 
 				return {
 					name: image.name,
 					fullName: image.fullName,
-					lastSynced: repo.last_synced,
 					tags
 				};
 			});
 
 			return {
 				name: repo.repoName,
-				lastSynced: repo.last_synced, // Make sure last_synced is included in the response
+				lastSynced: repo.last_synced,
 				images
 			};
 		});

@@ -49,38 +49,38 @@
 	});
 </script>
 
-<Card.Root>
-	<Card.Header class="cursor-pointer rounded-lg" onclick={toggleExpanded}>
+<Card.Root class="overflow-hidden transition-all duration-200 hover:shadow-md">
+	<Card.Header class="cursor-pointer rounded-t-lg bg-card/90 hover:bg-card/70 transition-colors" onclick={toggleExpanded}>
 		<div data-testid="repository-row" class="flex items-center justify-between">
 			<div>
 				<div class="flex flex-wrap items-center gap-2">
-					<Card.Title>
+					<Card.Title class="text-lg tracking-tight">
 						{title}
 					</Card.Title>
 					{#if title === 'library'}
-						<Badge variant="outline" class="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 h-6 min-w-35 px-4 text-sm justify-center">
-							<span class="text-xs font-medium">Default Namespace</span>
-						</Badge>
+						<Badge variant="outline" class="bg-blue-100/90 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800/70 px-3 py-0.5 text-xs font-medium rounded-full">Default Namespace</Badge>
 					{/if}
 				</div>
-				{#if description}
+				{#if description || lastSynced}
 					<Card.Description>
-						{description}
+						{description || ''}
 						{#if lastSynced}
-							<br />
-							<span class="text-xs text-muted-foreground">{lastSynced}</span>
-						{/if}</Card.Description
-					>
+							<div class="flex items-center gap-1.5 mt-1">
+								<span class="inline-block w-2 h-2 rounded-full bg-primary/30"></span>
+								<span class="text-xs text-muted-foreground">{lastSynced}</span>
+							</div>
+						{/if}
+					</Card.Description>
 				{/if}
 			</div>
-			<Button class="ml-10 h-8 p-3 shrink-0" variant="ghost" aria-label="Expand card">
-				<LucideChevronDown class={cn('h-5 w-5 transition-transform duration-200', expanded && 'rotate-180 transform')} />
+			<Button class="ml-10 h-8 w-8 p-0 shrink-0 rounded-full" variant="ghost" aria-label="Expand card">
+				<LucideChevronDown class={cn('h-4 w-4 transition-transform duration-300 ease-in-out', expanded && 'rotate-180 transform')} />
 			</Button>
 		</div>
 	</Card.Header>
 	{#if expanded}
-		<div transition:slide={{ duration: 200 }}>
-			<Card.Content class="">
+		<div transition:slide={{ duration: 200, easing: (t) => 1 - Math.pow(1 - t, 3) }}>
+			<Card.Content class="pt-4">
 				{@render children()}
 			</Card.Content>
 		</div>

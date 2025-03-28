@@ -4,6 +4,7 @@
 	import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js';
 	import type { RegistryRepo } from '$lib/models/repo.ts';
 	import { columns } from '$lib/models/image-table.ts';
+	import { Database, Package2 } from 'lucide-svelte';
 
 	export let repoIndex: number;
 	export let filteredData: RegistryRepo[];
@@ -54,13 +55,13 @@
 <!-- Table Documentation: https://next.shadcn-svelte.com/docs/components/data-table  -->
 
 {#if filteredData[repoIndex].images.length > 0}
-	<div class="rounded-md border">
+	<div class="rounded-xl border shadow-sm bg-card overflow-hidden transition-all hover:border-border/80">
 		<Table.Root>
 			<Table.Header>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-					<Table.Row>
+					<Table.Row class="bg-muted/20 hover:bg-muted/50 transition-colors">
 						{#each headerGroup.headers as header (header.id)}
-							<Table.Head>
+							<Table.Head class="font-medium text-muted-foreground">
 								{#if !header.isPlaceholder}
 									<FlexRender content={header.column.columnDef.header} context={header.getContext()} />
 								{/if}
@@ -71,21 +72,23 @@
 			</Table.Header>
 			<Table.Body>
 				{#each table.getRowModel().rows as row (row.id)}
-					<Table.Row data-testid="image-row-{row.original.name.replace(/[^\w]/g, '-')}" data-state={row.getIsSelected() && 'selected'}>
+					<Table.Row data-testid="image-row-{row.original.name.replace(/[^\w]/g, '-')}" data-state={row.getIsSelected() && 'selected'} class="transition-colors hover:bg-muted/20 group">
 						{#each row.getVisibleCells() as cell (cell.id)}
 							<Table.Cell>
 								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
 							</Table.Cell>
 						{/each}
 					</Table.Row>
-				{:else}
-					<Table.Row>
-						<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
-					</Table.Row>
 				{/each}
 			</Table.Body>
 		</Table.Root>
 	</div>
 {:else}
-	<p class="text-lg font-light">No Tags Found.</p>
+	<div class="rounded-xl border bg-card/30 p-8 text-center shadow-sm backdrop-blur-sm transition-all">
+		<div class="flex flex-col items-center justify-center space-y-3">
+			<Package2 class="h-12 w-12 text-muted-foreground/40" />
+			<p class="text-lg font-medium text-muted-foreground">No Images Found</p>
+			<p class="text-sm text-muted-foreground/70">This repository doesn't have any images yet.</p>
+		</div>
+	</div>
 {/if}

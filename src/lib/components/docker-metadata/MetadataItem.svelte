@@ -15,12 +15,12 @@
 	$: isUnknown = !value || String(value).includes('Unknown');
 </script>
 
-<div>
-	<Label for={label} class="font-light text-muted-foreground flex items-center gap-2 pb-2">
-		<svelte:component this={icon} class="w-5 h-5" />
+<div class="bg-card/30 p-4 rounded-lg border border-border/50 transition-all hover:border-border/80">
+	<Label for={label} class="font-medium text-muted-foreground flex items-center gap-2 pb-2">
+		<svelte:component this={icon} class="w-4 h-4 text-primary/70" />
 		{label}
 	</Label>
-	<p class={cn('text-sm font-semibold pb-2', isUnknown ? 'text-destructive' : '')} id={label}>
+	<p class={cn('text-sm font-medium pb-1', isUnknown ? 'text-destructive/80' : 'text-foreground', isUnknown ? 'italic' : '')} id={label}>
 		{displayValue}
 	</p>
 </div>
