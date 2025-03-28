@@ -44,7 +44,7 @@
 	}
 </script>
 
-<div class="repo-card bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden transition-all hover:shadow-md hover:border-border/80 flex flex-col h-full">
+<div class="repo-card bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden transition-all hover:shadow-md hover:border-border/80 flex flex-col h-full" data-testid="repository-card-{repo.name}">
 	<div class="p-5 flex-grow">
 		<!-- Header section with repo name and badge -->
 		<div class="flex justify-between items-start mb-3">
@@ -75,7 +75,8 @@
 					<div class="flex flex-wrap gap-2 mt-3">
 						{#each image.tags.slice(0, 5) as tag}
 							<a
-								href={getDetailUrl(repo.name, getSimpleName(image.name), tag.name)}
+								href="/details/{getRepoPath(repo.name)}{image.name}/{tag.name}"
+								data-testid="tag-pill-{repo.name}-{image.name}-{tag.name}"
 								class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors min-w-[2.5rem] text-center
                   {tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-muted/50 text-foreground/80 hover:bg-muted border border-border/40 hover:border-border/60'}"
 							>

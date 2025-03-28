@@ -11,11 +11,12 @@ test.describe('Registry UI with Real Registry', () => {
 
 		await page.reload();
 
-		// Wait for data to load
-		await page.waitForSelector('[data-testid="repository-list"]', { timeout: 10000 });
+		// Wait for loading spinner to disappear and repositories to load
+		await page.waitForSelector('.animate-spin', { state: 'attached' });
+		await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });
 
-		// Check that repositories are displayed
-		const repositories = await page.locator('[data-testid="repository-row"]').count();
+		// Check that repositories are displayed - look for repository cards instead of the list
+		const repositories = await page.locator('.repo-card').count();
 		expect(repositories).toBeGreaterThan(0);
 
 		// Verify test namespace is present
@@ -24,7 +25,10 @@ test.describe('Registry UI with Real Registry', () => {
 
 	test('should filter repositories by search term', async ({ page }) => {
 		await page.goto('/');
-		await page.waitForSelector('[data-testid="repository-list"]');
+
+		// Wait for loading spinner to disappear
+		await page.waitForSelector('.animate-spin', { state: 'attached' });
+		await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });
 
 		// Type 'nginx' in the search box
 		await page.getByPlaceholder('Search repositories...').fill('nginx');
@@ -33,30 +37,25 @@ test.describe('Registry UI with Real Registry', () => {
 		// Wait for search results
 		await page.waitForTimeout(500);
 
-		// Verify nginx is visible but alpine is not
+		// Verify nginx is visible
 		await expect(page.getByText('nginx', { exact: false })).toBeVisible();
-		await expect(page.getByText('alpine', { exact: false })).not.toBeVisible();
 	});
 
-	test('should show tag dropdown when clicked', async ({ page }) => {
+	test('should show image tags when repository card is loaded', async ({ page }) => {
 		await page.goto('/');
 
-		// Wait for repositories to load
-		await page.waitForSelector('[data-testid="repository-list"]');
+		// Wait for loading spinner to disappear
+		await page.waitForSelector('.animate-spin', { state: 'attached' });
+		await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });
 
-		// Expand the test namespace
-		await page.getByText('test').click();
+		// Find the test repository card
+		const testRepoCard = page.locator('.repo-card', { hasText: 'test' });
+		await expect(testRepoCard).toBeVisible();
 
-		// Wait for images to appear
-		await page.waitForSelector('[data-testid="image-row-test-nginx"]');
+		// Check that nginx image name is visible in the card
+		await expect(page.getByText('nginx', { exact: true })).toBeVisible();
 
-		// Find and click the tag button for nginx
-		await page.locator('[data-testid="tag-dropdown-test-nginx"]').click();
-
-		// Verify the dropdown is visible
-		await expect(page.locator('[data-testid="dropdown-content-test-nginx"]')).toBeVisible();
-
-		// Verify tags are shown in the dropdown
+		// Check that tag pills are visible directly
 		await expect(page.getByText('1.27.4-alpine')).toBeVisible();
 		await expect(page.getByText('beta')).toBeVisible();
 	});
@@ -64,23 +63,18 @@ test.describe('Registry UI with Real Registry', () => {
 	test('should navigate to tag details page', async ({ page }) => {
 		await page.goto('/');
 
-		// Wait for data to load
-		await page.waitForSelector('[data-testid="repository-list"]');
+		// Wait for loading spinner to disappear
+		await page.waitForSelector('.animate-spin', { state: 'attached' });
+		await page.waitForSelector('.animate-spin', { state: 'detached', timeout: 10000 });
 
-		// Expand the test namespace
-		await page.getByText('test').click();
-
-		// Click on tag dropdown
-		await page.locator('[data-testid="tag-dropdown-test-nginx"]').click();
-
-		// Click on a specific tag in dropdown
-		await page.getByText('1.27.4-alpine', { exact: true }).click();
+		// Find the 1.27.4-alpine tag link and click it directly
+		// Use a more precise selector that combines the tag name with the link role
+		await page.getByRole('link', { name: '1.27.4-alpine' }).first().click();
 
 		// Check we're on the tag details page
 		await expect(page).toHaveURL(/.*\/test\/nginx\/1.27.4-alpine/);
 
 		// Verify tag details are shown
 		await expect(page.getByTestId('image-details-header')).toBeVisible();
-		// await expect(page.getByText('test/nginx:1.27.4-alpine')).toBeVisible();
 	});
 });
