@@ -6,9 +6,9 @@
 	import { env } from '$env/dynamic/public';
 
 	// Toggle theme function
-	function toggleTheme() {
-		$mode = $mode === 'dark' ? 'light' : 'dark';
-	}
+	// function toggleTheme() {
+	// 	$mode = $mode === 'dark' ? 'light' : 'dark';
+	// }
 </script>
 
 <header class="w-full border-b border-border/40 bg-background/95 backdrop-blur-sm fixed top-0 z-40">
@@ -30,13 +30,13 @@
 				<HomeIcon size={18} />
 			</a>
 
-			<Button variant="ghost" size="icon" onclick={toggleTheme} class="text-muted-foreground hover:text-foreground" aria-label="Toggle theme">
+			<!-- <Button variant="ghost" size="icon" onclick={toggleTheme} class="text-muted-foreground hover:text-foreground" aria-label="Toggle theme">
 				{#if $mode === 'dark'}
 					<Sun size={18} />
 				{:else}
 					<Moon size={18} />
 				{/if}
-			</Button>
+			</Button> -->
 
 			<a href="https://github.com/kmendell/svelocker-ui" class="inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors" target="_blank" rel="noopener noreferrer">
 				<Github size={14} />
