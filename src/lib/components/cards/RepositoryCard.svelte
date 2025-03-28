@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { formatDistanceToNow } from 'date-fns';
-	import TextBadge from '$lib/components/text-badge.svelte';
-	import CountBadge from '$lib/components/count-badge.svelte';
+	import TextBadge from '$lib/components/badges/text-badge.svelte';
+	import CountBadge from '$lib/components/badges/count-badge.svelte';
 	import type { RegistryRepo } from '$lib/models/repo';
 
 	export let repo: RegistryRepo;

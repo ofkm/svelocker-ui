@@ -5,11 +5,11 @@
 	import { Search, AlertCircle, RefreshCw, Database } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 	import { env } from '$env/dynamic/public';
-	import SyncButton from '$lib/components/SyncButton.svelte';
+	import SyncButton from '$lib/components/buttons/SyncButton.svelte';
 	import type { RegistryRepo } from '$lib/models/repo';
 	import { onMount } from 'svelte';
 	import { lastSyncTimestamp, isSyncing } from '$lib/stores/sync-store';
-	import RepositoryCard from '$lib/components/RepositoryCard.svelte';
+	import RepositoryCard from '$lib/components/cards/RepositoryCard.svelte';
 
 	let { data }: PageProps = $props();
 	const isHealthy = data.healthStatus?.isHealthy;

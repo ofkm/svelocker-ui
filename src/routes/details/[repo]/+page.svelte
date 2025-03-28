@@ -2,8 +2,8 @@
 	import { page } from '$app/stores';
 	import { Home, Slash, Database, ArrowLeft, Layers } from 'lucide-svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-	import CountBadge from '$lib/components/count-badge.svelte';
-	import TextBadge from '$lib/components/text-badge.svelte';
+	import CountBadge from '$lib/components/badges/count-badge.svelte';
+	import TextBadge from '$lib/components/badges/text-badge.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { formatDistanceToNow } from 'date-fns';
 	import { env } from '$env/dynamic/public';

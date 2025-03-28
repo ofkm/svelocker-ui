@@ -3,8 +3,8 @@
 	import { LucideChevronDown } from 'lucide-svelte';
 	import { onMount, type Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { Button } from './ui/button';
-	import * as Card from './ui/card';
+	import { Button } from '../ui/button';
+	import * as Card from '../ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 
 	let {
