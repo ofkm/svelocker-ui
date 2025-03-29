@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { db } from '$lib/services/database/connection';
 import { Logger } from '$lib/services/logger';
 import type { PageServerLoad } from './$types';
-import type { TagMetadata, Image, Repository, TagWithMetadata, Tag } from '$lib/services/database/types';
+import type { TagMetadata, Image, Repository, TagWithMetadata, Tag } from '$lib/types/db';
 import { parseJSON, parseCommandOrEntrypoint } from '$lib/services/database/models/tag';
 
 // Create a proper interface for the database query result

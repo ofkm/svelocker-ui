@@ -48,6 +48,7 @@ export async function getRegistryReposAxios(url: string): Promise<RegistryRepos>
 		const namespacePromises = Object.entries(reposByNamespace).map(async ([namespace, repos]) => {
 			// Create a namespace object
 			const namespaceObj: RegistryRepo = {
+				id: namespace, // Using namespace as id
 				name: namespace,
 				images: []
 			};

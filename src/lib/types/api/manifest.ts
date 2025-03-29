@@ -93,6 +93,3 @@ export interface ManifestResponse {
 		'content-type'?: string;
 	};
 }
-
-// Re-export the ImageMetadata type from your models for convenience
-export type { ImageMetadata } from '$lib/models/metadata';
