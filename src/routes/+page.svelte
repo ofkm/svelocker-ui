@@ -6,7 +6,7 @@
 	import type { PageProps } from './$types';
 	import { env } from '$env/dynamic/public';
 	import SyncButton from '$lib/components/buttons/SyncButton.svelte';
-	import type { RegistryRepo } from '$lib/models/repo';
+	import type { RegistryRepo } from '$lib/types/api/registry';
 	import { onMount } from 'svelte';
 	import { lastSyncTimestamp, isSyncing } from '$lib/stores/sync-store';
 	import RepositoryCard from '$lib/components/cards/RepositoryCard.svelte';

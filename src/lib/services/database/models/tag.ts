@@ -1,68 +1,5 @@
-import type { ImageTag } from '$lib/models/tag';
 import { db } from '../connection';
-
-// Define interfaces for database records and results
-interface TagRecord {
-	id: number;
-	image_id: number;
-	name: string;
-	digest: string;
-	created_at: string;
-}
-
-// Define the Tag object structure returned by model methods
-interface Tag {
-	id: number;
-	imageId: number;
-	name: string;
-	digest: string;
-	createdAt?: Date;
-}
-
-// Define metadata structure
-interface TagMetadata {
-	created?: string;
-	os?: string;
-	architecture?: string;
-	author?: string;
-	dockerFile?: string;
-	exposedPorts?: string[] | null;
-	totalSize?: number;
-	workDir?: string;
-	command?: string | string[] | null;
-	description?: string;
-	contentDigest?: string;
-	entrypoint?: string | string[] | null;
-	isOCI?: boolean;
-	indexDigest?: string;
-}
-
-// Define tag with metadata
-interface TagWithMetadata extends Tag {
-	metadata: TagMetadata;
-}
-
-// Define interface for database query result including metadata
-interface TagMetadataRecord {
-	id: number;
-	image_id: number;
-	name: string;
-	digest: string;
-	created_at: string | null;
-	os: string | null;
-	architecture: string | null;
-	author: string | null;
-	dockerFile: string | null;
-	exposedPorts: string | null;
-	totalSize: number | null;
-	workDir: string | null;
-	command: string | null;
-	description: string | null;
-	contentDigest: string | null;
-	entrypoint: string | null;
-	isOCI: number | null;
-	indexDigest: string | null;
-}
+import type { TagRecord, TagWithMetadataRecord, Tag, TagMetadata, TagWithMetadata } from '$lib/types/db';
 
 // Define count result interface
 interface CountResult {
@@ -159,7 +96,7 @@ export const TagModel = {
         WHERE t.id = ?
       `
 			)
-			.get(tagId) as TagMetadataRecord | undefined;
+			.get(tagId) as TagWithMetadataRecord | undefined;
 
 		if (!result) return undefined;
 
@@ -171,19 +108,19 @@ export const TagModel = {
 			digest: result.digest,
 			metadata: {
 				created: result.created_at || undefined,
-				os: result.os || undefined,
-				architecture: result.architecture || undefined,
-				author: result.author || undefined,
-				dockerFile: result.dockerFile || undefined,
-				exposedPorts: parseJSON(result.exposedPorts, []),
-				totalSize: result.totalSize || undefined,
-				workDir: result.workDir || undefined,
-				command: parseCommandOrEntrypoint(result.command),
-				description: result.description || undefined,
-				contentDigest: result.contentDigest || undefined,
-				entrypoint: parseCommandOrEntrypoint(result.entrypoint),
-				isOCI: result.isOCI ? Boolean(result.isOCI) : undefined,
-				indexDigest: result.indexDigest || undefined
+				os: result.meta_os || undefined,
+				architecture: result.meta_architecture || undefined,
+				author: result.meta_author || undefined,
+				dockerFile: result.meta_dockerFile || undefined,
+				exposedPorts: result.meta_exposedPorts ? parseJSON(result.meta_exposedPorts, []) : [],
+				totalSize: result.meta_totalSize || undefined,
+				workDir: result.meta_workDir || undefined,
+				command: result.meta_command ? parseCommandOrEntrypoint(result.meta_command) : null,
+				description: result.meta_description || undefined,
+				contentDigest: result.meta_contentDigest || undefined,
+				entrypoint: result.meta_entrypoint ? parseCommandOrEntrypoint(result.meta_entrypoint) : null,
+				isOCI: result.meta_isOCI ? Boolean(result.meta_isOCI) : undefined,
+				indexDigest: result.meta_indexDigest || undefined
 			}
 		};
 	},

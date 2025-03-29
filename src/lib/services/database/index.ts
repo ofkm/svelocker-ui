@@ -1,11 +1,15 @@
 // src/lib/services/db/index.ts
 import { db } from './connection';
-import { runMigrations, getDatabaseInfo, migrations } from './migrations'; // Add migrations here
+import { runMigrations, getDatabaseInfo, migrations } from './migrations';
 import { RepositoryModel } from './models/repository';
 import { ImageModel } from './models/image';
 import { TagModel } from './models/tag';
-import type { RegistryRepo } from '$lib/models';
 import { Logger } from '$lib/services/logger';
+
+// Import centralized types
+import type { Repository, Image, Tag, TagMetadata, TagWithMetadata } from '$lib/types/db';
+import type { RepositoryRecord, ImageRecord, TagRecord, TagMetadataRecord, TagWithMetadataRecord } from '$lib/types/db';
+import type { RegistryRepo, RepoImage, ImageTag } from '$lib/types/api/registry';
 
 const logger = Logger.getInstance('DBService');
 
@@ -18,7 +22,7 @@ export async function initDatabase(): Promise<void> {
 }
 
 // Helper function to sync images for a repository
-function syncRepoImages(repoId: number, images: { name: string; fullName: string; tags: any[] }[], stats: any): void {
+function syncRepoImages(repoId: number, images: RepoImage[], stats: Record<string, number>): void {
 	// 1. Get existing images
 	const existingImages = ImageModel.getByRepositoryId(repoId);
 	const existingImageMap = new Map(existingImages.map((img) => [img.fullName, img]));
@@ -63,7 +67,7 @@ function syncRepoImages(repoId: number, images: { name: string; fullName: string
 }
 
 // Helper function to sync tags for an image
-function syncImageTags(imageId: number, tags: { name: string; digest: string; metadata?: any }[], stats: any, repoId: number): void {
+function syncImageTags(imageId: number, tags: ImageTag[], stats: Record<string, number>, repoId: number): void {
 	let changesDetected = false;
 
 	try {
@@ -78,8 +82,10 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 		for (const tag of tags) {
 			foundTagNames.add(tag.name);
 
-			// Get digest (default to empty if not available)
-			const digest = tag.metadata?.configDigest || tag.digest || '';
+			// Fix the type issue - make sure we handle all potential undefined/null cases
+			// Using type assertion to help TypeScript understand the structure
+			const tagMetadata = tag.metadata as TagMetadata | undefined;
+			const digest = tagMetadata?.configDigest || '';
 
 			// Check if tag exists
 			const existingTag = existingTagMap.get(tag.name);
@@ -91,17 +97,18 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 				// Get metadata for existing tag
 				const existingTagWithMeta = TagModel.getWithMetadata(existingTag.id);
 
-				// Check if metadata has changed by comparing the existing metadata with the new one
-				const metadataChanged = existingTagWithMeta?.metadata && tag.metadata && JSON.stringify(existingTagWithMeta.metadata) !== JSON.stringify(tag.metadata);
+				// Fix type issue with metadata comparison
+				const metadataChanged = existingTagWithMeta?.metadata && tagMetadata && JSON.stringify(existingTagWithMeta.metadata) !== JSON.stringify(tagMetadata);
 
 				if (digestChanged || metadataChanged) {
 					try {
-						// Your existing update logic
+						// Update logic
 						TagModel.delete(existingTag.id);
 						const tagId = TagModel.create(imageId, tag.name, digest);
 
-						if (tag.metadata) {
-							TagModel.saveMetadata(tagId, tag.metadata);
+						// Make sure we handle the case where tag.metadata might be undefined
+						if (tagMetadata) {
+							TagModel.saveMetadata(tagId, tagMetadata);
 						}
 						stats.updatedTags++;
 
@@ -116,9 +123,9 @@ function syncImageTags(imageId: number, tags: { name: string; digest: string; me
 					// Create new tag
 					const tagId = TagModel.create(imageId, tag.name, digest);
 
-					// Save metadata if available
-					if (tag.metadata) {
-						TagModel.saveMetadata(tagId, tag.metadata);
+					// Save metadata if available - with type assertion for clarity
+					if (tagMetadata) {
+						TagModel.saveMetadata(tagId, tagMetadata);
 					}
 					stats.addedTags++;
 
@@ -164,7 +171,7 @@ export async function getRepositoryData(repoName: string): Promise<RegistryRepo 
 		logger.debug(`Fetching repository data for: ${repoName}`);
 
 		// Find the repository by name
-		const repo = db.prepare('SELECT id, name, last_synced FROM repositories WHERE name = ?').get(repoName) as { id: number; name: string; last_synced: string } | undefined;
+		const repo = db.prepare('SELECT id, name, last_synced FROM repositories WHERE name = ?').get(repoName) as RepositoryRecord | undefined;
 
 		if (!repo) {
 			logger.warn(`Repository not found: ${repoName}`);
@@ -185,8 +192,8 @@ export async function getRepositoryData(repoName: string): Promise<RegistryRepo 
 					id: tag.id,
 					name: tag.name,
 					digest: tag.digest,
-					created: tag.created,
-					image_id: tag.image_id,
+					created: tag.createdAt,
+					image_id: tag.imageId,
 					metadata: tagWithMeta?.metadata || {}
 				};
 			});
@@ -195,7 +202,7 @@ export async function getRepositoryData(repoName: string): Promise<RegistryRepo 
 				id: image.id,
 				name: image.name,
 				fullName: image.fullName,
-				repository_id: image.repository_id,
+				repository_id: image.repositoryId,
 				tags
 			};
 		});
@@ -226,16 +233,16 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 		// Search pattern
 		const searchPattern = `%${search}%`;
 
-		// Get paginated repositories
+		// Get paginated repositories using centralized types
 		const repos = db
 			.prepare(
 				`
-      SELECT r.id, r.name as repoName, r.last_synced
-      FROM repositories r
-      WHERE r.name LIKE ?
-      ORDER BY r.name
-      LIMIT ? OFFSET ?
-    `
+        SELECT r.id, r.name as repoName, r.last_synced
+        FROM repositories r
+        WHERE r.name LIKE ?
+        ORDER BY r.name
+        LIMIT ? OFFSET ?
+        `
 			)
 			.all(searchPattern, limit, (page - 1) * limit) as { id: number; repoName: string; last_synced: string }[];
 
@@ -243,10 +250,10 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 		const countResult = db
 			.prepare(
 				`
-      SELECT COUNT(*) as count
-      FROM repositories r
-      WHERE r.name LIKE ?
-    `
+        SELECT COUNT(*) as count
+        FROM repositories r
+        WHERE r.name LIKE ?
+        `
 			)
 			.get(searchPattern) as { count: number };
 
@@ -266,7 +273,7 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 							? {
 									...tagWithMeta.metadata,
 									// Add required properties with default values if missing
-									configDigest: tagWithMeta.digest,
+									configDigest: tagWithMeta.metadata.configDigest || tag.digest,
 									created: tagWithMeta.metadata.created || '',
 									os: tagWithMeta.metadata.os || 'unknown',
 									architecture: tagWithMeta.metadata.architecture || 'unknown',
@@ -326,7 +333,6 @@ export async function incrementalSync(registryData: RegistryRepo[], options = { 
 	}
 
 	// Check if there are pending migrations
-	// Using non-async function now
 	if (dbInfo.version < getLatestMigrationVersion()) {
 		logger.info('Performing full sync due to schema version mismatch');
 		return deltaSync(registryData);
@@ -337,12 +343,12 @@ export async function incrementalSync(registryData: RegistryRepo[], options = { 
 	return deltaSync(registryData);
 }
 
-// Helper to get latest migration version - simplify this function
+// Helper to get latest migration version
 function getLatestMigrationVersion(): number {
 	return migrations[migrations.length - 1].version;
 }
 
-// Define an interface for the result
+// Define an interface for the settings result
 interface SettingValue {
 	value: string;
 }
@@ -367,7 +373,7 @@ export function getLastSyncTime(): { value: number } | undefined {
 }
 
 // Update the last sync time in the database
-export function updateLastSyncTime(timestamp: number) {
+export function updateLastSyncTime(timestamp: number): void {
 	try {
 		const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
 		stmt.run('last_sync_time', timestamp);
@@ -376,7 +382,7 @@ export function updateLastSyncTime(timestamp: number) {
 	}
 }
 
-// Delta sync implementation (renamed from previous syncFromRegistry)
+// Delta sync implementation
 async function deltaSync(registryData: RegistryRepo[]): Promise<void> {
 	logger.info(`Starting delta sync for ${registryData.length} repositories`);
 
@@ -433,16 +439,9 @@ async function deltaSync(registryData: RegistryRepo[]): Promise<void> {
 			}
 
 			// 4. Remove repositories that no longer exist in the registry
-			// Only if we have a complete registry dataset
 			if (registryData.length > 0) {
-				// Collect repo names to keep
-				const repoNamesToKeep = Array.from(foundRepoNames);
-
-				// Instead of deleting repositories one by one, use a safer method:
-				// First, identify repositories to remove
 				const reposToRemove = existingRepos.filter((repo) => !foundRepoNames.has(repo.name));
 
-				// For each repository to remove, first delete all related data
 				for (const repo of reposToRemove) {
 					try {
 						// Get all images for this repository
@@ -450,7 +449,6 @@ async function deltaSync(registryData: RegistryRepo[]): Promise<void> {
 
 						// For each image, delete all tags first
 						for (const image of images) {
-							// Get tags for this image
 							const tags = TagModel.getByImageId(image.id);
 
 							// Delete all tag metadata and tags
@@ -484,15 +482,15 @@ async function deltaSync(registryData: RegistryRepo[]): Promise<void> {
 	}
 }
 
-function shouldUpdateRepo(existingRepo: any, newRepo: any): boolean {
+function shouldUpdateRepo(existingRepo: Repository, newRepo: RegistryRepo): boolean {
 	// Define your criteria for updating repos
 	// For example, update timestamp every N hours
-	const lastSyncTime = new Date(existingRepo.last_synced).getTime();
+	const lastSyncTime = new Date(existingRepo.lastSynced).getTime();
 	const hoursSinceLastSync = (Date.now() - lastSyncTime) / (1000 * 60 * 60);
 	return hoursSinceLastSync > 24; // Only update once per day
 }
 
-// Track sync status
+// Track sync status using centralized record types
 export function getSyncStatus(): {
 	lastSync: number | null;
 	duration: number | null;
@@ -503,7 +501,7 @@ export function getSyncStatus(): {
 } {
 	try {
 		// Get last sync time
-		const lastSyncResult = db.prepare('SELECT value FROM settings WHERE key = ?').get('last_sync_time') as { value: number } | undefined;
+		const lastSyncResult = db.prepare('SELECT value FROM settings WHERE key = ?').get('last_sync_time') as SettingValue | undefined;
 
 		// Get counts
 		const repoCount = RepositoryModel.count();
@@ -511,14 +509,14 @@ export function getSyncStatus(): {
 		const tagCount = db.prepare('SELECT COUNT(*) as count FROM tags').get() as { count: number };
 
 		// Get last sync duration
-		const durationResult = db.prepare('SELECT value FROM settings WHERE key = ?').get('last_sync_duration') as { value: number } | undefined;
+		const durationResult = db.prepare('SELECT value FROM settings WHERE key = ?').get('last_sync_duration') as SettingValue | undefined;
 
 		// Get last error
-		const lastErrorResult = db.prepare('SELECT value FROM settings WHERE key = ?').get('last_sync_error') as { value: string } | undefined;
+		const lastErrorResult = db.prepare('SELECT value FROM settings WHERE key = ?').get('last_sync_error') as SettingValue | undefined;
 
 		return {
-			lastSync: lastSyncResult?.value || null,
-			duration: durationResult?.value || null,
+			lastSync: lastSyncResult?.value ? parseInt(lastSyncResult.value, 10) : null,
+			duration: durationResult?.value ? parseInt(durationResult.value, 10) : null,
 			repoCount,
 			imageCount: imageCount.count,
 			tagCount: tagCount.count,

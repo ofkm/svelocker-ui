@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import type { RepoImage, ImageTag } from '$lib/models';
+import type { RepoImage, ImageTag } from '$lib/types/api/registry';
 import { fetchDockerMetadata } from '$lib/utils/api';
 import { Logger } from '$lib/services/logger';
 import { getAuthHeaders } from '$lib/utils/api/auth';

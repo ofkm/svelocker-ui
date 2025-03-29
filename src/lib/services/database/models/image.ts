@@ -1,6 +1,6 @@
 // src/lib/services/db/models/image.ts
 import { db } from '../connection';
-import type { ImageRecord, Image } from '../types';
+import type { ImageRecord, Image } from '$lib/types/db';
 
 export const ImageModel = {
 	// Create a new image

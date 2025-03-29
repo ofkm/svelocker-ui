@@ -1,6 +1,6 @@
 // src/lib/services/db/models/repository.ts
 import { db } from '../connection';
-import type { RepositoryRecord, Repository } from '../types';
+import type { RepositoryRecord, Repository } from '$lib/types/db';
 
 export const RepositoryModel = {
 	// Create a new repository

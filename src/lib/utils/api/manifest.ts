@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import type { ImageMetadata, ImageTag, RepoImage } from '$lib/models';
+import type { ImageMetadata, ImageTag, RepoImage } from '$lib/types/api/registry';
 import { Logger } from '$lib/services/logger';
 import { calculateSha256, filterAttestationManifests, formatSize } from '$lib/utils/formatting';
 import { getBasicAuth, getAuthHeaders } from '$lib/utils/api/auth';
