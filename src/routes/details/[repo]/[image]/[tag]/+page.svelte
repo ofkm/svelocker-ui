@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { AppWindowMac, Trash2, CalendarCog, CircuitBoard, UserPen, EthernetPort, Slash, Scaling, Terminal, FolderCode, Home, Copy, ArrowLeft, RefreshCw } from 'lucide-svelte';
-	import { Separator } from '$lib/components/ui/separator';
+	import { AppWindowMac, Trash2, CalendarCog, CircuitBoard, UserPen, EthernetPort, Slash, Scaling, Terminal, FolderCode, Home, Copy, ArrowLeft, RefreshCw } from '@lucide/svelte';
 	import { copyTextToClipboard } from '$lib/utils/ui';
 	import { convertTimeString } from '$lib/utils/formatting';
-	import { Badge } from '$lib/components/ui/badge';
 	import MetadataItem from '$lib/components/docker-metadata/MetadataItem.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.ts';
 	import type { PageData } from './$types';
@@ -12,10 +10,14 @@
 	import { toast } from 'svelte-sonner';
 	import { env } from '$env/dynamic/public';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { copyDockerRunCommand } from '$lib/utils/ui';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	// Script content unchanged
 
@@ -34,11 +36,11 @@
 		});
 	}
 
-	$: currentTag = data.tag.tags[data.tagIndex];
+	let currentTag = $derived(data.tag.tags[data.tagIndex]);
 
 	// Error handling
-	let loadError = false;
-	let errorMessage = '';
+	let loadError = $state(false);
+	let errorMessage = $state('');
 
 	onMount(async () => {
 		if (currentTag && (!currentTag.metadata || Object.keys(currentTag.metadata).length === 0)) {
@@ -195,7 +197,36 @@
 							<AlertDialog.Trigger class="{buttonVariants({ variant: 'destructive', size: 'sm' })} gap-2">
 								<Trash2 class="h-4 w-4" /> Delete Tag
 							</AlertDialog.Trigger>
-							<!-- Keep AlertDialog.Content content the same -->
+							<AlertDialog.Content>
+								<AlertDialog.Header>
+									<AlertDialog.Title class="font-light text-md">Are you sure you want to delete the following tag?<br /><span class="font-bold underline">{data.imageFullName}:{currentTag.name}</span></AlertDialog.Title>
+									<AlertDialog.Description>This action <span class="font-extrabold">CAN NOT</span> be undone. <br /><span class="font-bold">All tags with the same config digest will be deleted.</span></AlertDialog.Description>
+								</AlertDialog.Header>
+								<AlertDialog.Footer>
+									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+									<AlertDialog.Action
+										onclick={() => {
+											const digest = currentTag.metadata?.indexDigest;
+											console.log('Selected digest:', digest);
+
+											if (!digest) {
+												toast.error('Error Deleting Docker Tag', {
+													description: 'No digest found for this tag'
+												});
+												return;
+											}
+
+											// Strip 'library/' prefix if present
+											const imageName = data.imageFullName.startsWith('library/') ? data.imageFullName.replace('library/', '') : data.imageFullName;
+
+											deleteTagBackend(imageName, digest);
+										}}
+										class={buttonVariants({ variant: 'destructive' })}
+									>
+										Delete
+									</AlertDialog.Action>
+								</AlertDialog.Footer>
+							</AlertDialog.Content>
 						</AlertDialog.Root>
 					</div>
 				</div>
