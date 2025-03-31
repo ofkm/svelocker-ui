@@ -209,7 +209,7 @@ export async function getRepositoryData(repoName: string): Promise<RegistryRepo 
 
 		// Return the complete repository data in the expected format
 		return {
-			id: repo.id,
+			id: String(repo.id),
 			name: repo.name,
 			lastSynced: repo.last_synced,
 			images: imagesWithTags
