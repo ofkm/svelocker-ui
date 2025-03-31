@@ -1,3 +1,13 @@
+## [0.25.0](https://github.com/kmendell/svelocker-ui/compare/v0.24.1...v0.25.0) (2025-03-31)
+
+### Features
+
+* add PUBLIC_LOG_LEVEL variable for configurable logging levels ([56640b4](https://github.com/kmendell/svelocker-ui/commit/56640b457ed24175fbe26d6cb5cfd191c5487f35))
+
+### Bug Fixes
+
+* delete dialog not showing on click ([1505c69](https://github.com/kmendell/svelocker-ui/commit/1505c690ce481f5fba3acb95b7a1a2bff834db93))
+* disable pre-fetch on tag links ([150ea80](https://github.com/kmendell/svelocker-ui/commit/150ea804cd729bb08f1b81ba7073b7f267217f3a))
 ## [0.24.1](https://github.com/kmendell/svelocker-ui/compare/v0.24.0...v0.24.1) (2025-03-28)
 
 ### Bug Fixes
