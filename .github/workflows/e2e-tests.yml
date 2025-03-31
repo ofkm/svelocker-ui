@@ -17,28 +17,26 @@ jobs:
   e2e-tests:
     permissions:
       contents: read
-      pull-requests: write
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout Svelocker UI Repo
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Get node_modules cache key
-        id: node-modules-cache-key
-        run: echo "::set-output name=key::${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}"
+        id: cache-key
+        run: echo "key=${{ runner.os }}-${{ hashFiles('package-lock.json') }}" >> $GITHUB_OUTPUT
 
-      - name: Cache node_modules
-        uses: actions/cache@v3
-        id: node-modules-cache
+      - name: Cache Node Modules
+        uses: actions/cache@v4
         with:
-          path: node_modules
-          key: ${{ steps.node-modules-cache-key.outputs.key }}
+          path: path/to/dependencies
+          key: ${{ steps.cache-key.outputs.key }}
 
       - name: Install dependencies
         run: npm ci
@@ -52,7 +50,7 @@ jobs:
           PLAYWRIGHT: 'true'
 
       - name: Upload Playwright test results
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-results
