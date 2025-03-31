@@ -83,6 +83,7 @@
 							<a
 								href="/details/{getRepoPath(repo.name)}{getSimpleName(image.name)}/{tag.name}"
 								data-testid="tag-pill-{repo.name}-{sanitizeForTestId(image.name)}-{sanitizeForTestId(tag.name)}"
+								data-sveltekit-preload-data="off"
 								class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors min-w-[2.5rem] text-center
                   {tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-muted/50 text-foreground/80 hover:bg-muted border border-border/40 hover:border-border/60'}"
 							>
