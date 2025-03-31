@@ -1,14 +1,24 @@
 import { env } from '$env/dynamic/public';
 
-type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+export enum LogLevel {
+	DEBUG = 0,
+	INFO = 1,
+	WARN = 2,
+	ERROR = 3
+}
+
+type LogLevelKey = keyof typeof LogLevel;
 
 export class Logger {
 	private static instances: Map<string, Logger> = new Map();
 	private serviceName: string;
-	private readonly logLevels: LogLevel[] = ['DEBUG', 'INFO', 'WARN', 'ERROR'];
+	private minimumLevel: LogLevel;
 
 	private constructor(serviceName: string) {
 		this.serviceName = serviceName;
+		// Use PUBLIC_LOG_LEVEL or default to 'INFO'
+		const configLevel = (env.PUBLIC_LOG_LEVEL as LogLevelKey) || 'INFO';
+		this.minimumLevel = LogLevel[configLevel] ?? LogLevel.INFO;
 	}
 
 	public static getInstance(serviceName: string): Logger {
@@ -34,31 +44,31 @@ export class Logger {
 
 	private formatMessage(level: LogLevel, message: string): string {
 		const timestamp = this.formatTimestamp();
-		return `[${timestamp}] [${level}] [${this.serviceName}] ${message}`;
+		return `[${timestamp}] [${LogLevel[level]}] [${this.serviceName}] ${message}`;
 	}
 
-	// Check if debug mode is enabled
-	private isDebugEnabled(): boolean {
-		// Check both browser and server environment variables
-		return (typeof process !== 'undefined' && (process.env.DEBUG === 'true' || process.env.PUBLIC_DEBUG === 'true')) || (typeof env !== 'undefined' && env.PUBLIC_DEBUG === 'true');
-	}
-
+	// Logging methods check against minimumLevel
 	public debug(message: string, ...args: any[]): void {
-		// Only log if debug is enabled
-		if (this.isDebugEnabled()) {
-			console.debug(this.formatMessage('DEBUG', message), ...args);
+		if (LogLevel.DEBUG >= this.minimumLevel) {
+			console.debug(this.formatMessage(LogLevel.DEBUG, message), ...args);
 		}
 	}
 
 	public info(message: string, ...args: any[]): void {
-		console.info(this.formatMessage('INFO', message), ...args);
+		if (LogLevel.INFO >= this.minimumLevel) {
+			console.info(this.formatMessage(LogLevel.INFO, message), ...args);
+		}
 	}
 
 	public warn(message: string, ...args: any[]): void {
-		console.warn(this.formatMessage('WARN', message), ...args);
+		if (LogLevel.WARN >= this.minimumLevel) {
+			console.warn(this.formatMessage(LogLevel.WARN, message), ...args);
+		}
 	}
 
 	public error(message: string, error?: any): void {
-		console.error(this.formatMessage('ERROR', message), error || '');
+		if (LogLevel.ERROR >= this.minimumLevel) {
+			console.error(this.formatMessage(LogLevel.ERROR, message), error || '');
+		}
 	}
 }
