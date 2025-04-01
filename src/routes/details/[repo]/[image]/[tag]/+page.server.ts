@@ -114,20 +114,20 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			// Only add metadata if the row contains metadata information
 			if (row.created_at || row.os || row.architecture || row.author || row.dockerFile || row.exposedPorts || row.totalSize || row.workDir || row.command || row.description || row.contentDigest || row.entrypoint || row.isOCI !== undefined || row.indexDigest || row.layers) {
 				tag.metadata = {
-					created: row.created_at || undefined,
-					os: row.os || undefined,
-					architecture: row.architecture || undefined,
-					author: row.author || undefined,
-					dockerFile: row.dockerFile || undefined,
+					created: row.created_at || '',
+					os: row.os || '',
+					architecture: row.architecture || '',
+					author: row.author || '',
+					dockerFile: row.dockerFile || '',
 					exposedPorts: row.exposedPorts ? parseJSON(row.exposedPorts, []) : [],
-					totalSize: row.totalSize || undefined,
-					workDir: row.workDir || undefined,
+					totalSize: row.totalSize || 0,
+					workDir: row.workDir || '',
 					command: row.command ? parseCommandOrEntrypoint(row.command) : null,
-					description: row.description || undefined,
-					contentDigest: row.contentDigest || undefined,
+					description: row.description || '',
+					contentDigest: row.contentDigest || '',
 					entrypoint: row.entrypoint ? parseCommandOrEntrypoint(row.entrypoint) : null,
-					isOCI: row.isOCI !== undefined ? Boolean(row.isOCI) : undefined,
-					indexDigest: row.indexDigest || undefined,
+					isOCI: row.isOCI !== undefined ? Boolean(row.isOCI) : false,
+					indexDigest: row.indexDigest || '',
 					layers: row.layers ? parseJSON(row.layers, []) : [] // Parse the layers JSON
 				};
 			}

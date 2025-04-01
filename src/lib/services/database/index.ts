@@ -304,7 +304,7 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 									architecture: tagWithMeta.metadata.architecture || 'unknown',
 									dockerFile: tagWithMeta.metadata.dockerFile || '',
 									exposedPorts: tagWithMeta.metadata.exposedPorts || [],
-									totalSize: tagWithMeta.metadata.totalSize ? String(tagWithMeta.metadata.totalSize) : '0',
+									totalSize: typeof tagWithMeta.metadata.totalSize === 'string' ? parseInt(tagWithMeta.metadata.totalSize, 10) || 0 : tagWithMeta.metadata.totalSize || 0,
 									workDir: tagWithMeta.metadata.workDir || '',
 									command: tagWithMeta.metadata.command || '',
 									description: tagWithMeta.metadata.description || '',
@@ -327,6 +327,7 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 			});
 
 			return {
+				id: String(repo.id),
 				name: repo.repoName,
 				lastSynced: repo.last_synced,
 				images
