@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { AppWindowMac, Trash2, CalendarCog, CircuitBoard, UserPen, EthernetPort, Slash, Scaling, Terminal, FolderCode, Home, Copy, ArrowLeft, RefreshCw } from '@lucide/svelte';
-	import { copyTextToClipboard } from '$lib/utils/ui';
 	import { convertTimeString } from '$lib/utils/formatting';
 	import MetadataItem from '$lib/components/docker-metadata/MetadataItem.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.ts';
 	import type { PageData } from './$types';
-	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { toast } from 'svelte-sonner';
 	import { env } from '$env/dynamic/public';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { onMount } from 'svelte';
 	import { copyDockerRunCommand } from '$lib/utils/ui';
 	import LayerVisualization from '$lib/components/docker-metadata/LayerVisualization.svelte';
+	import DockerfileEditor from '$lib/components/docker-metadata/DockerFileViewer.svelte';
+	import { Switch } from '$lib/components/ui/switch/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 
 	interface Props {
 		data: PageData;
@@ -20,28 +22,10 @@
 
 	let { data }: Props = $props();
 
-	// Script content unchanged
-
-	async function copyDockerfile() {
-		if (!currentTag.metadata?.dockerFile) {
-			toast.error('No Dockerfile available');
-			return;
-		}
-
-		copyTextToClipboard(currentTag.metadata.dockerFile).then((success) => {
-			if (success) {
-				toast.success('Dockerfile Copied successfully');
-			} else {
-				toast.error('Failed to copy Dockerfile...');
-			}
-		});
-	}
-
 	let currentTag = $derived(data.tag.tags[data.tagIndex]);
-
-	// Error handling
 	let loadError = $state(false);
 	let errorMessage = $state('');
+	let stickyLineNumbers = $state(true);
 
 	onMount(async () => {
 		if (currentTag && (!currentTag.metadata || Object.keys(currentTag.metadata).length === 0)) {
@@ -180,7 +164,7 @@
 						{#if currentTag.metadata?.indexDigest}
 							<div class="flex items-center mt-3 bg-muted/30 rounded-md overflow-hidden max-w-full">
 								<div class="flex-shrink-0 bg-primary/10 border border-secondary rounded-l-md px-3 py-1.5">
-									<span class="text-xs font-medium text-primary/80 font-mono">digest</span>
+									<span class="text-xs font-medium text-primary font-mono">digest</span>
 								</div>
 								<div class="px-3 py-1.5 overflow-hidden text-ellipsis whitespace-nowrap w-full">
 									<p class="text-xs text-muted-foreground font-mono truncate">{currentTag.metadata.indexDigest}</p>
@@ -266,42 +250,17 @@
 							<h2 class="text-lg font-semibold">Dockerfile</h2>
 							<p class="text-xs text-muted-foreground">Viewing Dockerfile for {data.imageFullName}:{currentTag.name}</p>
 						</div>
-						<Button variant="outline" size="sm" class="gap-2" onclick={copyDockerfile}>
-							<Copy class="h-4 w-4" />
-							Copy Dockerfile
-						</Button>
+
+						<!-- Sticky Lines Switch -->
+						<div class="flex items-center gap-2">
+							<Label for="stickyLineSwitch">Sticky Line Numbers</Label>
+							<Switch id="stickyLineSwitch" bind:checked={stickyLineNumbers} />
+						</div>
 					</div>
 
-					<!-- Dynamic height container for Dockerfile -->
-					<div class="flex-grow overflow-hidden">
-						<ScrollArea class="h-full">
-							<div class="overflow-hidden h-full">
-								<pre class="flex text-sm font-mono leading-relaxed h-full">
-									<!-- Line numbers -->
-									<div class="py-2 pl-2 pr-3 text-muted-foreground select-none border-r border-border/50 bg-muted/20 w-[3rem]">
-										{#if currentTag.metadata?.dockerFile}
-											{#each currentTag.metadata.dockerFile.split('\n') as _, i}
-												<div class="text-right h-5 flex items-center justify-end px-1 text-xs">{i + 1}</div>
-											{/each}
-										{/if}
-									</div>
-									
-									<!-- Code content -->
-									<div class="py-2 px-3 bg-muted/10 w-full overflow-x-auto">
-										{#if currentTag.metadata?.dockerFile}
-											{#each currentTag.metadata.dockerFile.split('\n') as line}
-												<div class="h-5 flex items-center text-xs">
-												<span>{line}</span>
-											</div>
-											{/each}
-										{:else}
-											<div class="h-full flex items-center justify-center p-6 text-muted-foreground">
-											<p>No Dockerfile content available for this image.</p>
-										</div>
-										{/if}
-									</div>
-								</pre>
-							</div>
+					<div class="flex-grow">
+						<ScrollArea class="h-full w-full">
+							<DockerfileEditor dockerfile={currentTag.metadata?.dockerFile} theme="auto" showLineNumbers={true} {stickyLineNumbers} showCopyButton={true} />
 						</ScrollArea>
 					</div>
 				</div>
@@ -322,32 +281,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	/* Styling for the scrollable areas */
-	:global(.scrollarea-viewport) {
-		border-radius: 0;
-	}
-
-	:global(.scrollbar) {
-		padding-bottom: 5px;
-	}
-
-	:global(.scrollbar-thumb) {
-		background-color: rgba(var(--primary-rgb), 0.2);
-		border-radius: 9999px;
-	}
-
-	:global(.scrollbar-thumb:hover) {
-		background-color: rgba(var(--primary-rgb), 0.3);
-	}
-
-	/* Add styles for the custom digest display */
-	.bg-primary\/10 {
-		background-color: rgba(var(--primary-rgb), 0.1);
-	}
-
-	.text-primary\/80 {
-		color: rgba(var(--primary-rgb), 0.8);
-	}
-</style>
