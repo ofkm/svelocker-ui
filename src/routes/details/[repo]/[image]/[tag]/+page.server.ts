@@ -25,6 +25,7 @@ interface TagQueryResult {
 	entrypoint?: string;
 	isOCI?: number; // SQLite stores boolean as 0/1
 	indexDigest?: string;
+	layers?: string; // JSON string of layer data
 }
 
 export const load: PageServerLoad = async ({ params, url }) => {
@@ -92,7 +93,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
                 tm.created_at, tm.os, tm.architecture, tm.author, 
                 tm.dockerFile, tm.exposedPorts, tm.totalSize, tm.workDir,
                 tm.command, tm.description, tm.contentDigest,
-                tm.entrypoint, tm.isOCI, tm.indexDigest
+                tm.entrypoint, tm.isOCI, tm.indexDigest, tm.layers
             FROM tags t
             LEFT JOIN tag_metadata tm ON tm.tag_id = t.id
             WHERE t.image_id = ?
@@ -111,7 +112,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			};
 
 			// Only add metadata if the row contains metadata information
-			if (row.created_at || row.os || row.architecture || row.author || row.dockerFile || row.exposedPorts || row.totalSize || row.workDir || row.command || row.description || row.contentDigest || row.entrypoint || row.isOCI !== undefined || row.indexDigest) {
+			if (row.created_at || row.os || row.architecture || row.author || row.dockerFile || row.exposedPorts || row.totalSize || row.workDir || row.command || row.description || row.contentDigest || row.entrypoint || row.isOCI !== undefined || row.indexDigest || row.layers) {
 				tag.metadata = {
 					created: row.created_at || undefined,
 					os: row.os || undefined,
@@ -126,7 +127,8 @@ export const load: PageServerLoad = async ({ params, url }) => {
 					contentDigest: row.contentDigest || undefined,
 					entrypoint: row.entrypoint ? parseCommandOrEntrypoint(row.entrypoint) : null,
 					isOCI: row.isOCI !== undefined ? Boolean(row.isOCI) : undefined,
-					indexDigest: row.indexDigest || undefined
+					indexDigest: row.indexDigest || undefined,
+					layers: row.layers ? parseJSON(row.layers, []) : [] // Parse the layers JSON
 				};
 			}
 

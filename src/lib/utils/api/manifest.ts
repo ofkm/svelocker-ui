@@ -4,6 +4,7 @@ import type { TagMetadata } from '$lib/types/db/models';
 import { Logger } from '$lib/services/logger';
 import { calculateSha256, filterAttestationManifests, formatSize } from '$lib/utils/formatting';
 import { getBasicAuth, getAuthHeaders } from '$lib/utils/api/auth';
+import type { ImageLayer } from '$lib/types/api/manifest';
 
 export async function fetchDockerMetadata(registryUrl: string, repo: string, tag: string): Promise<TagMetadata | undefined> {
 	const logger = Logger.getInstance('ManifestUtils');
@@ -24,6 +25,7 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 		let indexDigest;
 		let totalSize = 0;
 		let isOCI = false;
+		let layers: ImageLayer[] = [];
 
 		// Store the deletion digest in indexDigest for both types
 		indexDigest = manifestResponse.headers['docker-content-digest']?.replace(/"/g, '');
@@ -59,6 +61,13 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 
 			totalSize = manifestSize + layerSizes;
 
+			// Extract layer information
+			layers =
+				platformManifestResponse.data.layers?.map((layer: any) => ({
+					size: layer.size,
+					digest: layer.digest
+				})) || [];
+
 			// Update configDigest from platform manifest
 			configDigest = platformManifestResponse.data.config?.digest;
 
@@ -78,6 +87,13 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 
 			// Calculate size for regular Docker manifest
 			totalSize = manifest.layers?.reduce((sum: number, layer: any) => sum + (layer.size || 0), 0) || 0;
+
+			// Extract layer information
+			layers =
+				manifest.layers?.map((layer: any) => ({
+					size: layer.size,
+					digest: layer.digest
+				})) || [];
 		}
 
 		if (!configDigest) {
@@ -123,7 +139,8 @@ export async function fetchDockerMetadata(registryUrl: string, repo: string, tag
 			contentDigest: contentDigest,
 			entrypoint: entrypoint,
 			indexDigest: indexDigest,
-			isOCI: isOCI
+			isOCI: isOCI,
+			layers: layers
 		};
 	} catch (error) {
 		logger.error(`Error fetching metadata for ${repo}:${tag}:`, error);

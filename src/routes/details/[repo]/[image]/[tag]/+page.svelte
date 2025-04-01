@@ -12,6 +12,7 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { onMount } from 'svelte';
 	import { copyDockerRunCommand } from '$lib/utils/ui';
+	import LayerVisualization from '$lib/components/docker-metadata/LayerVisualization.svelte';
 
 	interface Props {
 		data: PageData;
@@ -276,35 +277,48 @@
 						<ScrollArea class="h-full">
 							<div class="overflow-hidden h-full">
 								<pre class="flex text-sm font-mono leading-relaxed h-full">
-										<!-- Line numbers -->
-										<div class="py-2 pl-2 pr-3 text-muted-foreground select-none border-r border-border/50 bg-muted/20 w-[3rem]">
-											{#if currentTag.metadata?.dockerFile}
+									<!-- Line numbers -->
+									<div class="py-2 pl-2 pr-3 text-muted-foreground select-none border-r border-border/50 bg-muted/20 w-[3rem]">
+										{#if currentTag.metadata?.dockerFile}
 											{#each currentTag.metadata.dockerFile.split('\n') as _, i}
 												<div class="text-right h-5 flex items-center justify-end px-1 text-xs">{i + 1}</div>
 											{/each}
 										{/if}
-										</div>
-										
-										<!-- Code content -->
-										<div class="py-2 px-3 bg-muted/10 w-full overflow-x-auto">
-											{#if currentTag.metadata?.dockerFile}
+									</div>
+									
+									<!-- Code content -->
+									<div class="py-2 px-3 bg-muted/10 w-full overflow-x-auto">
+										{#if currentTag.metadata?.dockerFile}
 											{#each currentTag.metadata.dockerFile.split('\n') as line}
 												<div class="h-5 flex items-center text-xs">
-														<span>{line}</span>
-													</div>
+												<span>{line}</span>
+											</div>
 											{/each}
 										{:else}
 											<div class="h-full flex items-center justify-center p-6 text-muted-foreground">
-													<p>No Dockerfile content available for this image.</p>
-												</div>
-										{/if}
+											<p>No Dockerfile content available for this image.</p>
 										</div>
-									</pre>
+										{/if}
+									</div>
+								</pre>
 							</div>
 						</ScrollArea>
 					</div>
 				</div>
 			</div>
+
+			<!-- Layer Visualization in Full Width Card -->
+			{#if currentTag?.metadata?.layers && Array.isArray(currentTag.metadata.layers) && currentTag.metadata.layers.length > 0}
+				<div class="mt-6 bg-card/50 backdrop-blur-sm border rounded-xl shadow-sm overflow-hidden">
+					<div class="border-b backdrop-blur-sm p-3 bg-card/80">
+						<h2 class="text-lg font-semibold">Layer Composition</h2>
+						<p class="text-xs text-muted-foreground">Size distribution of container image layers</p>
+					</div>
+					<div class="p-4">
+						<LayerVisualization layers={currentTag.metadata.layers} />
+					</div>
+				</div>
+			{/if}
 		</div>
 	</div>
 {/if}

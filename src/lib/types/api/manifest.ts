@@ -93,3 +93,27 @@ export interface ManifestResponse {
 		'content-type'?: string;
 	};
 }
+
+export interface ImageLayer {
+	size: number;
+	digest: string;
+}
+
+export interface TagMetadata {
+	created: string | undefined;
+	os: string | undefined;
+	architecture: string | undefined;
+	author: string;
+	dockerFile: string;
+	configDigest: string;
+	exposedPorts: string[];
+	totalSize: string;
+	workDir: string;
+	command: string;
+	description: string;
+	contentDigest: string;
+	entrypoint: string;
+	indexDigest: string;
+	isOCI: boolean;
+	layers?: ImageLayer[]; // Add this line
+}
