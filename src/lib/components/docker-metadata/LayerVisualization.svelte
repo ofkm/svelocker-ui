@@ -11,9 +11,6 @@
 
 	let { layers = [] }: Props = $props();
 
-	// Debug log to see what layers we're getting
-	console.log('LayerVisualization received layers:', layers);
-
 	// Calculate total size with safety check
 	let totalSize = $derived(Array.isArray(layers) && layers.length > 0 ? layers.reduce((sum, layer) => sum + (typeof layer.size === 'number' ? layer.size : 0), 0) : 0);
 

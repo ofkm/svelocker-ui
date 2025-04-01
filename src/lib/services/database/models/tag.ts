@@ -104,8 +104,6 @@ export class TagModel {
 		// Serialize layers to JSON string with validation
 		const layers = Array.isArray(metadata.layers) ? JSON.stringify(metadata.layers) : '[]';
 
-		console.debug('Saving metadata with layers:', layers);
-
 		stmt.run(tagId, metadata.created, metadata.os, metadata.architecture, metadata.author, metadata.dockerFile, exposedPorts, metadata.totalSize, metadata.workDir, command, metadata.description, metadata.contentDigest, entrypoint, isOCI, metadata.indexDigest, layers);
 	}
 
@@ -127,11 +125,7 @@ export class TagModel {
 			};
 		}
 
-		// Add debugging to see what's coming from the database
-		console.debug('Raw layers data from DB:', metadata.layers);
-
 		const parsedLayers = parseJSON(metadata.layers, []);
-		console.debug('Parsed layers data:', parsedLayers);
 
 		return {
 			id: tag.id,
