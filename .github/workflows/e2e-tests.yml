@@ -17,7 +17,7 @@ jobs:
   e2e-tests:
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout Svelocker UI Repo
