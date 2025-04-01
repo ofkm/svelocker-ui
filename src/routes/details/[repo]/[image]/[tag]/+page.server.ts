@@ -122,13 +122,14 @@ export const load: PageServerLoad = async ({ params, url }) => {
 					exposedPorts: row.exposedPorts ? parseJSON(row.exposedPorts, []) : [],
 					totalSize: row.totalSize || 0,
 					workDir: row.workDir || '',
-					command: row.command ? parseCommandOrEntrypoint(row.command) : null,
+					command: row.command ? (Array.isArray(parseCommandOrEntrypoint(row.command)) ? (parseCommandOrEntrypoint(row.command) as string[]).join(' ') : (parseCommandOrEntrypoint(row.command) as string) || '') : '',
 					description: row.description || '',
 					contentDigest: row.contentDigest || '',
-					entrypoint: row.entrypoint ? parseCommandOrEntrypoint(row.entrypoint) : null,
+					entrypoint: row.entrypoint ? (Array.isArray(parseCommandOrEntrypoint(row.entrypoint)) ? (parseCommandOrEntrypoint(row.entrypoint) as string[]).join(' ') : (parseCommandOrEntrypoint(row.entrypoint) as string) || '') : '',
 					isOCI: row.isOCI !== undefined ? Boolean(row.isOCI) : false,
 					indexDigest: row.indexDigest || '',
-					layers: row.layers ? parseJSON(row.layers, []) : [] // Parse the layers JSON
+					layers: row.layers ? parseJSON(row.layers, []) : [], // Parse the layers JSON
+					configDigest: row.contentDigest || ''
 				};
 			}
 
