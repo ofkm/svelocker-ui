@@ -2,6 +2,9 @@
 
 <div align="center"><h3>A Simple and Modern Docker Registry UI built with Typescript and SvelteKit.</h3>
 
+> [!IMPORTANT]
+> This project is currently in development. Features may not be available currently but may come in the future. Feel free to request or help contribute :)
+
 ### Home Page:
 
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/79d38083-60fd-4a59-9fa3-11cabb040147" />
@@ -22,17 +25,15 @@
 </div>
 
 
-> [!IMPORTANT]
-> This project is currently in development. Features, Themes, and other items may not be available or are subject to change.
-
 ## Features:
 
-- Simple and Modern
+- Simple and Modern Design
 - Easy Setup
 - Connects to Local Registries using the official [distribution/registry](https://hub.docker.com/_/registry) container image.
 - Delete Image Tags from the UI
 - SQLite Cache Layer for registry data
 - View and Copy the Dockerfile from the UI
+- View all Images for a specific Repo/Namespace
 
 ## Get Started
 
@@ -47,7 +48,7 @@ Follow the Install guide [here](https://github.com/kmendell/svelocker-ui/wiki/In
 
 # Additional Information
 
-- All the API Calls to the Registry happen Server-Side, the only exceptions to this are the `Copy Dockerfile`.
+- All the API Calls to the Registry happen Server-Side, the only exceptions to this are the `Copy Dockerfile` button. If you find something that is not happening Server side please open up a issue or a PR to help fix it.
 
 # Shoutouts
 
