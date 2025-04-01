@@ -234,7 +234,7 @@
 			</div>
 
 			<!-- Main Content Grid -->
-			<div class="grid lg:grid-cols-2 gap-6">
+			<div class="grid lg:grid-cols-2 gap-6 h-[calc(100vh-290px)]">
 				<!-- Left Column: Metadata -->
 				{#if currentTag?.metadata}
 					<div class="bg-card/50 backdrop-blur-sm border rounded-xl shadow-sm overflow-hidden flex flex-col">
