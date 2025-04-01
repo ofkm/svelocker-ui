@@ -1,3 +1,15 @@
+## [0.26.0](https://github.com/kmendell/svelocker-ui/compare/v0.25.1...v0.26.0) (2025-04-01)
+
+### Features
+
+* add dockerfile viewer with syntax highlighting ([#181](https://github.com/kmendell/svelocker-ui/issues/181)) ([9ee0d9a](https://github.com/kmendell/svelocker-ui/commit/9ee0d9a97fefe2b2ad7ea00b02020a2c82347062))
+* add layer visualization table ([#179](https://github.com/kmendell/svelocker-ui/issues/179)) ([c600ac1](https://github.com/kmendell/svelocker-ui/commit/c600ac12bae8872fe2037398f972c28cdae14142))
+
+### Bug Fixes
+
+* database function type errors ([764c9e3](https://github.com/kmendell/svelocker-ui/commit/764c9e3166a383b8bf4ef0bc1334e69a1dfe10f8))
+* map currentTag to the correct type ([813f363](https://github.com/kmendell/svelocker-ui/commit/813f363bc281b2ec3e85522bb5588564d71c07a5))
+* metadata type errors ([5f9bfd8](https://github.com/kmendell/svelocker-ui/commit/5f9bfd83b4ca0c2622a7920c75cd635f1e24ed45))
 ## [0.25.1](https://github.com/kmendell/svelocker-ui/compare/v0.25.0...v0.25.1) (2025-04-01)
 
 ### Bug Fixes
