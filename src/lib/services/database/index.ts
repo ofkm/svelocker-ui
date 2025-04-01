@@ -188,13 +188,38 @@ export async function getRepositoryData(repoName: string): Promise<RegistryRepo 
 				// Get metadata for this tag
 				const tagWithMeta = TagModel.getWithMetadata(tag.id);
 
+				// Create a properly typed default metadata object
+				const defaultMetadata: TagMetadata = {
+					created: '',
+					os: 'unknown',
+					architecture: 'unknown',
+					author: '',
+					dockerFile: '',
+					exposedPorts: [],
+					totalSize: 0,
+					workDir: '',
+					command: '',
+					description: '',
+					contentDigest: '',
+					entrypoint: '',
+					isOCI: false,
+					indexDigest: '',
+					configDigest: tag.digest,
+					layers: []
+				};
+
 				return {
 					id: tag.id,
 					name: tag.name,
 					digest: tag.digest,
 					created: tag.createdAt,
 					image_id: tag.imageId,
-					metadata: tagWithMeta?.metadata || {}
+					metadata: tagWithMeta?.metadata
+						? {
+								...tagWithMeta.metadata,
+								layers: tagWithMeta.metadata.layers || []
+							}
+						: defaultMetadata
 				};
 			});
 
@@ -286,7 +311,9 @@ export async function getRepositories({ page = 1, limit = 10, search = '' }: { p
 									contentDigest: tagWithMeta.metadata.contentDigest || '',
 									entrypoint: tagWithMeta.metadata.entrypoint || '',
 									indexDigest: tagWithMeta.metadata.indexDigest || '',
-									isOCI: Boolean(tagWithMeta.metadata.isOCI)
+									isOCI: Boolean(tagWithMeta.metadata.isOCI),
+									// Add layers with a default value if missing
+									layers: tagWithMeta.metadata.layers || []
 								}
 							: undefined
 					};

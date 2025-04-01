@@ -125,7 +125,10 @@ export class TagModel {
 			};
 		}
 
-		const parsedLayers = parseJSON(metadata.layers, []);
+		// Debug the raw metadata to see actual field names
+		// console.debug('Raw metadata from database:', metadata);
+
+		const parsedLayers = parseJSON(metadata.layers || null, []);
 
 		return {
 			id: tag.id,
@@ -135,20 +138,21 @@ export class TagModel {
 			createdAt: new Date(tag.created_at),
 			metadata: {
 				created: metadata.created_at,
-				os: metadata.meta_os,
-				architecture: metadata.meta_architecture,
-				author: metadata.meta_author,
-				dockerFile: metadata.meta_dockerFile,
-				exposedPorts: parseJSON(metadata.meta_exposedPorts, []),
-				totalSize: metadata.meta_totalSize,
-				workDir: metadata.meta_workDir,
-				command: metadata.meta_command,
-				description: metadata.meta_description,
-				contentDigest: metadata.meta_contentDigest,
-				entrypoint: metadata.meta_entrypoint,
-				indexDigest: metadata.meta_indexDigest,
-				isOCI: metadata.meta_isOCI === 1,
-				layers: parsedLayers // Using the parsed and debugged value
+				os: metadata.os || '',
+				architecture: metadata.architecture || '',
+				author: metadata.author || '',
+				dockerFile: metadata.dockerFile || '',
+				exposedPorts: parseJSON(metadata.exposedPorts || '', []),
+				totalSize: metadata.totalSize || 0,
+				workDir: metadata.workDir || '',
+				command: metadata.command || '',
+				description: metadata.description || '',
+				contentDigest: metadata.contentDigest || '',
+				entrypoint: metadata.entrypoint || '',
+				indexDigest: metadata.indexDigest || '',
+				isOCI: metadata.isOCI === 1,
+				layers: parsedLayers,
+				configDigest: metadata.contentDigest || ''
 			}
 		};
 	}

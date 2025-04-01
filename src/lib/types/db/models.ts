@@ -33,7 +33,7 @@ export interface TagMetadata {
 	dockerFile: string;
 	configDigest: string;
 	exposedPorts: string[];
-	totalSize: string;
+	totalSize: number;
 	workDir: string;
 	command: string;
 	description: string;
