@@ -149,12 +149,13 @@ test.describe('Registry UI with Real Registry', () => {
 		// Take a screenshot of the initial page load
 		await page.screenshot({ path: 'test-results/layer-visualization.png' });
 
-		// Check that the layer visualization component is present
-		const layerVisualizationTitle = page.getByText('Layer Composition');
+		// Check that the layer visualization component is present - use a more specific selector
+		// Use the h3 tag that's in the LayerVisualization.svelte component
+		const layerVisualizationTitle = page.locator('h3.text-sm.font-medium:has-text("Layer Composition")');
 		await expect(layerVisualizationTitle).toBeVisible({ timeout: 10000 });
 
 		// Check for the total size display
-		const totalSizeDisplay = page.locator('text=Total size:');
+		const totalSizeDisplay = page.locator('.text-xs.text-muted-foreground:has-text("Total size:")');
 		await expect(totalSizeDisplay).toBeVisible();
 
 		// Check that layer bars are rendered
@@ -190,10 +191,6 @@ test.describe('Registry UI with Real Registry', () => {
 	// Add a test to check behavior when no layer data is available
 	test('should handle missing layer data gracefully', async ({ page }) => {
 		// Note: To properly test this, you would need a tag without layer data
-		// This test assumes your test setup includes such a tag or can access a page where layers might be empty
-
-		// For now, we'll simulate the check by looking for the "No layer information available" message
-		// that should show up when layers array is empty
 		await page.goto('/details/test/nginx/beta');
 		await page.waitForLoadState('networkidle', { timeout: 15000 });
 
@@ -204,8 +201,8 @@ test.describe('Registry UI with Real Registry', () => {
 		const layerCount = await page.locator('.w-full.h-6.bg-muted.rounded-md.overflow-hidden.flex > div').count();
 
 		if (layerCount === 0) {
-			// If no layers, check for "no information" message
-			await expect(page.locator('text=No layer information available')).toBeVisible();
+			// If no layers, check for "no information" message - use more specific selector
+			await expect(page.locator('.text-sm.text-muted-foreground.italic:has-text("No layer information available")')).toBeVisible();
 			console.log('No layers found, "No layer information available" message displayed correctly');
 		} else {
 			// If layers exist, log the count
