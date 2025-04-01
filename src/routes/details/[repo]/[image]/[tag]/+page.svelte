@@ -12,6 +12,7 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { onMount } from 'svelte';
 	import { copyDockerRunCommand } from '$lib/utils/ui';
+	import LayerVisualization from '$lib/components/docker-metadata/LayerVisualization.svelte';
 
 	interface Props {
 		data: PageData;
@@ -254,6 +255,13 @@
 								<MetadataItem label="Command" icon={Terminal} value={typeof currentTag.metadata?.command === 'object' ? JSON.stringify(currentTag.metadata.command) : currentTag.metadata?.command || 'Unknown'} />
 								<MetadataItem label="Entrypoint" icon={Terminal} value={typeof currentTag.metadata?.entrypoint === 'object' ? JSON.stringify(currentTag.metadata.entrypoint) : currentTag.metadata?.entrypoint || 'Unknown'} />
 							</div>
+
+							<!-- Layer visualization in full width -->
+							{#if currentTag.metadata?.layers && Array.isArray(currentTag.metadata.layers) && currentTag.metadata.layers.length > 0}
+								<div class="mt-4">
+									<LayerVisualization layers={currentTag.metadata.layers} />
+								</div>
+							{/if}
 						</div>
 					</div>
 				{/if}

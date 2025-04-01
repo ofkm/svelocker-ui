@@ -61,4 +61,5 @@ export interface TagWithMetadataRecord extends TagRecord {
 	meta_entrypoint?: string | null;
 	meta_isOCI?: number | null;
 	meta_indexDigest?: string | null;
+	meta_layers?: string | null;
 }

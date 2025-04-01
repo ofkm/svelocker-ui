@@ -1,3 +1,5 @@
+import type { ImageLayer } from '$lib/types/api/manifest';
+
 /**
  * Application model types (transformed from database records)
  */
@@ -24,21 +26,22 @@ export interface Tag {
 }
 
 export interface TagMetadata {
-	created?: string | null;
-	os?: string | null;
-	architecture?: string | null;
-	author?: string | null;
-	dockerFile?: string | null;
-	exposedPorts?: string[] | null;
-	totalSize?: number | null;
-	workDir?: string | null;
-	command?: string | string[] | null;
-	description?: string | null;
-	contentDigest?: string | null;
-	configDigest?: string;
-	entrypoint?: string | string[] | null;
-	isOCI?: boolean | null;
-	indexDigest?: string | null;
+	created: string;
+	os: string;
+	architecture: string;
+	author: string;
+	dockerFile: string;
+	configDigest: string;
+	exposedPorts: string[];
+	totalSize: string;
+	workDir: string;
+	command: string;
+	description: string;
+	contentDigest: string;
+	entrypoint: string;
+	indexDigest: string;
+	isOCI: boolean;
+	layers: ImageLayer[];
 }
 
 export interface TagWithMetadata extends Tag {

@@ -94,6 +94,13 @@ export const migrations: Migration[] = [
 		sql: `
 	  CREATE INDEX IF NOT EXISTS idx_image_fullname ON images(fullName);
 	`
+	},
+	{
+		version: 5,
+		description: 'Add layer information to tag_metadata',
+		sql: `
+      ALTER TABLE tag_metadata ADD COLUMN layers TEXT DEFAULT '[]';
+    `
 	}
 	// Add more migrations as your schema evolves
 ];
