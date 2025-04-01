@@ -164,7 +164,7 @@
 						{#if currentTag.metadata?.indexDigest}
 							<div class="flex items-center mt-3 bg-muted/30 rounded-md overflow-hidden max-w-full">
 								<div class="flex-shrink-0 bg-primary/10 border border-secondary rounded-l-md px-3 py-1.5">
-									<span class="text-xs font-medium text-primary/80 font-mono">digest</span>
+									<span class="text-xs font-medium text-primary font-mono">digest</span>
 								</div>
 								<div class="px-3 py-1.5 overflow-hidden text-ellipsis whitespace-nowrap w-full">
 									<p class="text-xs text-muted-foreground font-mono truncate">{currentTag.metadata.indexDigest}</p>
@@ -281,32 +281,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	/* Styling for the scrollable areas */
-	:global(.scrollarea-viewport) {
-		border-radius: 0;
-	}
-
-	:global(.scrollbar) {
-		padding-bottom: 5px;
-	}
-
-	:global(.scrollbar-thumb) {
-		background-color: rgba(var(--primary-rgb), 0.2);
-		border-radius: 9999px;
-	}
-
-	:global(.scrollbar-thumb:hover) {
-		background-color: rgba(var(--primary-rgb), 0.3);
-	}
-
-	/* Add styles for the custom digest display */
-	.bg-primary\/10 {
-		background-color: rgba(var(--primary-rgb), 0.1);
-	}
-
-	.text-primary\/80 {
-		color: rgba(var(--primary-rgb), 0.8);
-	}
-</style>
