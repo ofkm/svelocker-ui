@@ -1,9 +1,9 @@
+> [!IMPORTANT]
+> This project is currently in development. Features may not be available currently but may come in the future. Feel free to request or help contribute :)
+
 # <div align="center"><img src="https://github.com/user-attachments/assets/5a378b40-ce28-414d-a849-f31397425132" width="200"/><br />Svelocker</div>
 
 <div align="center"><h3>A Simple and Modern Docker Registry UI built with Typescript and SvelteKit.</h3>
-
-> [!IMPORTANT]
-> This project is currently in development. Features may not be available currently but may come in the future. Feel free to request or help contribute :)
 
 ### Home Page:
 
