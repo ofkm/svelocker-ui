@@ -20,9 +20,6 @@
 
 	// Helper to construct correct detail URLs
 	function getDetailUrl(repoName: string, imageName: string, tagName: string): string {
-		if (repoName === 'library') {
-			return `/details/${imageName}/${tagName}`;
-		}
 		return `/details/${repoName}/${imageName}/${tagName}`;
 	}
 

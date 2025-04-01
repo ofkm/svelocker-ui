@@ -1,3 +1,8 @@
+## [0.25.1](https://github.com/kmendell/svelocker-ui/compare/v0.25.0...v0.25.1) (2025-04-01)
+
+### Bug Fixes
+
+* use library namespace for url if image is in the default namespace ([1cbc824](https://github.com/kmendell/svelocker-ui/commit/1cbc8245f9b785b3fcfa71706fb8247634ffa230))
 ## [0.25.0](https://github.com/kmendell/svelocker-ui/compare/v0.24.1...v0.25.0) (2025-03-31)
 
 ### Features
