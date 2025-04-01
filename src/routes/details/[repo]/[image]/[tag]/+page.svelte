@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { AppWindowMac, Trash2, CalendarCog, CircuitBoard, UserPen, EthernetPort, Slash, Scaling, Terminal, FolderCode, Home, Copy, ArrowLeft, RefreshCw } from '@lucide/svelte';
-	import { copyTextToClipboard } from '$lib/utils/ui';
 	import { convertTimeString } from '$lib/utils/formatting';
 	import MetadataItem from '$lib/components/docker-metadata/MetadataItem.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.ts';
@@ -15,7 +14,6 @@
 	import DockerfileEditor from '$lib/components/docker-metadata/DockerFileViewer.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import type { Tag } from '$lib/types/db';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 
 	interface Props {
@@ -24,28 +22,10 @@
 
 	let { data }: Props = $props();
 
-	// Script content unchanged
-
-	async function copyDockerfile() {
-		if (!currentTag.metadata?.dockerFile) {
-			toast.error('No Dockerfile available');
-			return;
-		}
-
-		copyTextToClipboard(currentTag.metadata.dockerFile).then((success) => {
-			if (success) {
-				toast.success('Dockerfile Copied successfully');
-			} else {
-				toast.error('Failed to copy Dockerfile...');
-			}
-		});
-	}
-
 	let currentTag = $derived(data.tag.tags[data.tagIndex]);
-
-	// Error handling
 	let loadError = $state(false);
 	let errorMessage = $state('');
+	let stickyLineNumbers = $state(true);
 
 	onMount(async () => {
 		if (currentTag && (!currentTag.metadata || Object.keys(currentTag.metadata).length === 0)) {
@@ -95,8 +75,6 @@
 			});
 		}
 	}
-
-	let stickyLineNumbers = $state(true);
 </script>
 
 <svelte:head>

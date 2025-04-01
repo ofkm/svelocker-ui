@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Copy } from '@lucide/svelte';
+	import { copyTextToClipboard } from '$lib/utils/ui';
+	import { toast } from 'svelte-sonner';
 
 	// Props - add new stickyLineNumbers option
 	interface Props {
@@ -29,21 +31,20 @@
 		applyHighlighting();
 	});
 
-	// Function to copy dockerfile content
 	function copyDockerfile() {
 		if (!dockerfile) return;
 
-		navigator.clipboard
-			.writeText(dockerfile)
-			.then(() => {
+		copyTextToClipboard(dockerfile).then((success) => {
+			if (success) {
 				copied = true;
+				toast.success('Dockerfile Copied successfully');
 				setTimeout(() => {
 					copied = false;
 				}, 2000);
-			})
-			.catch((err) => {
-				console.error('Failed to copy: ', err);
-			});
+			} else {
+				toast.error('Failed to copy Dockerfile...');
+			}
+		});
 	}
 
 	function highlightLine(line: string): string {
