@@ -15,6 +15,7 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
+	import type { TagWithMetadata } from '$lib/types/db';
 
 	interface Props {
 		data: PageData;
@@ -22,7 +23,7 @@
 
 	let { data }: Props = $props();
 
-	let currentTag = $derived(data.tag.tags[data.tagIndex]);
+	let currentTag = $derived(data.tag.tags[data.tagIndex] as TagWithMetadata);
 	let loadError = $state(false);
 	let errorMessage = $state('');
 	let stickyLineNumbers = $state(true);
