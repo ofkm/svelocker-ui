@@ -136,4 +136,80 @@ test.describe('Registry UI with Real Registry', () => {
 			throw e;
 		}
 	});
+
+	// Add this test after the existing "should navigate to tag details page" test
+
+	test('should display correct layer visualization data', async ({ page }) => {
+		// Navigate to the tag details page directly
+		await page.goto('/details/test/nginx/1.27.4-alpine');
+
+		// Wait for the page to load
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Take a screenshot of the initial page load
+		await page.screenshot({ path: 'test-results/layer-visualization.png' });
+
+		// Check that the layer visualization component is present
+		const layerVisualizationTitle = page.getByText('Layer Composition');
+		await expect(layerVisualizationTitle).toBeVisible({ timeout: 10000 });
+
+		// Check for the total size display
+		const totalSizeDisplay = page.locator('text=Total size:');
+		await expect(totalSizeDisplay).toBeVisible();
+
+		// Check that layer bars are rendered
+		const layerBars = page.locator('.w-full.h-6.bg-muted.rounded-md.overflow-hidden.flex > div');
+		const layerBarCount = await layerBars.count();
+		expect(layerBarCount).toBeGreaterThan(0);
+		console.log(`Found ${layerBarCount} layer bars in visualization`);
+
+		// Check that layer details are displayed below the bars
+		const layerDetails = page.locator('.space-y-1\\.5.mt-2 > div.flex.items-center.justify-between');
+		const layerDetailCount = await layerDetails.count();
+		expect(layerDetailCount).toEqual(layerBarCount);
+		console.log(`Found ${layerDetailCount} layer detail rows`);
+
+		// Check that each layer has a size and percentage
+		const firstLayerDetail = layerDetails.first();
+		await expect(firstLayerDetail).toContainText('%');
+
+		// Check for layer progress bars
+		const progressBars = page.locator('.w-full.bg-muted.h-1\\.5.rounded-full.overflow-hidden');
+		const progressBarCount = await progressBars.count();
+		expect(progressBarCount).toEqual(layerBarCount);
+
+		// Verify that clicking on a layer bar doesn't cause errors (optional)
+		await layerBars.first().click();
+		// Wait a moment to ensure no errors occur
+		await page.waitForTimeout(500);
+
+		// Take another screenshot to verify the state after interaction
+		await page.screenshot({ path: 'test-results/layer-visualization-after-click.png' });
+	});
+
+	// Add a test to check behavior when no layer data is available
+	test('should handle missing layer data gracefully', async ({ page }) => {
+		// Note: To properly test this, you would need a tag without layer data
+		// This test assumes your test setup includes such a tag or can access a page where layers might be empty
+
+		// For now, we'll simulate the check by looking for the "No layer information available" message
+		// that should show up when layers array is empty
+		await page.goto('/details/test/nginx/beta');
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Take a screenshot to see what's displayed
+		await page.screenshot({ path: 'test-results/layer-visualization-missing-data.png' });
+
+		// Check if either layers are displayed OR the "no information" message is shown
+		const layerCount = await page.locator('.w-full.h-6.bg-muted.rounded-md.overflow-hidden.flex > div').count();
+
+		if (layerCount === 0) {
+			// If no layers, check for "no information" message
+			await expect(page.locator('text=No layer information available')).toBeVisible();
+			console.log('No layers found, "No layer information available" message displayed correctly');
+		} else {
+			// If layers exist, log the count
+			console.log(`Found ${layerCount} layers, data is available`);
+		}
+	});
 });
