@@ -5,6 +5,7 @@ import { RepositoryModel } from './models/repository';
 import { ImageModel } from './models/image';
 import { TagModel } from './models/tag';
 import { Logger } from '$lib/services/logger';
+import { UserModel } from './models/user';
 
 // Import centralized types
 import type { Repository, Image, Tag, TagMetadata, TagWithMetadata } from '$lib/types/db';
@@ -13,7 +14,7 @@ import type { RegistryRepo, RepoImage, ImageTag } from '$lib/types/api/registry'
 
 const logger = Logger.getInstance('DBService');
 
-export { db, RepositoryModel, ImageModel, TagModel, getDatabaseInfo };
+export { db, RepositoryModel, ImageModel, TagModel, UserModel, getDatabaseInfo };
 
 // Initialize database
 export async function initDatabase(): Promise<void> {

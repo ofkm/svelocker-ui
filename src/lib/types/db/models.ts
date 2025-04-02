@@ -47,3 +47,13 @@ export interface TagMetadata {
 export interface TagWithMetadata extends Tag {
 	metadata?: TagMetadata;
 }
+
+// Add user type model
+export interface User {
+	id: string;
+	username: string;
+	email?: string;
+	name?: string;
+	isAdmin: boolean;
+	createdAt: number;
+}

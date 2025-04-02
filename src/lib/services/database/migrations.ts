@@ -101,6 +101,25 @@ export const migrations: Migration[] = [
 		sql: `
       ALTER TABLE tag_metadata ADD COLUMN layers TEXT DEFAULT '[]';
     `
+	},
+	{
+		version: 6, // Make sure this is one higher than your last migration version
+		description: 'Add users table for local authentication',
+		sql: `
+		  CREATE TABLE IF NOT EXISTS users (
+			id TEXT PRIMARY KEY,
+			username TEXT UNIQUE NOT NULL,
+			password_hash TEXT NOT NULL,
+			email TEXT UNIQUE,
+			name TEXT,
+			is_admin INTEGER NOT NULL DEFAULT 0,
+			created_at INTEGER NOT NULL
+		  );
+	
+		  -- Add indexes for fast lookups
+		  CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+		  CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+		`
 	}
 	// Add more migrations as your schema evolves
 ];

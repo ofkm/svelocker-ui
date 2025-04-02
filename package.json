@@ -53,14 +53,18 @@
     "@types/better-sqlite3": "^7.6.12",
     "@types/node-cron": "^3.0.11",
     "axios": "^1.8.4",
+    "bcryptjs": "^3.0.2",
     "better-sqlite3": "^11.9.1",
     "buffer": "^6.0.3",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
+    "formsnap": "^2.0.0",
     "json": "^11.0.0",
     "node-cron": "^3.0.3",
     "openid-client": "^6.3.4",
     "stream-browserify": "^3.0.0",
-    "tailwindcss": "^4.0.12"
+    "sveltekit-superforms": "^2.24.0",
+    "tailwindcss": "^4.0.12",
+    "zod": "^3.24.2"
   }
 }
