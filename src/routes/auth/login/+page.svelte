@@ -50,7 +50,7 @@
 		<CardFooter class="flex flex-col space-y-4 pt-2">
 			<div class="text-xs text-center text-muted-foreground">
 				<p>A container registry exploration UI</p>
-				<a href="https://github.com/kmendell/svelocker-ui" target="_blank" rel="noreferrer" class="inline-flex items-center gap-1 text-primary hover:underline mt-1">
+				<a href="https://github.com/ofkm/svelocker-ui" target="_blank" rel="noreferrer" class="inline-flex items-center gap-1 text-primary hover:underline mt-1">
 					<GithubIcon class="h-3 w-3" />
 					GitHub Repository
 				</a>
