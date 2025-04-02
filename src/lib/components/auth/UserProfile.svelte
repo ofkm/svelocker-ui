@@ -11,6 +11,10 @@
 		goto('/auth/logout');
 	}
 
+	function handleAdminRoute() {
+		goto('/admin');
+	}
+
 	// Generate initials for the avatar fallback
 	$: initials = user?.name
 		? user.name
@@ -59,7 +63,7 @@
 						<span>Profile</span>
 					</DropdownMenu.Item>
 					{#if user.isAdmin}
-						<DropdownMenu.Item>
+						<DropdownMenu.Item onclick={handleAdminRoute}>
 							<Shield class="mr-2 h-4 w-4" />
 							<span>Admin</span>
 						</DropdownMenu.Item>

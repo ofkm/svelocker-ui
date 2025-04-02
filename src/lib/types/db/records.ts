@@ -62,3 +62,14 @@ export interface TagWithMetadataRecord extends TagRecord {
 	indexDigest?: string | null;
 	layers?: string | null;
 }
+
+// Add user record type
+export interface UserRecord {
+	id: string;
+	username: string;
+	password_hash: string;
+	email: string | null;
+	name: string | null;
+	is_admin: number;
+	created_at: number;
+}

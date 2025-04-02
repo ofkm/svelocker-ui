@@ -18,6 +18,7 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.7",
     "@eslint/js": "^9.23.0",
+    "@lucide/svelte": "^0.486.0",
     "@playwright/test": "^1.51.1",
     "@sveltejs/adapter-auto": "^5.0.0",
     "@sveltejs/kit": "^2.20.2",
@@ -45,7 +46,6 @@
     "vite": "^6.2.4"
   },
   "dependencies": {
-    "@lucide/svelte": "^0.486.0",
     "@sveltejs/adapter-node": "^5.2.12",
     "@tailwindcss/vite": "^4.0.17",
     "@tanstack/table-core": "^8.21.2",

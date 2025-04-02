@@ -199,4 +199,23 @@ export class UserModel {
 	static countAdmins(): number {
 		return (db.prepare('SELECT COUNT(*) as count FROM users WHERE is_admin = 1').get() as { count: number }).count;
 	}
+
+	// Get all users
+	static getAllUsers(): User[] {
+		try {
+			const users = db.prepare('SELECT id, username, email, name, is_admin, created_at FROM users ORDER BY username').all() as UserRecord[];
+
+			return users.map((user) => ({
+				id: user.id,
+				username: user.username,
+				email: user.email || undefined,
+				name: user.name || undefined,
+				isAdmin: Boolean(user.is_admin),
+				createdAt: user.created_at
+			}));
+		} catch (error) {
+			logger.error('Error getting all users:', error);
+			return [];
+		}
+	}
 }
