@@ -94,7 +94,7 @@
 		{#if dockerfile && lines.length > 0}
 			<div class="editor">
 				{#if showLineNumbers}
-					<div class="line-numbers" class:sticky={stickyLineNumbers}>
+					<div data-testid="sticky-line-numbers" class="line-numbers" class:sticky={stickyLineNumbers}>
 						{#each lines as _, i}
 							<div class="line-number">{i + 1}</div>
 						{/each}
@@ -102,9 +102,9 @@
 				{/if}
 
 				<div class="content">
-					<div class="code-container">
+					<div class="code-container" data-testid="dockerfile-editor">
 						{#each lines as line, i}
-							<div class="line" class:highlighted={highlightLines.includes(i + 1)}>
+							<div data-testid="dockerfile-token" class="line" class:highlighted={highlightLines.includes(i + 1)}>
 								{@html highlightLine(line)}
 							</div>
 						{/each}

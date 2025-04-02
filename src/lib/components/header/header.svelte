@@ -18,7 +18,7 @@
 				<img src="/img/svelocker.png" class="h-9 w-9 shadow-sm" alt="Svelocker Logo" />
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold tracking-tight">Svelocker UI</span>
-					<span class="text-xs text-muted-foreground -mt-1 hidden md:block">
+					<span class="text-xs text-muted-foreground -mt-1 hidden md:block" data-testid="header-registry-name">
 						{env.PUBLIC_REGISTRY_NAME || 'Registry Explorer'}
 					</span>
 				</div>

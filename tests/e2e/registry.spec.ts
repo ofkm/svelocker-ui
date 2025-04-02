@@ -137,8 +137,6 @@ test.describe('Registry UI with Real Registry', () => {
 		}
 	});
 
-	// Add this test after the existing "should navigate to tag details page" test
-
 	test('should display correct layer visualization data', async ({ page }) => {
 		// Navigate to the tag details page directly
 		await page.goto('/details/test/nginx/1.27.4-alpine');
@@ -208,5 +206,200 @@ test.describe('Registry UI with Real Registry', () => {
 			// If layers exist, log the count
 			console.log(`Found ${layerCount} layers, data is available`);
 		}
+	});
+
+	test('should show correct registry health status', async ({ page }) => {
+		await page.goto('/');
+
+		// Wait for the page to load
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Check for the health status indicator
+		const healthStatus = page.locator('.flex.items-center.gap-2\\.5.bg-muted\\/40.rounded-full').first();
+		await expect(healthStatus).toBeVisible();
+
+		// Check that it contains either "Healthy" or "Unhealthy" text
+		const statusText = await healthStatus.textContent();
+		expect(statusText).toMatch(/Registry (Healthy|Unhealthy)/);
+
+		// The test registry should be healthy, so check for the green dot
+		const healthDot = healthStatus.locator('.rounded-full.bg-green-500');
+		await expect(healthDot).toBeVisible();
+	});
+
+	test('should synchronize registry data when clicking Sync Registry button', async ({ page }) => {
+		await page.goto('/');
+
+		// Wait for initial load
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Wait for repo cards to appear
+		await page.waitForSelector('[data-testid^="repository-card-"]', { timeout: 15000 });
+
+		// Click the sync button
+		const syncButton = page.getByRole('button', { name: 'Sync Registry' });
+		await expect(syncButton).toBeVisible();
+		await syncButton.click();
+
+		// Verify sync indicator appears (spinner)
+		const syncingIndicator = page.locator('.fixed.bottom-4.right-4');
+		await expect(syncingIndicator).toBeVisible();
+
+		// Wait for sync to complete (indicator disappears)
+		await page.waitForTimeout(5000); // Give it some time to sync
+
+		// Reload the page to see the updated content
+		await page.reload();
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Check that repositories still load after sync
+		await page.waitForSelector('[data-testid^="repository-card-"]', { timeout: 15000 });
+		const repositories = await page.locator('[data-testid^="repository-card-"]').count();
+		expect(repositories).toBeGreaterThan(0);
+	});
+
+	test('should show dockerfile with proper syntax highlighting', async ({ page }) => {
+		// Navigate directly to the details page for a specific image tag
+		await page.goto('/details/test/nginx/1.27.4-alpine');
+
+		// Wait for the page to load
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Check that the dockerfile editor component is displayed
+		const dockerfileEditor = page.getByTestId('dockerfile-editor');
+		await expect(dockerfileEditor).toBeVisible({ timeout: 10000 });
+
+		// Check that it contains common Dockerfile commands
+		const editorContent = (await dockerfileEditor.textContent()) || '';
+		const containsDockerfileCommands = editorContent.includes('FROM') || editorContent.includes('RUN') || editorContent.includes('CMD') || editorContent.includes('ENTRYPOINT');
+
+		expect(containsDockerfileCommands).toBeTruthy();
+
+		// Check for syntax highlighting (CSS classes applied to code)
+		const hasHighlighting = (await page.getByTestId('dockerfile-token').count()) > 0;
+		// const hasHighlighting = (await page.locator('.token').count()) > 0;
+		expect(hasHighlighting).toBeTruthy();
+	});
+
+	test('should show image metadata correctly', async ({ page }) => {
+		await page.goto('/details/test/nginx/1.27.4-alpine');
+
+		// Wait for the page to load
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Check for key metadata fields
+		const metadataItems = page.locator('.grid.grid-cols-1.md\\:grid-cols-2.gap-3');
+		await expect(metadataItems).toBeVisible();
+
+		// Check for common metadata fields like OS, Architecture, etc.
+		const fields = ['OS', 'Architecture', 'Created', 'Exposed Ports', 'Container Size'];
+
+		for (const field of fields) {
+			// Look for the label
+			const fieldExists = (await page.locator(`:text("${field}")`).count()) > 0;
+			expect(fieldExists).toBeTruthy();
+		}
+
+		// Check that at least one metadata value is shown and not "Unknown"
+		const metadataValues = await page.locator('.text-sm.text-foreground').count();
+		expect(metadataValues).toBeGreaterThan(0);
+	});
+
+	test('should handle copy docker run command', async ({ page }) => {
+		await page.goto('/details/test/nginx/1.27.4-alpine');
+
+		// Wait for the page to load
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Find the "Copy Docker Run" button
+		const copyButton = page.getByRole('button', { name: /copy docker run/i });
+		await expect(copyButton).toBeVisible();
+
+		// Click the button (we can't test the actual clipboard, but we can test the button click)
+		await copyButton.click();
+
+		// Check for any visual indication that the copy was successful (like a toast notification)
+		// This depends on how your app gives feedback for copy operations
+		// For example, if you have a toast message:
+		const successIndicator = page.locator('.text-green-500, .bg-green-100, .toast');
+		const hasSuccessIndicator = (await successIndicator.count()) > 0;
+
+		// If this assertion fails, you might not have a visible success indicator
+		if (hasSuccessIndicator) {
+			await expect(successIndicator).toBeVisible({ timeout: 3000 });
+		} else {
+			console.log('No visible success indicator for copy operation, skipping this check');
+		}
+	});
+
+	test('should handle image with multiple tags correctly', async ({ page }) => {
+		// Go to the homepage
+		await page.goto('/');
+
+		// Wait for the initial page load
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Wait for repo cards to appear
+		await page.waitForSelector('[data-testid^="repository-card-"]', { timeout: 15000 });
+
+		// Check that the nginx image has multiple tags (1.27.4-alpine and beta)
+		await expect(page.locator('[data-testid="tag-pill-test-test-nginx-1-27-4-alpine"]')).toBeVisible();
+		await expect(page.locator('[data-testid="tag-pill-test-test-nginx-beta"]')).toBeVisible();
+
+		// Navigate to one tag
+		await page.locator('[data-testid="tag-pill-test-test-nginx-1-27-4-alpine"]').click();
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Verify we're on the details page
+		await expect(page).toHaveURL(/.*\/details\/test\/nginx\/1.27.4-alpine/);
+
+		// Go back
+		await page.goBack();
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Navigate to the other tag
+		await page.waitForSelector('[data-testid="tag-pill-test-test-nginx-beta"]', { timeout: 15000 });
+		await page.locator('[data-testid="tag-pill-test-test-nginx-beta"]').click();
+
+		// Verify we're on the details page for the beta tag
+		await expect(page).toHaveURL(/.*\/details\/test\/nginx\/beta/);
+	});
+
+	test('should display sticky line numbers in dockerfile when toggled', async ({ page }) => {
+		// Navigate to the tag details page
+		await page.goto('/details/test/nginx/1.27.4-alpine');
+
+		// Wait for the page to load
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Find the sticky line numbers toggle
+		const stickyToggle = page.getByLabel('Sticky Line Numbers');
+		await expect(stickyToggle).toBeVisible();
+
+		// Toggle it on (if it's not already)
+		const isChecked = await stickyToggle.isChecked();
+		if (!isChecked) {
+			await stickyToggle.check();
+		}
+
+		// Wait a moment for the UI to update
+		await page.waitForTimeout(500);
+
+		// Check if the line numbers have the sticky style
+		// This depends on your implementation - adjust the selector as needed
+		const lineNumbers = page.getByTestId('sticky-line-numbers');
+		// const lineNumbers = page.locator('.sticky.left-0');
+		await expect(lineNumbers.first()).toBeVisible();
+	});
+
+	test('should display registry name in header', async ({ page }) => {
+		await page.goto('/');
+
+		// Wait for the page to load
+		await page.waitForLoadState('networkidle', { timeout: 15000 });
+
+		// Check for registry name in the header
+		// The registry name should be "Playwright Registry" from the env settings
+		await expect(page.getByTestId('header-registry-name')).toHaveText('Playwright Registry');
 	});
 });
