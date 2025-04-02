@@ -36,6 +36,8 @@ vite.config.ts.timestamp-*
 *.so
 *.dylib
 
+test.db.*
+
 
 # Misc
 .DS_Store
