@@ -59,6 +59,7 @@
     "dotenv": "^16.4.7",
     "json": "^11.0.0",
     "node-cron": "^3.0.3",
+    "openid-client": "^6.3.4",
     "stream-browserify": "^3.0.0",
     "tailwindcss": "^4.0.12"
   }

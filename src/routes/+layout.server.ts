@@ -7,10 +7,11 @@ import { runMigrations } from '$lib/services/database/migrations.ts';
 import { getLastSyncTime, updateLastSyncTime } from '$lib/services/database';
 import { MIN_SYNC_INTERVAL } from '$lib/utils/constants';
 import { formatTimeDiff } from '$lib/utils/formatting/time';
+import type { LayoutServerLoad } from './$types';
 
 const logger = Logger.getInstance('LayoutServer');
 
-export async function load({ url }) {
+export const load: LayoutServerLoad = async ({ url, locals }) => {
 	// Proceed with regular functionality for non-test environments
 	try {
 		// Initialize database (runs migrations if needed)
@@ -46,15 +47,17 @@ export async function load({ url }) {
 		}
 
 		return {
-			healthStatus
+			healthStatus,
+			user: locals.user
 		};
 	} catch (error) {
 		logger.error('Failed to initialize data', error);
 		return {
+			user: locals.user,
 			error: true,
 			healthStatus: {
 				isHealthy: false
 			}
 		};
 	}
-}
+};

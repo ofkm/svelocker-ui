@@ -1,14 +1,25 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { version as currentVersion } from '$app/environment';
 	import { Github, HomeIcon, ExternalLink, Moon, Sun } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { mode } from 'mode-watcher';
 	import { env } from '$env/dynamic/public';
+	import UserProfile from '$lib/components/auth/UserProfile.svelte';
+	import LoginButton from '$lib/components/auth/LoginButton.svelte';
+	import { userSession } from '$lib/stores/auth';
 
 	// Toggle theme function
 	// function toggleTheme() {
 	// 	$mode = $mode === 'dark' ? 'light' : 'dark';
 	// }
+	$: {
+		if ($page.data.user) {
+			userSession.set($page.data.user);
+		}
+	}
+
+	const isOidcEnabled = env.PUBLIC_OIDC_ENABLED === 'true';
 </script>
 
 <header class="w-full border-b border-border/40 bg-background/95 backdrop-blur-sm fixed top-0 z-40">
@@ -26,6 +37,11 @@
 		</div>
 
 		<div class="flex items-center gap-3">
+			{#if isOidcEnabled}
+				{#if $page.data.user?.isAuthenticated}
+					<UserProfile />
+				{/if}
+			{/if}
 			<a href="/" class="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-md hover:bg-muted/50" aria-label="Home">
 				<HomeIcon size={18} />
 			</a>
