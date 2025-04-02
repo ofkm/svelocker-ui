@@ -76,6 +76,8 @@
 			});
 		}
 	}
+
+	const imageName = data.imageFullName.includes('/') ? data.imageFullName.split('/').pop() : data.imageFullName;
 </script>
 
 <svelte:head>
@@ -116,26 +118,25 @@
 						<Breadcrumb.Separator>
 							<Slash class="h-4 w-4" />
 						</Breadcrumb.Separator>
-						{#if data.repo !== 'library'}
-							<Breadcrumb.Item>
-								<Breadcrumb.Link href="/" class="text-muted-foreground hover:text-foreground transition-colors">
-									{data.repo}
-								</Breadcrumb.Link>
-							</Breadcrumb.Item>
-							<Breadcrumb.Separator>
-								<Slash class="h-4 w-4" />
-							</Breadcrumb.Separator>
-						{/if}
 						<Breadcrumb.Item>
-							<Breadcrumb.Link href="/" class="text-muted-foreground hover:text-foreground transition-colors">
-								{data.imageFullName.includes('/') ? data.imageFullName.split('/').pop() : data.imageFullName}
+							<Breadcrumb.Link href="/details/{data.repo}" class="text-muted-foreground hover:text-foreground transition-colors">
+								{data.repo}
 							</Breadcrumb.Link>
 						</Breadcrumb.Item>
 						<Breadcrumb.Separator>
 							<Slash class="h-4 w-4" />
 						</Breadcrumb.Separator>
 						<Breadcrumb.Item>
-							<Breadcrumb.Link class="text-foreground font-medium">
+							<Breadcrumb.Link href="/details/{data.repo}" class="text-muted-foreground hover:text-foreground transition-colors">
+								<!-- {data.imageFullName.includes('/') ? data.imageFullName.split('/').pop() : data.imageFullName} -->
+								{imageName}
+							</Breadcrumb.Link>
+						</Breadcrumb.Item>
+						<Breadcrumb.Separator>
+							<Slash class="h-4 w-4" />
+						</Breadcrumb.Separator>
+						<Breadcrumb.Item>
+							<Breadcrumb.Link href="/details/{data.repo}/{imageName}/{currentTag.name}" class="text-foreground font-medium">
 								{currentTag.name}
 							</Breadcrumb.Link>
 						</Breadcrumb.Item>

@@ -8,11 +8,6 @@
 
 	// Fixed helper function to get repository URL path with proper handling of 'library' and nested repos
 	function getRepoPath(repoName: string): string {
-		// Handle 'library' special case
-		if (repoName === 'library') {
-			return '';
-		}
-
 		// For nested repos like 'ofkm/caddy', we need to handle them correctly
 		// The repository name itself should be included in the path
 		return `${repoName}/`;
@@ -27,19 +22,8 @@
 		return fullName;
 	}
 
-	// Helper to construct correct detail URLs
-	function getDetailUrl(repoName: string, imageName: string, tagName: string): string {
-		if (repoName === 'library') {
-			return `/details/${imageName}/${tagName}`;
-		}
-		return `/details/${repoName}/${imageName}/${tagName}`;
-	}
-
 	// Helper to construct correct image URLs
 	function getImageUrl(repoName: string, imageName: string): string {
-		if (repoName === 'library') {
-			return `/details/${imageName}`;
-		}
 		return `/details/${repoName}/${imageName}`;
 	}
 

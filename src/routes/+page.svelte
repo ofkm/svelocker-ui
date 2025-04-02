@@ -119,7 +119,7 @@
 					<SyncButton />
 					<div class="relative w-full md:w-[280px]">
 						<Search class="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-						<Input type="search" placeholder="Search repositories..." class="pl-10 rounded-lg border-border/60 bg-background/80 focus-visible:ring-primary/30" bind:value={$searchQuery} />
+						<Input type="search" data-testid="dashboard-searchbar" placeholder="Search repositories..." class="pl-10 rounded-lg border-border/60 bg-background/80 focus-visible:ring-primary/30" bind:value={$searchQuery} />
 					</div>
 				</div>
 			</div>

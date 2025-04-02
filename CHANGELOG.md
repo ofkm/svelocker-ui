@@ -1,3 +1,8 @@
+## [0.26.1](https://github.com/kmendell/svelocker-ui/compare/v0.26.0...v0.26.1) (2025-04-02)
+
+### Bug Fixes
+
+* update breadcrumb links and tag links to point to correct locations ([e1e809a](https://github.com/kmendell/svelocker-ui/commit/e1e809a92fca2411bbfe511ee29565efb6a8a86e))
 ## [0.26.0](https://github.com/kmendell/svelocker-ui/compare/v0.25.1...v0.26.0) (2025-04-01)
 
 ### Features

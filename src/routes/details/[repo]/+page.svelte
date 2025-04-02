@@ -53,7 +53,7 @@
 						<Slash class="h-4 w-4" />
 					</Breadcrumb.Separator>
 					<Breadcrumb.Item>
-						<Breadcrumb.Link class="text-foreground font-medium">
+						<Breadcrumb.Link href="/details/{repoName}" class="text-foreground font-medium">
 							{repoName}
 						</Breadcrumb.Link>
 					</Breadcrumb.Item>
