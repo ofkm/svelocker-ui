@@ -1,0 +1,186 @@
+name: Release and Publish Docker Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (major, minor, patch)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      changelog: ${{ steps.extract_changelog.outputs.changelog }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important for git history analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install conventional-changelog-cli
+        run: npm install -g conventional-changelog-cli
+
+      - name: Determine Current Version
+        id: current_version
+        run: echo "version=$(cat .version)" >> $GITHUB_OUTPUT
+
+      - name: Calculate New Version
+        id: version
+        run: |
+          VERSION=$(cat .version)
+          RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+
+          # Function to increment version
+          increment_version() {
+            local version=$1
+            local part=$2
+            
+            IFS='.' read -r -a parts <<< "$version"
+            if [ "$part" == "major" ]; then
+              parts[0]=$((parts[0] + 1))
+              parts[1]=0
+              parts[2]=0
+            elif [ "$part" == "minor" ]; then
+              parts[1]=$((parts[1] + 1))
+              parts[2]=0
+            elif [ "$part" == "patch" ]; then
+              parts[2]=$((parts[2] + 1))
+            fi
+            echo "${parts[0]}.${parts[1]}.${parts[2]}"
+          }
+
+          NEW_VERSION=$(increment_version $VERSION $RELEASE_TYPE)
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Calculated new version: $NEW_VERSION"
+
+      - name: Update Version Files
+        run: |
+          # Update .version
+          echo "${{ steps.version.outputs.new_version }}" > .version
+
+          # Update package.json
+          jq --arg new_version "${{ steps.version.outputs.new_version }}" '.version = $new_version' package.json > package_tmp.json
+          mv package_tmp.json package.json
+
+      - name: Generate Changelog
+        run: conventional-changelog -p conventionalcommits -i CHANGELOG.md -s
+
+      - name: Extract Changelog for Release Notes
+        id: extract_changelog
+        run: |
+          # Get the previous version tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0)
+          echo "Previous tag: $PREVIOUS_TAG"
+
+          # Extract the changelog content for the latest release using the same method as the create-release.sh script
+          echo "Extracting changelog content for version ${{ steps.version.outputs.new_version }}..."
+          CHANGELOG=$(awk '/^## / {if (NR > 1) exit} NR > 1 {print}' CHANGELOG.md | awk 'NR > 2 || NF {print}')
+
+          if [ -z "$CHANGELOG" ]; then
+            echo "Warning: Could not extract changelog from CHANGELOG.md using the standard pattern."
+            # Fallback to extracting feat/fix commits directly
+            echo "## Changes" > RELEASE_NOTES.md
+            echo "" >> RELEASE_NOTES.md
+            echo "### Features" >> RELEASE_NOTES.md
+            git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s" --grep="^feat" | sed 's/^feat: //' >> RELEASE_NOTES.md
+            echo "" >> RELEASE_NOTES.md
+            echo "" >> RELEASE_NOTES.md
+            echo "### Bug Fixes" >> RELEASE_NOTES.md
+            git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s" --grep="^fix" | sed 's/^fix: //' >> RELEASE_NOTES.md
+            
+            # If no commits were found, provide a simple message
+            if ! grep -q "^-" RELEASE_NOTES.md; then
+              echo "## Changes" > RELEASE_NOTES.md
+              echo "" >> RELEASE_NOTES.md
+              echo "No significant changes in this release." >> RELEASE_NOTES.md
+            fi
+            
+            CHANGELOG=$(cat RELEASE_NOTES.md)
+          fi
+
+          # Write changelog to a file for the release
+          echo "$CHANGELOG" > RELEASE_NOTES.md
+
+          # Set changelog output for other steps to use
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Commit Changes
+        run: |
+          git add .version package.json CHANGELOG.md
+          git commit -m "release: ${{ steps.version.outputs.new_version }}"
+
+      - name: Push Changes
+        run: git push origin main
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=v${{ steps.version.outputs.new_version }}
+            type=raw,value=latest
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create GitHub Release
+        run: |
+          echo "Creating GitHub release..."
+          gh release create "v${{ steps.version.outputs.new_version }}" \
+            --title "v${{ steps.version.outputs.new_version }}" \
+            --notes-file RELEASE_NOTES.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
