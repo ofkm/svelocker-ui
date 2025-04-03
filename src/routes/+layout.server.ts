@@ -2,8 +2,7 @@ import { Logger } from '$lib/services/logger';
 import { env } from '$env/dynamic/public';
 import { getRegistryReposAxios } from '$lib/utils/repos';
 import { checkRegistryHealth } from '$lib/utils/api/health';
-import { initDatabase, incrementalSync } from '$lib/services/database';
-import { runMigrations } from '$lib/services/database/migrations.ts';
+import { incrementalSync } from '$lib/services/database';
 import { getLastSyncTime, updateLastSyncTime } from '$lib/services/database';
 import { MIN_SYNC_INTERVAL } from '$lib/utils/constants';
 import { formatTimeDiff } from '$lib/utils/formatting/time';
@@ -13,10 +12,6 @@ const logger = Logger.getInstance('LayoutServer');
 export async function load({ url }) {
 	// Proceed with regular functionality for non-test environments
 	try {
-		// Initialize database (runs migrations if needed)
-		await initDatabase();
-		await runMigrations();
-
 		// Get last sync time from DB
 		const lastSyncSetting = getLastSyncTime();
 		const currentTime = Date.now();
