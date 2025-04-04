@@ -111,7 +111,7 @@
 			<CardHeader>
 				<div class="flex items-center gap-2">
 					<LifeBuoy size={18} class="text-muted-foreground" />
-					<CardTitle>Support</CardTitle>
+					<CardTitle>About</CardTitle>
 				</div>
 				<CardDescription>Support options and application information</CardDescription>
 			</CardHeader>
