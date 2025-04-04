@@ -101,6 +101,37 @@ export const migrations: Migration[] = [
 		sql: `
       ALTER TABLE tag_metadata ADD COLUMN layers TEXT DEFAULT '[]';
     `
+	},
+	{
+		version: 6,
+		description: 'Update settings table to accept string values',
+		sql: `
+      -- Create a temporary table with the correct structure
+      CREATE TABLE settings_new (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
+      
+      -- Copy data from the old table, converting INTEGER to TEXT
+      INSERT INTO settings_new SELECT key, CAST(value AS TEXT) FROM settings;
+      
+      -- Drop the old table
+      DROP TABLE settings;
+      
+      -- Rename the new table to the original name
+      ALTER TABLE settings_new RENAME TO settings;
+    `
+	},
+	{
+		version: 7,
+		description: 'Add app_config table',
+		sql: `
+      CREATE TABLE IF NOT EXISTS app_config (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+    `
 	}
 	// Add more migrations as your schema evolves
 ];

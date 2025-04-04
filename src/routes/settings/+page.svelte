@@ -10,36 +10,20 @@
 	import { env } from '$env/dynamic/public';
 	import SyncButton from '$lib/components/buttons/SyncButton.svelte';
 	import { version as currentVersion } from '$app/environment';
-	import { getConfigValue, setConfigValue, resetAllConfig, syncAllConfigFromServer } from '$lib/services/client-config';
-	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 
 	let { data }: { data: PageData } = $props();
 
-	// Initialize syncInterval from client storage, falling back to server data or default
-	let syncInterval = $state(getConfigValue('sync_interval', data.settings?.sync_interval || '5'));
+	// Initialize syncInterval from server data
+	let syncInterval = $state(data.settings?.sync_interval || '5');
 	let formElement: HTMLFormElement | undefined = $state();
-
-	onMount(() => {
-		// Sync settings from server to client storage on component mount if available
-		if (data.settings) {
-			syncAllConfigFromServer(data.settings);
-			// Re-read from potentially updated client storage after sync
-			syncInterval = getConfigValue('sync_interval', data.settings.sync_interval || '5');
-		} else {
-			// Ensure we have a value even if server data is missing
-			syncInterval = getConfigValue('sync_interval', '5');
-		}
-	});
 
 	function handleSyncIntervalChange(value: string | undefined) {
 		if (value !== undefined && value !== syncInterval) {
-			// Only trigger if value actually changed
+			// Update local state
 			syncInterval = value;
-			setConfigValue('sync_interval', syncInterval);
-			const displayValue = syncInterval === '60' ? '1 hour' : `${syncInterval} minutes`;
-			toast.success(`Sync interval changed to ${displayValue}`);
 
+			// We'll store to the database using the form submission
 			// Submit the form programmatically using the reference
 			if (formElement) {
 				const hiddenValueInput = formElement.querySelector('input[name="value"]') as HTMLInputElement;
@@ -47,17 +31,22 @@
 					hiddenValueInput.value = syncInterval;
 				}
 				formElement.requestSubmit();
+
+				// Show success message
+				const displayValue = syncInterval === '60' ? '1 hour' : `${syncInterval} minutes`;
+				toast.success(`Sync interval changed to ${displayValue}`);
 			}
 		}
 	}
 
 	function resetSettings() {
-		resetAllConfig();
-		syncInterval = '5'; // Reset state variable
-		toast.success('Settings reset to defaults');
-		// Submit the reset form if needed by server logic
+		// We'll use the server action to reset settings
+		// The form submission will trigger the server-side resetSettings action
 		const resetForm = document.getElementById('reset-settings-form') as HTMLFormElement;
-		if (resetForm) resetForm.requestSubmit();
+		if (resetForm) {
+			resetForm.requestSubmit();
+			toast.success('Settings reset to defaults');
+		}
 	}
 </script>
 
