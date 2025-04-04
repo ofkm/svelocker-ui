@@ -129,7 +129,7 @@
 				<div>
 					<h3 class="font-medium">Support Links</h3>
 					<div class="mt-1 grid grid-cols-3 gap-2">
-						<a href="https://github.com/ofkm/svelocker-ui" target="_blank" rel="noopener noreferrer" class="text-sm text-primary hover:underline">Documentation</a>
+						<a href="https://github.com/ofkm/svelocker-ui/wiki" target="_blank" rel="noopener noreferrer" class="text-sm text-primary hover:underline">Documentation</a>
 						<a href="https://github.com/ofkm/svelocker-ui/issues/new?assignees=&labels=bug&projects=&template=bug.yml&title=+Bug:" target="_blank" rel="noopener noreferrer" class="text-sm text-primary hover:underline">Report Issue</a>
 						<a href="https://github.com/ofkm/svelocker-ui/issues/new?assignees=&labels=feature&projects=&template=feature.yml&title=+Feature:" target="_blank" rel="noopener noreferrer" class="text-sm text-primary hover:underline">Request a Feature</a>
 					</div>
@@ -149,7 +149,16 @@
 				<p class="text-sm text-muted-foreground">This will reset all your preferences to their default values. This cannot be undone.</p>
 			</CardContent>
 			<CardFooter>
-				<form method="POST" action="?/resetSettings" use:enhance on:submit|preventDefault={resetSettings} id="reset-settings-form">
+				<form
+					method="POST"
+					action="?/resetSettings"
+					use:enhance
+					onsubmit={(event) => {
+						event.preventDefault();
+						resetSettings();
+					}}
+					id="reset-settings-form"
+				>
 					<Button variant="destructive" size="sm" type="submit">Reset All Settings</Button>
 				</form>
 			</CardFooter>
