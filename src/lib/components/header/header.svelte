@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { version as currentVersion } from '$app/environment';
-	import { Github, HomeIcon, ExternalLink, Moon, Sun } from 'lucide-svelte';
+	import { Github, HomeIcon, ExternalLink, Moon, Sun, Settings } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { mode } from 'mode-watcher';
 	import { env } from '$env/dynamic/public';
@@ -28,6 +28,11 @@
 		<div class="flex items-center gap-3">
 			<a href="/" class="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-md hover:bg-muted/50" aria-label="Home">
 				<HomeIcon size={18} />
+			</a>
+
+			<!-- Settings Icon Link -->
+			<a href="/settings" class="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-md hover:bg-muted/50" aria-label="Settings">
+				<Settings size={18} />
 			</a>
 
 			<!-- <Button variant="ghost" size="icon" onclick={toggleTheme} class="text-muted-foreground hover:text-foreground" aria-label="Toggle theme">
