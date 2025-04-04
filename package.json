@@ -18,6 +18,7 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.8",
     "@eslint/js": "^9.23.0",
+    "@lucide/svelte": "^0.487.0",
     "@playwright/test": "^1.51.1",
     "@sveltejs/adapter-auto": "^6.0.0",
     "@sveltejs/kit": "^2.20.4",
@@ -27,6 +28,7 @@
     "clsx": "^2.1.1",
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
+    "formsnap": "^2.0.0",
     "eslint-plugin-svelte": "^3.5.1",
     "globals": "^16.0.0",
     "lucide-svelte": "^0.487.0",
@@ -45,7 +47,6 @@
     "vite": "^6.2.5"
   },
   "dependencies": {
-    "@lucide/svelte": "^0.487.0",
     "@sveltejs/adapter-node": "^5.2.12",
     "@tailwindcss/vite": "^4.1.2",
     "@tanstack/table-core": "^8.21.2",

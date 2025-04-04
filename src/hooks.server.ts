@@ -18,6 +18,13 @@ async function initialize() {
 
 		// Initialize sync service
 		const syncService = RegistrySyncService.getInstance();
+
+		// Perform an initial sync before starting the scheduled sync service
+		logger.info('Performing initial sync on startup...');
+		await syncService.syncNow();
+		logger.info('Initial sync completed');
+
+		// Start the scheduled sync service
 		syncService.start();
 	} catch (error) {
 		logger.error('Failed to initialize application:', error);
