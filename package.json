@@ -47,7 +47,7 @@
   "dependencies": {
     "@lucide/svelte": "^0.487.0",
     "@sveltejs/adapter-node": "^5.2.12",
-    "@tailwindcss/vite": "^4.1.1",
+    "@tailwindcss/vite": "^4.1.2",
     "@tanstack/table-core": "^8.21.2",
     "@types/axios": "^0.14.4",
     "@types/better-sqlite3": "^7.6.12",
