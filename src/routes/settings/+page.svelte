@@ -14,30 +14,67 @@
 
 	let { data }: { data: PageData } = $props();
 
-	// Initialize syncInterval from server data
+	// Initialize values from server data
 	let syncInterval = $state(data.settings?.sync_interval || '5');
-	let formElement: HTMLFormElement | undefined = $state();
-	let registryUrl = data.settings?.registry_url || '';
+	let registryName = $state(data.settings?.registry_name || '');
+	let registryUrl = $state(data.settings?.registry_url || '');
 
 	function handleSyncIntervalChange(value: string | undefined) {
 		if (value !== undefined && value !== syncInterval) {
 			// Update local state
 			syncInterval = value;
 
-			// We'll store to the database using the form submission
-			// Submit the form programmatically using the reference
-			if (formElement) {
-				const hiddenValueInput = formElement.querySelector('input[name="value"]') as HTMLInputElement;
-				if (hiddenValueInput) {
-					hiddenValueInput.value = syncInterval;
-				}
-				formElement.requestSubmit();
+			// Submit the form to update the sync interval
+			submitSettingChange('sync_interval', syncInterval);
 
-				// Show success message
-				const displayValue = syncInterval === '60' ? '1 hour' : `${syncInterval} minutes`;
-				toast.success(`Sync interval changed to ${displayValue}`);
-			}
+			// Show success message
+			const displayValue = syncInterval === '60' ? '1 hour' : `${syncInterval} minutes`;
+			toast.success(`Sync interval changed to ${displayValue}`);
 		}
+	}
+
+	function submitSettingChange(key: string, value: string) {
+		const formData = new FormData();
+		formData.append('key', key);
+		formData.append('value', value);
+
+		fetch('?/updateSetting', {
+			method: 'POST',
+			body: formData
+		})
+			.then(async (response) => {
+				if (response.ok) {
+					const result = await response.json();
+					if (result.success) {
+						// Update local state
+						if (key === 'registry_name') {
+							registryName = value;
+						} else if (key === 'registry_url') {
+							registryUrl = value;
+						}
+
+						// Update the settings object
+						data.settings = { ...data.settings, [key]: value };
+					} else {
+						toast.error('Failed to save setting');
+					}
+				} else {
+					toast.error('Failed to save setting');
+				}
+			})
+			.catch(() => {
+				toast.error('An error occurred while saving settings');
+			});
+	}
+
+	function saveRegistryName() {
+		submitSettingChange('registry_name', registryName);
+		toast.success('Registry name saved');
+	}
+
+	function saveRegistryUrl() {
+		submitSettingChange('registry_url', registryUrl);
+		toast.success('Registry URL saved');
 	}
 
 	function resetSettings() {
@@ -76,52 +113,50 @@
 			<CardContent>
 				<div class="space-y-6">
 					<!-- Registry Settings Section -->
-					<form method="POST" action="?/updateSetting" use:enhance>
-						<div class="space-y-4">
-							<!-- Registry Name -->
-							<div class="flex items-center justify-between">
-								<div>
-									<Label for="registry-name" class="text-base">Registry Name</Label>
-									<p class="text-sm text-muted-foreground">Display name for your registry</p>
-								</div>
-								<Input class="w-100" value={data.settings?.registry_name || ''} name="registry_name" placeholder="My Registry" />
+					<div class="space-y-4">
+						<!-- Registry Name -->
+						<div class="flex items-center justify-between">
+							<div>
+								<Label for="registry-name" class="text-base">Registry Name</Label>
+								<p class="text-sm text-muted-foreground">Display name for your registry</p>
 							</div>
-
-							<!-- Registry URL -->
-							<div class="flex items-center justify-between">
-								<div>
-									<Label for="registry-url" class="text-base">Registry URL</Label>
-									<p class="text-sm text-muted-foreground">Base URL of your Docker registry</p>
-								</div>
-								<Input class="w-100" value={data.settings?.registry_url || ''} name="registry_url" placeholder="https://registry.example.com" />
-							</div>
-
-							<!-- Registry Sync Interval -->
-							<div class="flex items-center justify-between">
-								<div>
-									<Label for="sync-interval" class="text-base">Sync Interval</Label>
-									<p class="text-sm text-muted-foreground">How often to check for registry changes</p>
-								</div>
-								<Select.Root type="single" value={syncInterval} onValueChange={handleSyncIntervalChange}>
-									<Select.Trigger class="w-100" aria-label="Sync Interval">
-										{syncInterval === '60' ? '1 hour' : `${syncInterval} minutes`}
-									</Select.Trigger>
-									<Select.Content>
-										<Select.Item value="5" label="5 minutes">5 minutes</Select.Item>
-										<Select.Item value="15" label="15 minutes">15 minutes</Select.Item>
-										<Select.Item value="30" label="30 minutes">30 minutes</Select.Item>
-										<Select.Item value="60" label="1 hour">1 hour</Select.Item>
-									</Select.Content>
-								</Select.Root>
-								<input type="hidden" name="key" value="sync_interval" />
-								<input type="hidden" name="value" value={syncInterval} />
+							<div class="flex gap-2">
+								<Input id="registry-name" class="w-80" bind:value={registryName} placeholder="My Registry" />
+								<Button size="sm" type="button" onclick={saveRegistryName}>Save</Button>
 							</div>
 						</div>
 
-						<div class="mt-4 flex justify-end">
-							<Button class="w-30" size="sm" type="submit">Save</Button>
+						<!-- Registry URL -->
+						<div class="flex items-center justify-between">
+							<div>
+								<Label for="registry-url" class="text-base">Registry URL</Label>
+								<p class="text-sm text-muted-foreground">Base URL of your Docker registry</p>
+							</div>
+							<div class="flex gap-2">
+								<Input id="registry-url" class="w-80" bind:value={registryUrl} placeholder="https://registry.example.com" />
+								<Button size="sm" type="button" onclick={saveRegistryUrl}>Save</Button>
+							</div>
 						</div>
-					</form>
+
+						<!-- Registry Sync Interval -->
+						<div class="flex items-center justify-between">
+							<div>
+								<Label for="sync-interval" class="text-base">Sync Interval</Label>
+								<p class="text-sm text-muted-foreground">How often to check for registry changes</p>
+							</div>
+							<Select.Root type="single" value={syncInterval} onValueChange={handleSyncIntervalChange}>
+								<Select.Trigger class="w-100" aria-label="Sync Interval">
+									{syncInterval === '60' ? '1 hour' : `${syncInterval} minutes`}
+								</Select.Trigger>
+								<Select.Content>
+									<Select.Item value="5" label="5 minutes">5 minutes</Select.Item>
+									<Select.Item value="15" label="15 minutes">15 minutes</Select.Item>
+									<Select.Item value="30" label="30 minutes">30 minutes</Select.Item>
+									<Select.Item value="60" label="1 hour">1 hour</Select.Item>
+								</Select.Content>
+							</Select.Root>
+						</div>
+					</div>
 				</div>
 			</CardContent>
 		</Card>

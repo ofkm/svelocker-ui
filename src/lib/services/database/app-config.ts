@@ -111,7 +111,9 @@ export function resetAllConfig(): void {
 
 // Default configuration values
 const DEFAULT_CONFIG = {
-	sync_interval: '5'
+	sync_interval: '5',
+	registry_name: 'My Registry',
+	registry_url: 'https://registry.example.com'
 	// Add more default config here as needed
 };
 
