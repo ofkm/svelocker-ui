@@ -1,6 +1,7 @@
 // src/lib/services/db/migrations.ts
 import { db } from './connection';
 import { Logger } from '$lib/services/logger';
+import { env } from '$env/dynamic/public'; // Import environment variables
 
 const logger = Logger.getInstance('DBMigrations');
 
@@ -324,5 +325,32 @@ export function getDatabaseInfo(): {
 			size: 0,
 			tables: []
 		};
+	}
+}
+
+// Migrate registry configuration
+export async function migrateRegistryConfig() {
+	try {
+		const currentTimestamp = Date.now(); // Get the current timestamp
+
+		// Check if `registry_name` exists in the database
+		const registryNameExists = (db.prepare("SELECT COUNT(*) as count FROM app_config WHERE key = 'registry_name'").get() as { count: number }).count > 0;
+
+		// Insert `registry_name` if it doesn't exist
+		if (!registryNameExists) {
+			db.prepare('INSERT INTO app_config (key, value, updated_at) VALUES (?, ?, ?)').run('registry_name', env.PUBLIC_REGISTRY_NAME || 'Default Registry', currentTimestamp);
+			logger.info('Inserted default registry_name into the database');
+		}
+
+		// Check if `registry_url` exists in the database
+		const registryUrlExists = (db.prepare("SELECT COUNT(*) as count FROM app_config WHERE key = 'registry_url'").get() as { count: number }).count > 0;
+
+		// Insert `registry_url` if it doesn't exist
+		if (!registryUrlExists) {
+			db.prepare('INSERT INTO app_config (key, value, updated_at) VALUES (?, ?, ?)').run('registry_url', env.PUBLIC_REGISTRY_URL || 'http://localhost:5000', currentTimestamp);
+			logger.info('Inserted default registry_url into the database');
+		}
+	} catch (error) {
+		logger.error('Failed to migrate registry configuration:', error);
 	}
 }

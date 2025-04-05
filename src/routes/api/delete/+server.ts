@@ -6,7 +6,7 @@ import { TagModel } from '$lib/services/database/models/tag';
 import { db } from '$lib/services/database/connection';
 import { incrementalSync } from '$lib/services/database';
 import { getRegistryReposAxios } from '$lib/utils/repos';
-import { env } from '$env/dynamic/public';
+import { getAppConfig } from '$lib/services/config';
 
 const logger = Logger.getInstance('DeleteAPI');
 
@@ -88,7 +88,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		// This is optional but helps keep things consistent
 		try {
 			logger.info('Triggering incremental sync after tag deletion');
-			const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
+			const registryUrl = await getAppConfig('registry_url');
+			const registryData = await getRegistryReposAxios(registryUrl + '/v2/_catalog');
 			await incrementalSync(registryData.repositories, { forceFullSync: false });
 		} catch (syncError) {
 			logger.error('Failed to sync after tag deletion:', syncError);

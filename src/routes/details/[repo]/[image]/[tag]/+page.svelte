@@ -27,6 +27,7 @@
 	let loadError = $state(false);
 	let errorMessage = $state('');
 	let stickyLineNumbers = $state(true);
+	let registryUrl = data.registryUrl;
 
 	onMount(async () => {
 		if (currentTag && (!currentTag.metadata || Object.keys(currentTag.metadata).length === 0)) {
@@ -52,7 +53,7 @@
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					registryUrl: env.PUBLIC_REGISTRY_URL,
+					registryUrl: registryUrl,
 					repo: name,
 					digest: digest,
 					manifestType: currentTag.metadata?.isOCI ? 'application/vnd.oci.image.index.v1+json' : 'application/vnd.docker.distribution.manifest.v2+json'
@@ -175,7 +176,7 @@
 						{/if}
 					</div>
 					<div class="flex gap-2 mt-2 md:mt-0">
-						<Button variant="outline" size="sm" class="gap-2" onclick={() => copyDockerRunCommand(data.imageFullName, currentTag.name, env.PUBLIC_REGISTRY_URL)}>
+						<Button variant="outline" size="sm" class="gap-2" onclick={() => copyDockerRunCommand(data.imageFullName, currentTag.name, data!.registryUrl!)}>
 							<Terminal class="h-4 w-4" />
 							Copy Docker Run
 						</Button>

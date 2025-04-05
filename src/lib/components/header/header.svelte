@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { version as currentVersion } from '$app/environment';
 	import { Github, HomeIcon, ExternalLink, Moon, Sun, Settings } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
 	import { mode } from 'mode-watcher';
-	import { env } from '$env/dynamic/public';
+	import type { PageData } from '../../../routes/$types';
 
-	// Toggle theme function
-	// function toggleTheme() {
-	// 	$mode = $mode === 'dark' ? 'light' : 'dark';
-	// }
+	interface Props {
+		data: PageData;
+	}
+	let { data }: Props = $props();
 </script>
 
 <header class="w-full border-b border-border/40 bg-background/95 backdrop-blur-sm fixed top-0 z-40">
@@ -19,7 +18,7 @@
 				<div class="flex flex-col">
 					<span class="text-lg font-semibold tracking-tight">Svelocker UI</span>
 					<span class="text-xs text-muted-foreground -mt-1 hidden md:block" data-testid="header-registry-name">
-						{env.PUBLIC_REGISTRY_NAME || 'Registry Explorer'}
+						{data.registryName}
 					</span>
 				</div>
 			</a>

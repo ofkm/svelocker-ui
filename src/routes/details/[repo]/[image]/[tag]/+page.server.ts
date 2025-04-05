@@ -4,6 +4,7 @@ import { Logger } from '$lib/services/logger';
 import type { PageServerLoad } from './$types';
 import type { TagMetadata, Image, Repository, TagWithMetadata, Tag } from '$lib/types/db';
 import { parseJSON, parseCommandOrEntrypoint } from '$lib/services/database/models/tag';
+import { getRegistryConfig } from '$lib/services/database/config';
 
 // Create a proper interface for the database query result
 interface TagQueryResult {

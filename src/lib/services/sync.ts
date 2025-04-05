@@ -68,7 +68,8 @@ export class RegistrySyncService {
 		this.logger.info('Starting registry sync...');
 
 		try {
-			const registryData = await getRegistryReposAxios(env.PUBLIC_REGISTRY_URL + '/v2/_catalog');
+			const registryUrl = await getConfigValue('registry_url');
+			const registryData = await getRegistryReposAxios(registryUrl + '/v2/_catalog');
 			await incrementalSync(registryData.repositories, { forceFullSync: false });
 
 			// Update sync statistics in the database

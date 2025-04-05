@@ -2,7 +2,7 @@ import { RegistrySyncService } from '$lib/services/sync';
 import { Logger } from '$lib/services/logger';
 import type { Handle } from '@sveltejs/kit';
 import { initDatabase } from '$lib/services/database';
-import { runMigrations } from '$lib/services/database/migrations';
+import { runMigrations, migrateRegistryConfig } from '$lib/services/database/migrations';
 
 const logger = Logger.getInstance('ServerHooks');
 
@@ -14,6 +14,7 @@ async function initialize() {
 
 		// Run migrations explicitly to ensure schema is up to date
 		await runMigrations();
+		await migrateRegistryConfig();
 		logger.info('Database initialization complete');
 
 		// Initialize sync service

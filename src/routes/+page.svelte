@@ -24,6 +24,9 @@
 	const ITEMS_PER_PAGE = 5;
 	const currentPage = writable(1);
 
+	let registryName: string | null = $state(null);
+	let registryUrl: string | null = $state(null);
+
 	// Load data from API based on current page and search
 	async function loadPageData() {
 		isLoading.set(true);
@@ -92,7 +95,7 @@
 	{#if data.error}
 		<div class="flex items-center mx-10 gap-3 p-4 border rounded-xl shadow-sm bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 transition-all">
 			<AlertCircle size={20} class="text-red-600 dark:text-red-400 flex-shrink-0" />
-			<p class="text-red-600 dark:text-red-400 font-medium">Unable to connect to registry at {env.PUBLIC_REGISTRY_URL}. Please check your connection and registry status.</p>
+			<p class="text-red-600 dark:text-red-400 font-medium">Unable to connect to registry at {data.registryUrl}. Please check your connection and registry status.</p>
 		</div>
 	{/if}
 
@@ -104,7 +107,7 @@
 					<h2 class="text-3xl font-semibold tracking-tight">
 						<span class="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{$totalCount}</span>
 						<span class="font-medium">{$totalCount === 1 ? 'Repository' : 'Repositories'}</span>
-						<span class="text-muted-foreground text-xl ml-1">in {env.PUBLIC_REGISTRY_NAME}</span>
+						<span class="text-muted-foreground text-xl ml-1">in {data.registryName}</span>
 					</h2>
 					{#if isHealthy !== undefined}
 						<div class="flex items-center gap-2.5 bg-muted/40 rounded-full px-4 py-1.5 w-fit">
