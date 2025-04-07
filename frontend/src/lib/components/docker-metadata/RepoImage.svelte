@@ -2,7 +2,7 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { type ColumnDef, getCoreRowModel } from '@tanstack/table-core';
 	import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js';
-	import type { RegistryRepo } from '$lib/types/api/registry';
+	import type { RegistryRepo } from '$lib/types/api.old/registry';
 	import { columns } from '$lib/types/components/image-table';
 	import { Database, Package2 } from 'lucide-svelte';
 

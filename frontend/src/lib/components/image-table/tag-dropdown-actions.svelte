@@ -2,7 +2,7 @@
 	import { Tag, ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import type { ImageTag } from '$lib/types/api/registry';
+	import type { ImageTag } from '$lib/types/api.old/registry';
 	import { derived } from 'svelte/store';
 	import { readable, writable } from 'svelte/store';
 	import type { ExtendedRepoImage } from '$lib/types/components/image-table';

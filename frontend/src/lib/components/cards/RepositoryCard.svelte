@@ -2,7 +2,7 @@
 	import { formatDistanceToNow } from 'date-fns';
 	import TextBadge from '$lib/components/badges/text-badge.svelte';
 	import CountBadge from '$lib/components/badges/count-badge.svelte';
-	import type { RegistryRepo } from '$lib/types/api/registry';
+	import type { RegistryRepo } from '$lib/types/api.old/registry';
 
 	export let repo: RegistryRepo;
 

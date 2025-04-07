@@ -1,7 +1,7 @@
 <!-- src/lib/components/docker-metadata/LayerVisualization.svelte -->
 <script lang="ts">
 	import { formatSize } from '$lib/utils/formatting';
-	import type { ImageLayer } from '$lib/types/api/manifest';
+	import type { ImageLayer } from '$lib/types/api.old/manifest';
 	import { Progress } from '$lib/components/ui/progress';
 	import * as Card from '$lib/components/ui/card';
 
