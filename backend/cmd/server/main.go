@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -31,6 +32,7 @@ func main() {
 
 	// Auto-migrate database schemas
 	if err := db.AutoMigrate(
+		&models.AppConfig{},
 		&models.Repository{},
 		&models.Image{},
 		&models.Tag{},
@@ -42,6 +44,11 @@ func main() {
 
 	// Create repository store
 	store := repository.NewGormStore(db)
+
+	// Initialize default configuration in database
+	if err := initializeDefaultConfig(store, appConfig); err != nil {
+		log.Fatal("Failed to initialize default configuration:", err)
+	}
 
 	// Set Gin mode based on log level
 	if appConfig.Logging.Level == "DEBUG" {
@@ -75,4 +82,18 @@ func main() {
 	if err := r.Run(serverAddr); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
+}
+
+func initializeDefaultConfig(store repository.RepositoryStore, appConfig *config.AppConfig) error {
+	ctx := context.Background()
+
+	// Initialize registry configuration
+	if err := store.UpdateAppConfig(ctx, "registry_url", appConfig.Registry.URL); err != nil {
+		return err
+	}
+	if err := store.UpdateAppConfig(ctx, "registry_name", appConfig.Registry.Name); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -146,3 +146,29 @@ func (s *GormStore) DeleteTag(ctx context.Context, repoName, imageName, tagName 
 		Where("repositories.name = ? AND images.name = ? AND tags.name = ?", repoName, imageName, tagName).
 		Delete(&models.Tag{}).Error
 }
+
+// AppConfig operations
+func (s *GormStore) GetAppConfig(ctx context.Context, key string) (*models.AppConfig, error) {
+	var config models.AppConfig
+	err := s.db.Where("key = ?", key).First(&config).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &config, nil
+}
+
+func (s *GormStore) UpdateAppConfig(ctx context.Context, key, value string) error {
+	result := s.db.Where("key = ?", key).
+		Assign(models.AppConfig{Value: value}).
+		FirstOrCreate(&models.AppConfig{Key: key, Value: value})
+	return result.Error
+}
+
+func (s *GormStore) ListAppConfigs(ctx context.Context) ([]models.AppConfig, error) {
+	var configs []models.AppConfig
+	err := s.db.Find(&configs).Error
+	return configs, err
+}

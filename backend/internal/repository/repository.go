@@ -8,6 +8,11 @@ import (
 
 // RepositoryStore handles database operations for repositories
 type RepositoryStore interface {
+	// AppConfig operations
+	GetAppConfig(ctx context.Context, key string) (*models.AppConfig, error)
+	UpdateAppConfig(ctx context.Context, key, value string) error
+	ListAppConfigs(ctx context.Context) ([]models.AppConfig, error)
+
 	// Repository operations
 	ListRepositories(ctx context.Context, page, limit int, search string) ([]models.Repository, int64, error)
 	GetRepository(ctx context.Context, name string) (*models.Repository, error)

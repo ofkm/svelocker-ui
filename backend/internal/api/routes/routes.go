@@ -11,10 +11,19 @@ func SetupRoutes(r *gin.Engine, store repository.RepositoryStore) {
 	repoHandler := handlers.NewRepositoryHandler(store)
 	imageHandler := handlers.NewImageHandler(store)
 	tagHandler := handlers.NewTagHandler(store)
+	configHandler := handlers.NewAppConfigHandler(store)
 
 	// API v1 group
 	v1 := r.Group("/api/v1")
 	{
+		// App Config routes
+		config := v1.Group("/config")
+		{
+			config.GET("", configHandler.ListConfigs)
+			config.GET("/:key", configHandler.GetConfig)
+			config.PUT("/:key", configHandler.UpdateConfig)
+		}
+
 		// Repository routes
 		repos := v1.Group("/repositories")
 		{
