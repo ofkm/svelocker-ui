@@ -15,7 +15,7 @@ export class AppConfigService {
 
 	async loadAllConfigs(): Promise<Map<string, string>> {
 		try {
-			const response = await fetch('/api/config');
+			const response = await fetch('/api/v1/config');
 			if (!response.ok) {
 				throw new Error('Failed to load configurations');
 			}
@@ -31,7 +31,7 @@ export class AppConfigService {
 
 	async getConfig(key: string): Promise<string | null> {
 		try {
-			const response = await fetch(`/api/config/${key}`);
+			const response = await fetch(`/api/v1/config/${key}`);
 			if (response.status === 404) {
 				return null;
 			}
@@ -49,7 +49,7 @@ export class AppConfigService {
 
 	async updateConfig(key: string, value: string): Promise<void> {
 		try {
-			const response = await fetch(`/api/config/${key}`, {
+			const response = await fetch(`/api/v1/config/${key}`, {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json'
