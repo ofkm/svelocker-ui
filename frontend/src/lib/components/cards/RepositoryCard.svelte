@@ -1,21 +1,12 @@
 <script lang="ts">
 	import { formatDistanceToNow } from 'date-fns';
 	import TextBadge from '$lib/components/badges/text-badge.svelte';
-	import CountBadge from '$lib/components/badges/count-badge.svelte';
 	import type { Repository } from '$lib/types';
 
 	export let repo: Repository;
 
-	// Fixed helper function to get repository URL path with proper handling of 'library' and nested repos
-	function getRepoPath(repoName: string): string {
-		// For nested repos like 'ofkm/caddy', we need to handle them correctly
-		// The repository name itself should be included in the path
-		return `${repoName}/`;
-	}
-
-	// Helper to extract just the simple name from a path (getting "caddy" from "ofkm/caddy")
-	function getSimpleName(fullName: string): string {
-		// If the name contains a slash, take only the last part
+	// Helper to extract just the repository name from a path (getting "caddy" from "ofkm/caddy")
+	function getRepoName(fullName: string): string {
 		if (fullName.includes('/')) {
 			return fullName.split('/').pop() || fullName;
 		}
@@ -23,20 +14,29 @@
 	}
 
 	// Helper to construct correct image URLs
-	function getImageUrl(repoName: string, imageName: string): string {
-		return `/details/${repoName}/${imageName}`;
+	function getImageUrl(repoName: string): string {
+		return `/details/${repoName}`;
 	}
 
 	// Add a helper function to sanitize names for data-testid
 	function sanitizeForTestId(text: string): string {
-		// Replace any characters that might cause issues in CSS selectors
 		return text.replace(/[^a-zA-Z0-9-]/g, '-');
+	}
+
+	// Create object to track expanded status for each image
+	let expandedImages: { [key: string]: boolean } = {};
+	// Only show a few tags by default
+	const DEFAULT_VISIBLE_TAGS = 5;
+
+	// Toggle expanded state for an image
+	function toggleExpanded(imageName: string) {
+		expandedImages[imageName] = !expandedImages[imageName];
 	}
 </script>
 
 <div class="repo-card bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden transition-all hover:shadow-md hover:border-border/80 flex flex-col h-full" data-testid="repository-card-{repo.name}">
 	<div class="p-5 flex-grow">
-		<!-- Header section with repo name and badge -->
+		<!-- Header section with namespace name and badge -->
 		<div class="flex justify-between items-start mb-3">
 			<div>
 				<h3 class="text-xl font-medium tracking-tight text-foreground">{repo.name}</h3>
@@ -51,43 +51,58 @@
 			{/if}
 		</div>
 
-		<!-- Images section -->
-		<div class="space-y-4">
-			{#each (repo.images || []).slice(0, 3) as image, i}
-				<div class="bg-background/60 rounded-lg p-3 border border-border/30" data-testid="image-container-{sanitizeForTestId(image.name)}">
-					<div class="flex items-center justify-between mb-2">
-						<!-- Display simplified image name -->
-						<h4 class="font-medium text-sm">{getSimpleName(image.name)}</h4>
-						<CountBadge count={(image.tags || []).length} />
-					</div>
+		<!-- Images table/list -->
+		<div class="mt-4">
+			{#if (repo.images || []).length > 0}
+				<div class="space-y-2">
+					{#each repo.images || [] as image}
+						<div class="bg-background/60 rounded-lg p-3 border border-border/30 hover:bg-background hover:border-border/50 transition-all" data-testid="image-row-{sanitizeForTestId(image.name)}">
+							<div class="flex items-center justify-between">
+								<a href={getImageUrl(image.name)} class="flex-1">
+									<h4 class="font-medium text-sm">{getRepoName(image.name)}</h4>
+								</a>
+								<div class="flex items-center gap-2">
+									<span class="text-xs text-muted-foreground">{(image.tags || []).length} tags</span>
+									{#if (image.tags || []).some((tag) => tag.name === 'latest')}
+										<div class="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80">latest</div>
+									{/if}
+								</div>
+							</div>
 
-					<!-- Tag pills with fixed URLs, but keep the FULL image.name for paths -->
-					<div class="flex flex-wrap gap-2 mt-3">
-						{#each (image.tags || []).slice(0, 5) as tag}
-							<a
-								href="/details/{getRepoPath(repo.name)}{getSimpleName(image.name)}/{tag.name}"
-								data-testid="tag-pill-{repo.name}-{sanitizeForTestId(image.name)}-{sanitizeForTestId(tag.name)}"
-								data-sveltekit-preload-data="off"
-								class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors min-w-[2.5rem] text-center
-                  {tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-muted/50 text-foreground/80 hover:bg-muted border border-border/40 hover:border-border/60'}"
-							>
-								{tag.name}
-							</a>
-						{/each}
+							{#if (image.tags || []).length > 0}
+								<div class="mt-2">
+									<div class="flex flex-wrap gap-1">
+										{#each (image.tags || []).slice(0, expandedImages[image.name] ? image.tags.length : DEFAULT_VISIBLE_TAGS) as tag}
+											<a
+												href={`/details/${image.name}/${tag.name}`}
+												class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium transition-colors
+												{tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' : 'bg-muted/50 text-foreground/80 hover:bg-muted'}"
+											>
+												{tag.name}
+											</a>
+										{/each}
 
-						{#if (image.tags || []).length > 5}
-							<a href={getImageUrl(repo.name, getSimpleName(image.name))} class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30 min-w-[2.5rem] text-center">
-								+{(image.tags || []).length - 5} more
-							</a>
-						{/if}
-					</div>
+										{#if (image.tags || []).length > DEFAULT_VISIBLE_TAGS}
+											<button on:click={() => toggleExpanded(image.name)} class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted/30 text-muted-foreground hover:bg-muted/50">
+												{expandedImages[image.name] ? 'Show less' : `+${image.tags.length - DEFAULT_VISIBLE_TAGS} more`}
+											</button>
+										{/if}
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/each}
 				</div>
-			{/each}
 
-			{#if (repo.images || []).length > 3}
-				<a href={`/details/${repo.name}`} class="flex items-center justify-center w-full py-2 rounded-lg bg-muted/20 text-sm text-muted-foreground hover:bg-muted/40 transition-colors">
-					View all {(repo.images || []).length} images
-				</a>
+				{#if (repo.images || []).length > 10}
+					<a href={`/details/${repo.name}`} class="flex items-center justify-center w-full py-2 rounded-lg bg-muted/20 text-sm text-muted-foreground hover:bg-muted/40 transition-colors mt-3">
+						View all {(repo.images || []).length} images
+					</a>
+				{/if}
+			{:else}
+				<div class="text-center p-4 bg-muted/20 rounded-lg">
+					<p class="text-sm text-muted-foreground">No images found in this namespace</p>
+				</div>
 			{/if}
 		</div>
 	</div>

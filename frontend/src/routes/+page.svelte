@@ -3,15 +3,17 @@
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Search, AlertCircle, RefreshCw, Database } from '@lucide/svelte';
-	import type { PageProps } from './$types';
+	import type { PageData } from './$types';
 	import { env } from '$env/dynamic/public';
 	import SyncButton from '$lib/components/buttons/SyncButton.svelte';
 	import { lastSyncTimestamp, isSyncing } from '$lib/stores/sync-store';
 	import RepositoryCard from '$lib/components/cards/RepositoryCard.svelte';
 	import { goto } from '$app/navigation';
 	import type { Repository } from '$lib/types';
+	import { fade } from 'svelte/transition';
+	import { Button } from '$lib/components/ui/button';
 
-	let { data }: PageProps = $props();
+	let { data }: { data: PageData } = $props();
 	const isHealthy = data.healthStatus?.isHealthy;
 
 	// Store for loaded data - initialize with data from page server
@@ -23,6 +25,38 @@
 
 	// Constants
 	const ITEMS_PER_PAGE = data.limit || 5;
+
+	// Group repositories by namespace
+	const groupRepositoriesByNamespace = (repos: Repository[]) => {
+		const namespaces: Record<string, { name: string; images: any[]; lastSynced: string | null }> = {};
+
+		repos.forEach((repo) => {
+			const namespaceName = repo.name.includes('/') ? repo.name.split('/')[0] : repo.name;
+
+			if (!namespaces[namespaceName]) {
+				namespaces[namespaceName] = {
+					name: namespaceName,
+					images: [],
+					lastSynced: repo.lastSynced
+				};
+			}
+
+			// Add all images from this repo to the namespace
+			if (repo.images && repo.images.length) {
+				namespaces[namespaceName].images = [...namespaces[namespaceName].images, ...repo.images];
+			}
+
+			// Update lastSynced if this repo was synced more recently
+			if (repo.lastSynced && (!namespaces[namespaceName].lastSynced || new Date(repo.lastSynced) > new Date(namespaces[namespaceName].lastSynced))) {
+				namespaces[namespaceName].lastSynced = repo.lastSynced;
+			}
+		});
+
+		return Object.values(namespaces);
+	};
+
+	const groupedRepositories = derived(repositories, ($repositories) => groupRepositoriesByNamespace($repositories));
+	const filteredRepositories = derived([groupedRepositories, searchQuery], ([$groupedRepositories, $searchQuery]) => ($searchQuery ? $groupedRepositories.filter((repo) => repo.name.toLowerCase().includes($searchQuery.toLowerCase()) || repo.images.some((img) => img.name.toLowerCase().includes($searchQuery.toLowerCase()))) : $groupedRepositories));
 
 	// Load data by navigating to the page with updated parameters
 	// This will trigger a new server load with the updated parameters
@@ -94,6 +128,11 @@
 			loadPageData();
 		}
 	});
+
+	// Clear search
+	function clearSearch() {
+		searchQuery.set('');
+	}
 </script>
 
 <svelte:head>
@@ -145,18 +184,20 @@
 					<p class="text-base text-muted-foreground">Loading repositories...</p>
 				</div>
 			</div>
-		{:else if $repositories.length > 0}
+		{:else if $filteredRepositories.length > 0}
 			<!-- Repository Cards Grid Layout -->
 			<div class="mx-10 mb-16">
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{#each $repositories as repo}
-						<RepositoryCard {repo} />
+					{#each $filteredRepositories as repo (repo.name)}
+						<div transition:fade={{ duration: 200 }}>
+							<RepositoryCard {repo} />
+						</div>
 					{/each}
 				</div>
 			</div>
 
 			<!-- Updated Pagination with Modern Floating Style -->
-			{#if $repositories.length > 0 && $totalCount > ITEMS_PER_PAGE}
+			{#if $filteredRepositories.length > 0 && $totalCount > ITEMS_PER_PAGE}
 				<div class="fixed bottom-6 left-0 right-0 z-40 flex justify-center pointer-events-none">
 					<div class="pointer-events-auto bg-background/80 backdrop-blur-lg shadow-lg border border-border/30 rounded-full px-4 py-2.5 transition-all duration-200 hover:bg-background/90">
 						<Pagination.Root count={$totalCount} perPage={ITEMS_PER_PAGE}>
@@ -198,6 +239,7 @@
 					<Search size={32} class="text-muted-foreground mx-auto opacity-50" />
 					<h3 class="text-xl font-medium text-muted-foreground">No matches found for "<span class="text-foreground">{$searchQuery}</span>"</h3>
 					<p class="text-sm text-muted-foreground/80 mt-2">Try adjusting your search terms or clear the search to see all repositories</p>
+					<Button variant="outline" onclick={clearSearch} class="mt-4">Clear search</Button>
 				</div>
 			</div>
 		{:else}

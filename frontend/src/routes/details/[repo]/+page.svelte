@@ -26,11 +26,21 @@
 	// Helper to extract just the simple name from a path (getting "caddy" from "ofkm/caddy")
 	function getSimpleName(fullName: string): string {
 		// If the name contains a slash, take only the last part
-		if (fullName.includes('/')) {
-			return fullName.split('/').pop() || fullName;
-		}
-		return fullName;
+		return fullName.includes('/') ? fullName.split('/').pop() || fullName : fullName;
 	}
+
+	// Group images by namespace
+	let groupedImages = $derived(() => {
+		const groups: Record<string, typeof repo.images> = {};
+		repo.images.forEach((image) => {
+			const namespace = image.name.includes('/') ? image.name.split('/')[0] : 'default';
+			if (!groups[namespace]) {
+				groups[namespace] = [];
+			}
+			groups[namespace].push(image);
+		});
+		return groups;
+	});
 </script>
 
 <svelte:head>
@@ -103,28 +113,38 @@
 						<p class="text-muted-foreground">This repository doesn't have any images yet.</p>
 					</div>
 				{:else}
-					{#each repo.images as image}
-						<div class="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden shadow-sm">
+					{#each Object.entries(groupedImages) as [namespace, images]}
+						<div class="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden shadow-sm mb-6">
 							<div class="border-b border-border/30 px-5 py-3 bg-muted/10 flex items-center">
-								<h3 class="text-lg font-medium">{image.name}</h3>
-								<CountBadge count={image.tags.length} label="tags" variant="primary" customClass="ml-3" />
+								<h3 class="text-lg font-medium">{namespace}</h3>
+								<CountBadge count={images.length} label="images" variant="primary" customClass="ml-3" />
 							</div>
-							<div class="p-5">
-								<div class="flex flex-wrap gap-2">
-									{#if !image.tags || image.tags.length === 0}
-										<div class="w-full py-3 text-center text-muted-foreground">No tags available for this image</div>
-									{:else}
-										{#each image.tags as tag}
-											<a
-												href={getDetailUrl(repoName, getSimpleName(image.name), tag.name)}
-												class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors min-w-[2.5rem] text-center
-                          {tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-muted/50 text-foreground/80 hover:bg-muted border border-border/40 hover:border-border/60'}"
-											>
-												{tag.name}
-											</a>
-										{/each}
-									{/if}
-								</div>
+							<div class="p-5 space-y-4">
+								{#each images as image}
+									<div class="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden shadow-sm">
+										<div class="border-b border-border/30 px-5 py-3 bg-muted/10 flex items-center">
+											<h3 class="text-lg font-medium">{image.name}</h3>
+											<CountBadge count={image.tags.length} label="tags" variant="primary" customClass="ml-3" />
+										</div>
+										<div class="p-5">
+											<div class="flex flex-wrap gap-2">
+												{#if !image.tags || image.tags.length === 0}
+													<div class="w-full py-3 text-center text-muted-foreground">No tags available for this image</div>
+												{:else}
+													{#each image.tags as tag}
+														<a
+															href={getDetailUrl(repoName, getSimpleName(image.name), tag.name)}
+															class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors min-w-[2.5rem] text-center
+                              {tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-muted/50 text-foreground/80 hover:bg-muted border border-border/40 hover:border-border/60'}"
+														>
+															{tag.name}
+														</a>
+													{/each}
+												{/if}
+											</div>
+										</div>
+									</div>
+								{/each}
 							</div>
 						</div>
 					{/each}
