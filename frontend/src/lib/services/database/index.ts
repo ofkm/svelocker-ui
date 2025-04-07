@@ -9,7 +9,7 @@ import { Logger } from '$lib/services/logger';
 // Import centralized types
 import type { Repository, Image, Tag, TagMetadata, TagWithMetadata } from '$lib/types/db';
 import type { RepositoryRecord, ImageRecord, TagRecord, TagMetadataRecord, TagWithMetadataRecord } from '$lib/types/db';
-import type { RegistryRepo, RepoImage, ImageTag } from '$lib/types/api/registry';
+import type { RegistryRepo, RepoImage, ImageTag } from '$lib/types/api.old/registry';
 
 const logger = Logger.getInstance('DBService');
 

@@ -1,4 +1,4 @@
-import type { ImageLayer } from '$lib/types/api/manifest';
+import type { ImageLayer } from '$lib/types/api.old/manifest';
 
 /**
  * Application model types (transformed from database records)

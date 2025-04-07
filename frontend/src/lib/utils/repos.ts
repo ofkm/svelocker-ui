@@ -1,4 +1,4 @@
-import type { RegistryRepo } from '$lib/types/api/registry';
+import type { RegistryRepo } from '$lib/types/api.old/registry';
 import { getDockerTags } from '$lib/utils/api';
 import axios, { AxiosError } from 'axios';
 import { Logger } from '$lib/services/logger';

@@ -1,10 +1,10 @@
 import axios, { AxiosError } from 'axios';
-import type { ImageTag, RepoImage } from '$lib/types/api/registry';
+import type { ImageTag, RepoImage } from '$lib/types/api.old/registry';
 import type { TagMetadata } from '$lib/types/db/models';
 import { Logger } from '$lib/services/logger';
 import { calculateSha256, filterAttestationManifests, formatSize } from '$lib/utils/formatting';
 import { getBasicAuth, getAuthHeaders } from '$lib/utils/api/auth';
-import type { ImageLayer } from '$lib/types/api/manifest';
+import type { ImageLayer } from '$lib/types/api.old/manifest';
 
 export async function fetchDockerMetadata(registryUrl: string, repo: string, tag: string): Promise<TagMetadata | undefined> {
 	const logger = Logger.getInstance('ManifestUtils');
