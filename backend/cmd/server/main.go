@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/ofkm/svelocker-ui/backend/internal/api/routes"
 	"github.com/ofkm/svelocker-ui/backend/internal/config"
 	"github.com/ofkm/svelocker-ui/backend/internal/models"
@@ -14,6 +16,14 @@ import (
 )
 
 func main() {
+	// Load .env file if it exists
+	if err := godotenv.Load(filepath.Join(".", ".env")); err != nil {
+		// Try loading from backend directory
+		if err := godotenv.Load(filepath.Join("backend", ".env")); err != nil {
+			log.Println("Warning: .env file not found, using environment variables")
+		}
+	}
+
 	// Initialize application configuration
 	appConfig, err := config.NewAppConfig()
 	if err != nil {
