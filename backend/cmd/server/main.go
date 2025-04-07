@@ -1,24 +1,54 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ofkm/svelocker-ui/backend/internal/api/routes"
+	"github.com/ofkm/svelocker-ui/backend/internal/config"
+	"github.com/ofkm/svelocker-ui/backend/internal/models"
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 func main() {
-	// Set up database connection
-	db, err := gorm.Open(sqlite.Open("svelocker.db"), &gorm.Config{})
+	// Initialize application configuration
+	appConfig, err := config.NewAppConfig()
+	if err != nil {
+		log.Fatal("Failed to load configuration:", err)
+	}
+
+	// Validate configuration
+	if err := appConfig.Validate(); err != nil {
+		log.Fatal("Invalid configuration:", err)
+	}
+
+	// Initialize database connection
+	db, err := appConfig.Database.Connect(appConfig.Logging.Level)
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
+	// Auto-migrate database schemas
+	if err := db.AutoMigrate(
+		&models.Repository{},
+		&models.Image{},
+		&models.Tag{},
+		&models.TagMetadata{},
+		&models.ImageLayer{},
+	); err != nil {
+		log.Fatal("Failed to migrate database:", err)
+	}
+
 	// Create repository store
 	store := repository.NewGormStore(db)
+
+	// Set Gin mode based on log level
+	if appConfig.Logging.Level == "DEBUG" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	// Create Gin router
 	r := gin.Default()
@@ -41,7 +71,8 @@ func main() {
 	routes.SetupRoutes(r, store)
 
 	// Start server
-	if err := r.Run(":8080"); err != nil {
+	serverAddr := fmt.Sprintf("%s:%d", appConfig.Server.Host, appConfig.Server.Port)
+	if err := r.Run(serverAddr); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
 }

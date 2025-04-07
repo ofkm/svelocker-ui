@@ -9,6 +9,8 @@ import (
 func SetupRoutes(r *gin.Engine, store repository.RepositoryStore) {
 	// Create handlers
 	repoHandler := handlers.NewRepositoryHandler(store)
+	imageHandler := handlers.NewImageHandler(store)
+	tagHandler := handlers.NewTagHandler(store)
 
 	// API v1 group
 	v1 := r.Group("/api/v1")
@@ -20,12 +22,12 @@ func SetupRoutes(r *gin.Engine, store repository.RepositoryStore) {
 			repos.GET("/:name", repoHandler.GetRepository)
 
 			// Image routes
-			repos.GET("/:name/images", repoHandler.ListImages)
-			repos.GET("/:name/images/:image", repoHandler.GetImage)
+			repos.GET("/:name/images", imageHandler.ListImages)
+			repos.GET("/:name/images/:image", imageHandler.GetImage)
 
 			// Tag routes
-			repos.GET("/:name/images/:image/tags", repoHandler.ListTags)
-			repos.GET("/:name/images/:image/tags/:tag", repoHandler.GetTag)
+			repos.GET("/:name/images/:image/tags", tagHandler.ListTags)
+			repos.GET("/:name/images/:image/tags/:tag", tagHandler.GetTag)
 		}
 	}
 }
