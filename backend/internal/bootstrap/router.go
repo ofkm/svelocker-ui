@@ -30,8 +30,8 @@ func (app *Application) initRouter() error {
 		c.Next()
 	})
 
-	// Set up routes with the repositories
-	routes.SetupRoutes(r, app.ConfigRepo, app.DockerRepo, app.ImageRepo, app.TagRepo)
+	// Set up routes with the repositories and sync service
+	routes.SetupRoutes(r, app.ConfigRepo, app.DockerRepo, app.ImageRepo, app.TagRepo, app.SyncSvc)
 
 	app.Router = r
 	return nil

@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ofkm/svelocker-ui/backend/internal/config"
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
+	"github.com/ofkm/svelocker-ui/backend/internal/services"
 	"gorm.io/gorm"
 )
 
@@ -19,6 +20,7 @@ type Application struct {
 	DockerRepo repository.DockerRepository
 	ImageRepo  repository.ImageRepository
 	TagRepo    repository.TagRepository
+	SyncSvc    *services.SyncService
 }
 
 // Bootstrap initializes the application
@@ -40,10 +42,22 @@ func Bootstrap(ctx context.Context) (*Application, error) {
 		return nil, err
 	}
 
+	// Initialize sync service
+	if err := app.initSyncService(ctx); err != nil {
+		return nil, err
+	}
+
 	// Initialize router and middleware
 	if err := app.initRouter(); err != nil {
 		return nil, err
 	}
 
 	return app, nil
+}
+
+func (app *Application) Close() error {
+	if app.SyncSvc != nil {
+		app.SyncSvc.Stop()
+	}
+	return nil
 }
