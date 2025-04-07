@@ -27,6 +27,7 @@
 	let loadError = $state(false);
 	let errorMessage = $state('');
 	let stickyLineNumbers = $state(true);
+	const baseUrl = 'http://localhost:8080';
 
 	onMount(async () => {
 		if (currentTag && (!currentTag.metadata || Object.keys(currentTag.metadata).length === 0)) {
@@ -48,7 +49,7 @@
 		}
 
 		try {
-			const response = await fetch('/api/delete', {
+			const response = await fetch(`${baseUrl}/api/delete`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({

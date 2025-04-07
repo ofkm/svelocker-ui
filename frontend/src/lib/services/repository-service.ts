@@ -6,6 +6,7 @@ export class RepositoryService {
 	private static instance: RepositoryService;
 	private logger = Logger.getInstance('RepositoryService');
 	private repositoryCache: Map<string, Repository> = new Map();
+	private baseUrl = 'http://localhost:8080';
 
 	private constructor() {}
 
@@ -21,7 +22,7 @@ export class RepositoryService {
 	 */
 	async listRepositories(page = 1, limit = 10, search = ''): Promise<RepositoryResponse> {
 		try {
-			const url = new URL('/api/repositories', window.location.origin);
+			const url = new URL('/api/repositories', this.baseUrl);
 			url.searchParams.append('page', page.toString());
 			url.searchParams.append('limit', limit.toString());
 			if (search) {
@@ -53,7 +54,7 @@ export class RepositoryService {
 				return cachedRepo;
 			}
 
-			const response = await axios.get<Repository>(`/api/repositories/${encodeURIComponent(name)}`);
+			const response = await axios.get<Repository>(`${this.baseUrl}/api/repositories/${encodeURIComponent(name)}`);
 
 			// Update cache with fetched repository
 			this.repositoryCache.set(name, response.data);

@@ -4,6 +4,7 @@
 	import { startSync, isSyncing, notifySyncComplete } from '$lib/stores/sync-store';
 
 	let isLoading = false;
+	const baseUrl = 'http://localhost:8080';
 
 	async function handleSync() {
 		if (isLoading) return;
@@ -12,7 +13,7 @@
 		startSync();
 
 		try {
-			const response = await fetch('/api/v1/sync', {
+			const response = await fetch(`${baseUrl}/api/v1/sync`, {
 				method: 'POST'
 			});
 

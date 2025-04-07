@@ -7,6 +7,7 @@ export class ImageService {
 	private logger = Logger.getInstance('ImageService');
 	private imageCache: Map<string, Image[]> = new Map();
 	private singleImageCache: Map<string, Image> = new Map();
+	private baseUrl = 'http://localhost:8080';
 
 	private constructor() {}
 
@@ -29,7 +30,7 @@ export class ImageService {
 				return cachedImages;
 			}
 
-			const response = await axios.get<Image[]>(`/api/repositories/${encodeURIComponent(repoName)}/images`);
+			const response = await axios.get<Image[]>(`${this.baseUrl}/api/repositories/${encodeURIComponent(repoName)}/images`);
 
 			// Update cache
 			this.imageCache.set(cacheKey, response.data);
@@ -53,7 +54,7 @@ export class ImageService {
 				return cachedImage;
 			}
 
-			const response = await axios.get<Image>(`/api/repositories/${encodeURIComponent(repoName)}/images/${encodeURIComponent(imageName)}`);
+			const response = await axios.get<Image>(`${this.baseUrl}/api/repositories/${encodeURIComponent(repoName)}/images/${encodeURIComponent(imageName)}`);
 
 			// Update cache
 			this.singleImageCache.set(cacheKey, response.data);

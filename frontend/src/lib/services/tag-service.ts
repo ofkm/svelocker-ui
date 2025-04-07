@@ -7,6 +7,7 @@ export class TagService {
 	private logger = Logger.getInstance('TagService');
 	private tagCache: Map<string, Tag[]> = new Map();
 	private singleTagCache: Map<string, Tag> = new Map();
+	private baseUrl = 'http://localhost:8080';
 
 	private constructor() {}
 
@@ -29,7 +30,7 @@ export class TagService {
 				return cachedTags;
 			}
 
-			const response = await axios.get<Tag[]>(`/api/repositories/${encodeURIComponent(repoName)}/images/${encodeURIComponent(imageName)}/tags`);
+			const response = await axios.get<Tag[]>(`${this.baseUrl}/api/repositories/${encodeURIComponent(repoName)}/images/${encodeURIComponent(imageName)}/tags`);
 
 			// Update cache
 			this.tagCache.set(cacheKey, response.data);
@@ -53,7 +54,7 @@ export class TagService {
 				return cachedTag;
 			}
 
-			const response = await axios.get<Tag>(`/api/repositories/${encodeURIComponent(repoName)}/images/${encodeURIComponent(imageName)}/tags/${encodeURIComponent(tagName)}`);
+			const response = await axios.get<Tag>(`${this.baseUrl}/api/repositories/${encodeURIComponent(repoName)}/images/${encodeURIComponent(imageName)}/tags/${encodeURIComponent(tagName)}`);
 
 			// Update cache
 			this.singleTagCache.set(cacheKey, response.data);
