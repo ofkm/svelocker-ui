@@ -12,7 +12,7 @@
 		startSync();
 
 		try {
-			const response = await fetch('/api/sync', {
+			const response = await fetch('/api/v1/sync', {
 				method: 'POST'
 			});
 
