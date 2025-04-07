@@ -2,9 +2,9 @@
 	import { formatDistanceToNow } from 'date-fns';
 	import TextBadge from '$lib/components/badges/text-badge.svelte';
 	import CountBadge from '$lib/components/badges/count-badge.svelte';
-	import type { RegistryRepo } from '$lib/types/api.old/registry';
+	import type { Repository } from '$lib/types';
 
-	export let repo: RegistryRepo;
+	export let repo: Repository;
 
 	// Fixed helper function to get repository URL path with proper handling of 'library' and nested repos
 	function getRepoPath(repoName: string): string {
@@ -41,8 +41,8 @@
 			<div>
 				<h3 class="text-xl font-medium tracking-tight text-foreground">{repo.name}</h3>
 				<p class="text-sm text-muted-foreground mt-1">
-					{repo.images.length}
-					{repo.images.length === 1 ? 'Image' : 'Images'}
+					{(repo.images || []).length}
+					{(repo.images || []).length === 1 ? 'Image' : 'Images'}
 				</p>
 			</div>
 
@@ -53,17 +53,17 @@
 
 		<!-- Images section -->
 		<div class="space-y-4">
-			{#each repo.images.slice(0, 3) as image, i}
+			{#each (repo.images || []).slice(0, 3) as image, i}
 				<div class="bg-background/60 rounded-lg p-3 border border-border/30" data-testid="image-container-{sanitizeForTestId(image.name)}">
 					<div class="flex items-center justify-between mb-2">
 						<!-- Display simplified image name -->
 						<h4 class="font-medium text-sm">{getSimpleName(image.name)}</h4>
-						<CountBadge count={image.tags.length} />
+						<CountBadge count={(image.tags || []).length} />
 					</div>
 
 					<!-- Tag pills with fixed URLs, but keep the FULL image.name for paths -->
 					<div class="flex flex-wrap gap-2 mt-3">
-						{#each image.tags.slice(0, 5) as tag}
+						{#each (image.tags || []).slice(0, 5) as tag}
 							<a
 								href="/details/{getRepoPath(repo.name)}{getSimpleName(image.name)}/{tag.name}"
 								data-testid="tag-pill-{repo.name}-{sanitizeForTestId(image.name)}-{sanitizeForTestId(tag.name)}"
@@ -75,18 +75,18 @@
 							</a>
 						{/each}
 
-						{#if image.tags.length > 5}
+						{#if (image.tags || []).length > 5}
 							<a href={getImageUrl(repo.name, getSimpleName(image.name))} class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30 min-w-[2.5rem] text-center">
-								+{image.tags.length - 5} more
+								+{(image.tags || []).length - 5} more
 							</a>
 						{/if}
 					</div>
 				</div>
 			{/each}
 
-			{#if repo.images.length > 3}
+			{#if (repo.images || []).length > 3}
 				<a href={`/details/${repo.name}`} class="flex items-center justify-center w-full py-2 rounded-lg bg-muted/20 text-sm text-muted-foreground hover:bg-muted/40 transition-colors">
-					View all {repo.images.length} images
+					View all {(repo.images || []).length} images
 				</a>
 			{/if}
 		</div>

@@ -6,32 +6,34 @@
 	import type { PageProps } from './$types';
 	import { env } from '$env/dynamic/public';
 	import SyncButton from '$lib/components/buttons/SyncButton.svelte';
-	import type { RegistryRepo } from '$lib/types/api.old/registry';
-	import { onMount } from 'svelte';
 	import { lastSyncTimestamp, isSyncing } from '$lib/stores/sync-store';
 	import RepositoryCard from '$lib/components/cards/RepositoryCard.svelte';
+	import { goto } from '$app/navigation';
+	import type { Repository } from '$lib/types';
 
 	let { data }: PageProps = $props();
 	const isHealthy = data.healthStatus?.isHealthy;
-	const searchQuery = writable('');
 
-	// Store for loaded data
-	const repositories = writable<RegistryRepo[]>([]);
-	const isLoading = writable(true);
-	const totalCount = writable(0); // Initialize with 0
+	// Store for loaded data - initialize with data from page server
+	const repositories = writable<Repository[]>(data.repositories || []);
+	const isLoading = writable(false);
+	const totalCount = writable(data.totalCount || 0);
+	const searchQuery = writable(data.search || '');
+	const currentPage = writable(data.page || 1);
 
 	// Constants
-	const ITEMS_PER_PAGE = 5;
-	const currentPage = writable(1);
+	const ITEMS_PER_PAGE = data.limit || 5;
 
-	// Load data from API based on current page and search
+	// Load data by navigating to the page with updated parameters
+	// This will trigger a new server load with the updated parameters
 	async function loadPageData() {
 		isLoading.set(true);
 		try {
-			const response = await fetch(`/api/repositories?page=${$currentPage}&limit=${ITEMS_PER_PAGE}&search=${$searchQuery}`);
-			const data = await response.json();
-			repositories.set(data.repositories);
-			totalCount.set(data.totalCount);
+			await goto(`?page=${$currentPage}&limit=${ITEMS_PER_PAGE}&search=${$searchQuery}`, {
+				keepFocus: true,
+				noScroll: true,
+				replaceState: true
+			});
 		} catch (error) {
 			console.error('Failed to load repositories:', error);
 		} finally {
@@ -39,9 +41,14 @@
 		}
 	}
 
-	// Reactive values
-	// const filteredData = $derived($repositories);
-	// const totalPages = $derived(Math.ceil($totalCount / ITEMS_PER_PAGE));
+	// Update stores when page data changes
+	$effect(() => {
+		if (data) {
+			repositories.set(data.repositories || []);
+			totalCount.set(data.totalCount || 0);
+			// Don't update the currentPage or searchQuery here to prevent loops
+		}
+	});
 
 	// Reactively compute total pages
 	const totalPagesStore = derived(totalCount, ($totalCount) => {
@@ -51,23 +58,33 @@
 	// Handle page navigation
 	function prevPage() {
 		currentPage.update((n) => Math.max(1, n - 1));
+		loadPageData();
 	}
 
 	function nextPage() {
 		currentPage.update((n) => Math.min($totalPagesStore, n + 1));
+		loadPageData();
 	}
 
 	function goToPage(page: number) {
 		if (page >= 1 && page <= $totalPagesStore) {
 			currentPage.set(page);
+			loadPageData();
 		}
 	}
 
-	// Reactively load data when page or search changes
+	// Reactively load data when search changes with a debounce
+	let searchTimeout: NodeJS.Timeout;
 	$effect(() => {
-		if ($currentPage || $searchQuery !== undefined) {
-			loadPageData();
-		}
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(() => {
+			if ($currentPage !== 1 && $searchQuery !== data.search) {
+				currentPage.set(1); // Reset to page 1 when search changes
+			}
+			if ($searchQuery !== data.search) {
+				loadPageData();
+			}
+		}, 300);
 	});
 
 	// Listen for sync completion and reload data
@@ -76,11 +93,6 @@
 			console.log('Sync completed, refreshing data...');
 			loadPageData();
 		}
-	});
-
-	// Initial data load
-	onMount(() => {
-		loadPageData();
 	});
 </script>
 

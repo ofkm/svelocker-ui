@@ -30,7 +30,7 @@ export class ImageService {
 				return cachedImages;
 			}
 
-			const response = await axios.get<Image[]>(`${this.baseUrl}/api/repositories/${encodeURIComponent(repoName)}/images`);
+			const response = await axios.get<Image[]>(`${this.baseUrl}/api/v1/repositories/${encodeURIComponent(repoName)}/images`);
 
 			// Update cache
 			this.imageCache.set(cacheKey, response.data);
@@ -54,7 +54,7 @@ export class ImageService {
 				return cachedImage;
 			}
 
-			const response = await axios.get<Image>(`${this.baseUrl}/api/repositories/${encodeURIComponent(repoName)}/images/${encodeURIComponent(imageName)}`);
+			const response = await axios.get<Image>(`${this.baseUrl}/api/v1/repositories/${encodeURIComponent(repoName)}/images/${encodeURIComponent(imageName)}`);
 
 			// Update cache
 			this.singleImageCache.set(cacheKey, response.data);

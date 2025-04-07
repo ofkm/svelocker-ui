@@ -22,7 +22,7 @@ export class RepositoryService {
 	 */
 	async listRepositories(page = 1, limit = 10, search = ''): Promise<RepositoryResponse> {
 		try {
-			const url = new URL('/api/repositories', this.baseUrl);
+			const url = new URL('/api/v1/repositories', this.baseUrl);
 			url.searchParams.append('page', page.toString());
 			url.searchParams.append('limit', limit.toString());
 			if (search) {
@@ -54,7 +54,7 @@ export class RepositoryService {
 				return cachedRepo;
 			}
 
-			const response = await axios.get<Repository>(`${this.baseUrl}/api/repositories/${encodeURIComponent(name)}`);
+			const response = await axios.get<Repository>(`${this.baseUrl}/api/v1/repositories/${encodeURIComponent(name)}`);
 
 			// Update cache with fetched repository
 			this.repositoryCache.set(name, response.data);
