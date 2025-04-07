@@ -8,11 +8,11 @@ import (
 )
 
 type TagHandler struct {
-	store repository.RepositoryStore
+	repo repository.TagRepository
 }
 
-func NewTagHandler(store repository.RepositoryStore) *TagHandler {
-	return &TagHandler{store: store}
+func NewTagHandler(repo repository.TagRepository) *TagHandler {
+	return &TagHandler{repo: repo}
 }
 
 // ListTags handles GET /api/repositories/:name/images/:image/tags
@@ -20,7 +20,7 @@ func (h *TagHandler) ListTags(c *gin.Context) {
 	repoName := c.Param("name")
 	imageName := c.Param("image")
 
-	tags, err := h.store.ListTags(c.Request.Context(), repoName, imageName)
+	tags, err := h.repo.ListTags(c.Request.Context(), repoName, imageName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -35,7 +35,7 @@ func (h *TagHandler) GetTag(c *gin.Context) {
 	imageName := c.Param("image")
 	tagName := c.Param("tag")
 
-	tag, err := h.store.GetTag(c.Request.Context(), repoName, imageName, tagName)
+	tag, err := h.repo.GetTag(c.Request.Context(), repoName, imageName, tagName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

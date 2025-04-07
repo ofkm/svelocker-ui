@@ -10,6 +10,7 @@ import (
 	"github.com/ofkm/svelocker-ui/backend/internal/config"
 	"github.com/ofkm/svelocker-ui/backend/internal/models"
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
+	"github.com/ofkm/svelocker-ui/backend/internal/repository/gorm"
 )
 
 func main() {
@@ -42,11 +43,14 @@ func main() {
 		log.Fatal("Failed to migrate database:", err)
 	}
 
-	// Create repository store
-	store := repository.NewGormStore(db)
+	// Initialize repositories
+	configRepo := gorm.NewConfigRepository(db)
+	dockerRepo := gorm.NewDockerRepository(db)
+	imageRepo := gorm.NewImageRepository(db)
+	tagRepo := gorm.NewTagRepository(db)
 
 	// Initialize default configuration in database
-	if err := initializeDefaultConfig(store, appConfig); err != nil {
+	if err := initializeDefaultConfig(configRepo, appConfig); err != nil {
 		log.Fatal("Failed to initialize default configuration:", err)
 	}
 
@@ -74,8 +78,8 @@ func main() {
 		c.Next()
 	})
 
-	// Set up routes
-	routes.SetupRoutes(r, store)
+	// Set up routes with the new repositories
+	routes.SetupRoutes(r, configRepo, dockerRepo, imageRepo, tagRepo)
 
 	// Start server
 	serverAddr := fmt.Sprintf("%s:%d", appConfig.Server.Host, appConfig.Server.Port)
@@ -84,14 +88,14 @@ func main() {
 	}
 }
 
-func initializeDefaultConfig(store repository.RepositoryStore, appConfig *config.AppConfig) error {
+func initializeDefaultConfig(configRepo repository.ConfigRepository, appConfig *config.AppConfig) error {
 	ctx := context.Background()
 
 	// Initialize registry configuration
-	if err := store.UpdateAppConfig(ctx, "registry_url", appConfig.Registry.URL); err != nil {
+	if err := configRepo.Update(ctx, "registry_url", appConfig.Registry.URL); err != nil {
 		return err
 	}
-	if err := store.UpdateAppConfig(ctx, "registry_name", appConfig.Registry.Name); err != nil {
+	if err := configRepo.Update(ctx, "registry_name", appConfig.Registry.Name); err != nil {
 		return err
 	}
 

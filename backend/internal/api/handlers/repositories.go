@@ -9,11 +9,11 @@ import (
 )
 
 type RepositoryHandler struct {
-	store repository.RepositoryStore
+	repo repository.DockerRepository
 }
 
-func NewRepositoryHandler(store repository.RepositoryStore) *RepositoryHandler {
-	return &RepositoryHandler{store: store}
+func NewRepositoryHandler(repo repository.DockerRepository) *RepositoryHandler {
+	return &RepositoryHandler{repo: repo}
 }
 
 // ListRepositories handles GET /api/repositories
@@ -22,7 +22,7 @@ func (h *RepositoryHandler) ListRepositories(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	search := c.DefaultQuery("search", "")
 
-	repositories, total, err := h.store.ListRepositories(c.Request.Context(), page, limit, search)
+	repositories, total, err := h.repo.ListRepositories(c.Request.Context(), page, limit, search)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -39,7 +39,7 @@ func (h *RepositoryHandler) ListRepositories(c *gin.Context) {
 // GetRepository handles GET /api/repositories/:name
 func (h *RepositoryHandler) GetRepository(c *gin.Context) {
 	name := c.Param("name")
-	repository, err := h.store.GetRepository(c.Request.Context(), name)
+	repository, err := h.repo.GetRepository(c.Request.Context(), name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

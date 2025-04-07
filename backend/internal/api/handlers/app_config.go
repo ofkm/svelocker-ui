@@ -8,16 +8,16 @@ import (
 )
 
 type AppConfigHandler struct {
-	store repository.RepositoryStore
+	repo repository.ConfigRepository
 }
 
-func NewAppConfigHandler(store repository.RepositoryStore) *AppConfigHandler {
-	return &AppConfigHandler{store: store}
+func NewAppConfigHandler(repo repository.ConfigRepository) *AppConfigHandler {
+	return &AppConfigHandler{repo: repo}
 }
 
 // ListConfigs handles GET /api/config
 func (h *AppConfigHandler) ListConfigs(c *gin.Context) {
-	configs, err := h.store.ListAppConfigs(c.Request.Context())
+	configs, err := h.repo.List(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -28,7 +28,7 @@ func (h *AppConfigHandler) ListConfigs(c *gin.Context) {
 // GetConfig handles GET /api/config/:key
 func (h *AppConfigHandler) GetConfig(c *gin.Context) {
 	key := c.Param("key")
-	config, err := h.store.GetAppConfig(c.Request.Context(), key)
+	config, err := h.repo.Get(c.Request.Context(), key)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -51,7 +51,7 @@ func (h *AppConfigHandler) UpdateConfig(c *gin.Context) {
 		return
 	}
 
-	err := h.store.UpdateAppConfig(c.Request.Context(), key, input.Value)
+	err := h.repo.Update(c.Request.Context(), key, input.Value)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

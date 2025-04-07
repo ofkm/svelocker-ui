@@ -6,12 +6,18 @@ import (
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
 )
 
-func SetupRoutes(r *gin.Engine, store repository.RepositoryStore) {
-	// Create handlers
-	repoHandler := handlers.NewRepositoryHandler(store)
-	imageHandler := handlers.NewImageHandler(store)
-	tagHandler := handlers.NewTagHandler(store)
-	configHandler := handlers.NewAppConfigHandler(store)
+func SetupRoutes(
+	r *gin.Engine,
+	configRepo repository.ConfigRepository,
+	dockerRepo repository.DockerRepository,
+	imageRepo repository.ImageRepository,
+	tagRepo repository.TagRepository,
+) {
+	// Create handlers with their specific repositories
+	repoHandler := handlers.NewRepositoryHandler(dockerRepo)
+	imageHandler := handlers.NewImageHandler(imageRepo)
+	tagHandler := handlers.NewTagHandler(tagRepo)
+	configHandler := handlers.NewAppConfigHandler(configRepo)
 
 	// API v1 group
 	v1 := r.Group("/api/v1")

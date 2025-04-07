@@ -8,17 +8,17 @@ import (
 )
 
 type ImageHandler struct {
-	store repository.RepositoryStore
+	repo repository.ImageRepository
 }
 
-func NewImageHandler(store repository.RepositoryStore) *ImageHandler {
-	return &ImageHandler{store: store}
+func NewImageHandler(repo repository.ImageRepository) *ImageHandler {
+	return &ImageHandler{repo: repo}
 }
 
 // ListImages handles GET /api/repositories/:name/images
 func (h *ImageHandler) ListImages(c *gin.Context) {
 	repoName := c.Param("name")
-	images, err := h.store.ListImages(c.Request.Context(), repoName)
+	images, err := h.repo.ListImages(c.Request.Context(), repoName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -31,7 +31,7 @@ func (h *ImageHandler) GetImage(c *gin.Context) {
 	repoName := c.Param("name")
 	imageName := c.Param("image")
 
-	image, err := h.store.GetImage(c.Request.Context(), repoName, imageName)
+	image, err := h.repo.GetImage(c.Request.Context(), repoName, imageName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
