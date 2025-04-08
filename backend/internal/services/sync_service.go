@@ -298,50 +298,26 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 		entrypoint = strings.Join(config.Config.Entrypoint, " ")
 	}
 
-	// Extract Dockerfile from history entries
-	var dockerFileBuilder strings.Builder
+	// Extract Dockerfile from history entries - simplified version matching TypeScript
+	var dockerCommands []string
 	if len(config.History) > 0 {
 		for _, historyEntry := range config.History {
-			// Skip empty layers as they don't represent actual Dockerfile commands
-			if historyEntry.EmptyLayer {
-				continue
-			}
+			if historyEntry.CreatedBy != "" {
+				// Clean up the command
+				cmd := strings.TrimPrefix(historyEntry.CreatedBy, "/bin/sh -c ")
+				cmd = strings.TrimPrefix(cmd, "#(nop) ")
+				cmd = strings.TrimSpace(cmd)
 
-			createdBy := historyEntry.CreatedBy
-			if createdBy == "" {
-				continue
-			}
-
-			// Clean up the createdBy string to make it more Dockerfile-like
-			createdBy = strings.TrimPrefix(createdBy, "/bin/sh -c ")
-			createdBy = strings.TrimPrefix(createdBy, "#(nop) ")
-
-			// Handle EXPOSE instructions
-			if strings.HasPrefix(createdBy, "EXPOSE map[") {
-				ports := []string{}
-				// Extract port numbers from the map string
-				portStr := strings.TrimPrefix(createdBy, "EXPOSE map[")
-				portStr = strings.TrimSuffix(portStr, "]")
-				for _, p := range strings.Split(portStr, " ") {
-					if strings.Contains(p, "/tcp:{}") {
-						port := strings.TrimSuffix(p, "/tcp:{}")
-						ports = append(ports, port)
-					}
-				}
-				if len(ports) > 0 {
-					createdBy = fmt.Sprintf("EXPOSE %s", strings.Join(ports, " "))
+				if cmd != "" {
+					dockerCommands = append(dockerCommands, cmd)
 				}
 			}
-
-			// Write the command to the Dockerfile
-			dockerFileBuilder.WriteString(createdBy)
-			dockerFileBuilder.WriteString("\n")
 		}
 	}
 
-	dockerFileContent := dockerFileBuilder.String()
-	if dockerFileContent == "" {
-		dockerFileContent = "No Dockerfile found"
+	dockerFileContent := "No Dockerfile found"
+	if len(dockerCommands) > 0 {
+		dockerFileContent = strings.Join(dockerCommands, "\n")
 	}
 
 	// Add debug logging
