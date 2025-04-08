@@ -133,7 +133,7 @@ func (s *SyncService) PerformSync(ctx context.Context) error {
 
 // Update the syncRepository function to parse namespace and image name correctly
 func (s *SyncService) syncRepository(ctx context.Context, repoPath string) error {
-	log.Printf("Starting sync for repository: %s", repoPath)
+	log.Printf("Syncing: %s", repoPath)
 
 	// Extract namespace from the full path
 	namespace := "library" // Default namespace like Docker Hub uses
@@ -177,16 +177,13 @@ func (s *SyncService) syncRepository(ctx context.Context, repoPath string) error
 	}
 
 	// Get list of tags for this image
-	log.Printf("Fetching tags for %s", repoPath)
 	tags, err := s.registry.ListTags(ctx, repoPath)
 	if err != nil {
 		return fmt.Errorf("failed to list tags: %w", err)
 	}
-	log.Printf("Found %d tags for %s", len(tags), repoPath)
 
 	// Process each tag
 	for _, tagName := range tags {
-		log.Printf("Processing tag %s for repo %s", tagName, repoPath)
 		if err := s.syncTag(ctx, repo, image, namespace+"/"+imageName, tagName); err != nil {
 			log.Printf("Error syncing tag %s in repository %s: %v", tagName, repoPath, err)
 			continue
@@ -217,7 +214,6 @@ func (s *SyncService) syncTag(ctx context.Context, repo *models.Repository, imag
 
 	// Check if the manifest is a manifest list
 	if manifest.MediaType == "application/vnd.oci.image.index.v1+json" || manifest.MediaType == "application/vnd.docker.distribution.manifest.list.v2+json" {
-		log.Printf("Tag %s in repository %s is a manifest list, processing entries", tagName, repoPath)
 
 		// Iterate through the manifests in the list
 		for _, m := range manifest.Manifests {
@@ -243,13 +239,10 @@ func (s *SyncService) syncTag(ctx context.Context, repo *models.Repository, imag
 }
 
 func (s *SyncService) processManifest(ctx context.Context, repo *models.Repository, image *models.Image, repoPath string, tagName string, manifest *ManifestResponse) error {
-	log.Printf("Processing manifest for %s:%s (type: %s)", repoPath, tagName, manifest.MediaType)
 
 	// Handle OCI manifest list or Docker manifest list
 	if manifest.MediaType == "application/vnd.oci.image.index.v1+json" ||
 		manifest.MediaType == "application/vnd.docker.distribution.manifest.list.v2+json" {
-
-		log.Printf("Processing manifest list for %s:%s with %d manifests", repoPath, tagName, len(manifest.Manifests))
 
 		// Get the first non-attestation manifest for the default platform
 		var targetManifest *struct {
@@ -268,8 +261,6 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 				m.Platform.OS != "unknown" &&
 				m.Platform.Architecture != "unknown" {
 				targetManifest = &m
-				log.Printf("Selected platform manifest: OS=%s, Arch=%s, Digest=%s",
-					m.Platform.OS, m.Platform.Architecture, m.Digest)
 				break
 			}
 		}
@@ -295,9 +286,6 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 			return fmt.Errorf("failed to get actual manifest: %w", err)
 		}
 
-		log.Printf("Processing platform-specific manifest for %s:%s (digest: %s)",
-			repoPath, tagName, targetManifest.Digest)
-
 		// Set the platform info from the index
 		actualManifest.Platform = targetManifest.Platform
 
@@ -307,7 +295,6 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 
 	// Check if the manifest actually has a config
 	if manifest.Config.Digest == "" {
-		log.Printf("Manifest for tag %s in repository %s has no config digest", tagName, repoPath)
 
 		// Create a minimal tag record
 		tag := &models.Tag{
@@ -464,7 +451,6 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 		}
 
 		if needsUpdate {
-			log.Printf("Updating tag %s with new metadata. Author: %s", tag.Name, author)
 			if err := s.tagRepo.UpdateTag(ctx, tag); err != nil {
 				return fmt.Errorf("failed to update tag: %w", err)
 			}

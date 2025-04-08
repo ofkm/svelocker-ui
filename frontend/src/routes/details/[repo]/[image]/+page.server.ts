@@ -7,7 +7,6 @@ export async function load({ params }) {
 
 	const imageResponse = await imageService.getImage(repoName, imageName);
 
-	console.log('Image data received:', imageResponse);
 	return {
 		image: imageResponse,
 		repoName,

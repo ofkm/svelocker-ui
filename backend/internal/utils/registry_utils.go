@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"log"
 	"strings"
 )
 
@@ -59,7 +58,6 @@ func ExtractAuthorFromLabels(labels map[string]string, defaultAuthor string) str
 
 	for _, key := range labelKeys {
 		if value, exists := labels[key]; exists && value != "" {
-			log.Printf("Found author in label %s: %s", key, value)
 			return value
 		}
 	}

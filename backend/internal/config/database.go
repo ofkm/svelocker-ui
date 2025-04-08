@@ -13,6 +13,7 @@ import (
 // DatabaseConfig holds the configuration for the database
 type DatabaseConfig struct {
 	Path string
+	ENV  string // Add environment field
 }
 
 // NewDatabaseConfig creates a new database configuration
@@ -20,6 +21,12 @@ func NewDatabaseConfig() *DatabaseConfig {
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
 		dbPath = "data/svelockerui.db"
+	}
+
+	// Get environment
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = "production" // Default to production
 	}
 
 	// Ensure the directory exists
@@ -30,13 +37,19 @@ func NewDatabaseConfig() *DatabaseConfig {
 
 	return &DatabaseConfig{
 		Path: dbPath,
+		ENV:  env,
 	}
 }
 
 // Connect establishes a connection to the database
 func (c *DatabaseConfig) Connect(logLevel string) (*gorm.DB, error) {
-	config := &gorm.Config{
-		Logger: logger.Default.LogMode(parseLogLevel(logLevel)),
+	config := &gorm.Config{}
+
+	// Only enable logging for development and testing environments
+	if c.ENV == "development" || c.ENV == "testing" {
+		config.Logger = logger.Default.LogMode(parseLogLevel(logLevel))
+	} else {
+		config.Logger = logger.Default.LogMode(logger.Silent) // Disable logging in production
 	}
 
 	db, err := gorm.Open(sqlite.Open(c.Path), config)

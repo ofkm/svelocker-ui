@@ -80,9 +80,6 @@ func NewRegistryClient(baseURL, username, password string) *RegistryClient {
 		Timeout: time.Minute * 5,
 	}
 
-	// Add debug logging
-	log.Printf("Creating registry client for %s with username %s", baseURL, username)
-
 	return &RegistryClient{
 		baseURL:  strings.TrimSuffix(baseURL, "/"),
 		username: username,
@@ -172,8 +169,6 @@ func (c *RegistryClient) GetManifest(ctx context.Context, repository, reference 
 	repository = strings.Trim(repository, "/")
 	url := fmt.Sprintf("%s/v2/%s/manifests/%s", c.baseURL, repository, reference)
 
-	log.Printf("Getting manifest for %s:%s", repository, reference)
-
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -190,7 +185,6 @@ func (c *RegistryClient) GetManifest(ctx context.Context, repository, reference 
 		req.SetBasicAuth(c.username, c.password)
 	}
 
-	log.Printf("Fetching manifest from: %s with Accept headers: %s", url, req.Header.Get("Accept"))
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
@@ -202,17 +196,11 @@ func (c *RegistryClient) GetManifest(ctx context.Context, repository, reference 
 		return nil, fmt.Errorf("failed to read manifest body: %w", err)
 	}
 
-	contentType := resp.Header.Get("Content-Type")
-	log.Printf("Manifest response status: %d, Content-Type: %s", resp.StatusCode, contentType)
-
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("Error getting manifest for %s:%s - Status: %d, Body: %s",
 			repository, reference, resp.StatusCode, string(bodyBytes))
 		return nil, fmt.Errorf("registry returned status %d", resp.StatusCode)
 	}
-
-	// Log the raw manifest for debugging
-	log.Printf("Raw manifest for %s:%s: %s", repository, reference, string(bodyBytes))
 
 	var manifest ManifestResponse
 	if err := json.Unmarshal(bodyBytes, &manifest); err != nil {
@@ -221,7 +209,6 @@ func (c *RegistryClient) GetManifest(ctx context.Context, repository, reference 
 
 	// Add explicit platform handling for OCI manifests
 	if manifest.MediaType == "application/vnd.oci.image.index.v1+json" {
-		log.Printf("Received OCI index manifest, looking for specific platform manifest")
 		for _, m := range manifest.Manifests {
 			if m.Platform.OS != "unknown" && m.Platform.Architecture != "unknown" {
 				// Get the actual platform-specific manifest
@@ -230,7 +217,6 @@ func (c *RegistryClient) GetManifest(ctx context.Context, repository, reference 
 		}
 	}
 
-	log.Printf("Processed manifest type: %s, schema version: %d", manifest.MediaType, manifest.SchemaVersion)
 	return &manifest, nil
 }
 
