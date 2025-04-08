@@ -41,7 +41,7 @@
 			{/if}
 		</div>
 
-		<!-- Images table/list -->
+		<!-- Images section -->
 		<div class="mt-4">
 			{#if (repo.images || []).length > 0}
 				<div class="space-y-2">
@@ -78,7 +78,7 @@
 					{/each}
 				</div>
 
-				{#if (repo.images || []).length > 10}
+				{#if (repo.images || []).length > 3}
 					<a href={`/details/${repo.name}`} class="flex items-center justify-center w-full py-2 rounded-lg bg-muted/20 text-sm text-muted-foreground hover:bg-muted/40 transition-colors mt-3">
 						View all {(repo.images || []).length} images
 					</a>
