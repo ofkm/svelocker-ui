@@ -22,7 +22,6 @@ func (r *tagRepository) ListTags(ctx context.Context, repoName, imageName string
 	err := r.db.Joins("JOIN images ON images.id = tags.image_id").
 		Joins("JOIN repositories ON repositories.id = images.repository_id").
 		Where("repositories.name = ? AND images.name = ?", repoName, imageName).
-		Preload("Metadata.Layers").
 		Find(&tags).Error
 	return tags, err
 }

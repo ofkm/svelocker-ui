@@ -129,15 +129,17 @@ func (s *SyncService) PerformSync(ctx context.Context) error {
 	return nil
 }
 
-// Update the syncRepository function to parse namespace correctly
+// Update the syncRepository function to parse namespace and image name correctly
 func (s *SyncService) syncRepository(ctx context.Context, repoPath string) error {
 	log.Printf("Starting sync for repository: %s", repoPath)
 
 	// Extract namespace from the full path
 	namespace := "library" // Default namespace like Docker Hub uses
+	imageName := repoPath
 	if strings.Contains(repoPath, "/") {
 		parts := strings.SplitN(repoPath, "/", 2)
 		namespace = parts[0]
+		imageName = parts[1]
 	}
 
 	// Get or create repository (namespace)
@@ -153,13 +155,6 @@ func (s *SyncService) syncRepository(ctx context.Context, repoPath string) error
 		if err := s.dockerRepo.CreateRepository(ctx, repo); err != nil {
 			return fmt.Errorf("failed to create repository namespace: %w", err)
 		}
-	}
-
-	// Extract image name from the full path
-	imageName := repoPath
-	if strings.Contains(repoPath, "/") {
-		parts := strings.SplitN(repoPath, "/", 2)
-		imageName = parts[1] // The part after the namespace
 	}
 
 	// Get or create image within this repository
@@ -190,7 +185,7 @@ func (s *SyncService) syncRepository(ctx context.Context, repoPath string) error
 	// Process each tag
 	for _, tagName := range tags {
 		log.Printf("Processing tag %s for repo %s", tagName, repoPath)
-		if err := s.syncTag(ctx, repo, image, repoPath, tagName); err != nil {
+		if err := s.syncTag(ctx, repo, image, namespace+"/"+imageName, tagName); err != nil {
 			log.Printf("Error syncing tag %s in repository %s: %v", tagName, repoPath, err)
 			continue
 		}
@@ -218,10 +213,50 @@ func (s *SyncService) syncTag(ctx context.Context, repo *models.Repository, imag
 		return fmt.Errorf("failed to get manifest: %w", err)
 	}
 
+	// Check if the manifest is a manifest list
+	if manifest.MediaType == "application/vnd.oci.image.index.v1+json" || manifest.MediaType == "application/vnd.docker.distribution.manifest.list.v2+json" {
+		log.Printf("Tag %s in repository %s is a manifest list, processing entries", tagName, repoPath)
+
+		// Iterate through the manifests in the list
+		for _, m := range manifest.Manifests {
+			// Fetch the manifest for this entry
+			platformManifest, err := s.registry.GetManifest(ctx, repoPath, m.Digest)
+			if err != nil {
+				log.Printf("Failed to fetch manifest for digest %s: %v", m.Digest, err)
+				continue
+			}
+
+			// Process the platform-specific manifest
+			if err := s.processManifest(ctx, repo, image, repoPath, tagName, platformManifest); err != nil {
+				log.Printf("Failed to process manifest for digest %s: %v", m.Digest, err)
+				continue
+			}
+		}
+
+		return nil
+	}
+
+	// Process the single manifest
+	return s.processManifest(ctx, repo, image, repoPath, tagName, manifest)
+}
+
+func (s *SyncService) processManifest(ctx context.Context, repo *models.Repository, image *models.Image, repoPath string, tagName string, manifest *ManifestResponse) error {
 	// Check if the manifest actually has a config
 	if manifest.Config.Digest == "" {
 		log.Printf("Manifest for tag %s in repository %s has no config digest", tagName, repoPath)
-		return fmt.Errorf("manifest has no config digest")
+
+		// Create a minimal tag record
+		tag := &models.Tag{
+			ImageID: image.ID,
+			Name:    tagName,
+			Digest:  "", // Set digest to empty string
+		}
+
+		if err := s.tagRepo.CreateTag(ctx, tag); err != nil {
+			return fmt.Errorf("failed to create minimal tag: %w", err)
+		}
+
+		return nil
 	}
 
 	// Get config for this image

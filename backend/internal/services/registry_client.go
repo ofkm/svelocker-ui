@@ -27,14 +27,23 @@ type ManifestResponse struct {
 	MediaType     string `json:"mediaType"`
 	Config        struct {
 		MediaType string `json:"mediaType"`
-		Size      int64  `json:"size"`
 		Digest    string `json:"digest"`
+		Size      int64  `json:"size"`
 	} `json:"config"`
 	Layers []struct {
 		MediaType string `json:"mediaType"`
-		Size      int64  `json:"size"`
 		Digest    string `json:"digest"`
+		Size      int64  `json:"size"`
 	} `json:"layers"`
+	Manifests []struct {
+		MediaType string `json:"mediaType"`
+		Digest    string `json:"digest"`
+		Size      int64  `json:"size"`
+		Platform  struct {
+			Architecture string `json:"architecture"`
+			OS           string `json:"os"`
+		} `json:"platform"`
+	} `json:"manifests,omitempty"`
 }
 
 type ConfigResponse struct {
@@ -58,13 +67,18 @@ type ConfigResponse struct {
 }
 
 func NewRegistryClient(baseURL, username, password string) *RegistryClient {
+	client := &http.Client{
+		Timeout: time.Minute * 5,
+	}
+
+	// Add debug logging
+	log.Printf("Creating registry client for %s with username %s", baseURL, username)
+
 	return &RegistryClient{
 		baseURL:  strings.TrimSuffix(baseURL, "/"),
 		username: username,
 		password: password,
-		client: &http.Client{
-			Timeout: time.Minute * 5, // Increase from 30 seconds to 5 minutes
-		},
+		client:   client,
 	}
 }
 
@@ -107,6 +121,7 @@ func (c *RegistryClient) ListTags(ctx context.Context, repository string) ([]str
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+	req.Header.Add("Accept", "application/vnd.docker.distribution.manifest.v2+json")
 
 	if c.username != "" && c.password != "" {
 		req.SetBasicAuth(c.username, c.password)
@@ -156,7 +171,7 @@ func (c *RegistryClient) GetManifest(ctx context.Context, repository, tag string
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Add("Accept", "application/vnd.docker.distribution.manifest.v2+json")
+	req.Header.Add("Accept", "application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json")
 	if c.username != "" && c.password != "" {
 		req.SetBasicAuth(c.username, c.password)
 	}
