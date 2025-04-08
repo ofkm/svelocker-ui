@@ -53,9 +53,6 @@
 								</a>
 								<div class="flex items-center gap-2">
 									<span class="text-xs text-muted-foreground">{(image.tags || []).length} tags</span>
-									{#if (image.tags || []).some((tag) => tag.name === 'latest')}
-										<div class="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80">latest</div>
-									{/if}
 								</div>
 							</div>
 
