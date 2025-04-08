@@ -7,9 +7,9 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Database, RotateCcw, LifeBuoy } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
-	import { env } from '$env/dynamic/public';
 	import SyncButton from '$lib/components/buttons/SyncButton.svelte';
 	import { version as currentVersion } from '$app/environment';
+	import SupportLinkButton from '$lib/components/buttons/SupportLinkButton.svelte';
 	import { enhance } from '$app/forms';
 
 	let { data }: { data: PageData } = $props();
@@ -128,40 +128,13 @@
 
 				<div>
 					<h3 class="font-medium">Support Links</h3>
-					<div class="mt-1 grid grid-cols-3 gap-2">
-						<a href="https://github.com/ofkm/svelocker-ui/wiki" target="_blank" rel="noopener noreferrer" class="text-sm text-primary hover:underline">Documentation</a>
-						<a href="https://github.com/ofkm/svelocker-ui/issues/new?assignees=&labels=bug&projects=&template=bug.yml&title=+Bug:" target="_blank" rel="noopener noreferrer" class="text-sm text-primary hover:underline">Report Issue</a>
-						<a href="https://github.com/ofkm/svelocker-ui/issues/new?assignees=&labels=feature&projects=&template=feature.yml&title=+Feature:" target="_blank" rel="noopener noreferrer" class="text-sm text-primary hover:underline">Request a Feature</a>
+					<div class="mt-2 flex flex-wrap gap-2">
+						<SupportLinkButton href="https://github.com/ofkm/svelocker-ui/wiki" label="Documentation" />
+						<SupportLinkButton href="https://github.com/ofkm/svelocker-ui/issues/new?assignees=&labels=bug&projects=&template=bug.yml&title=+Bug:" label="Report Issue" />
+						<SupportLinkButton href="https://github.com/ofkm/svelocker-ui/issues/new?assignees=&labels=feature&projects=&template=feature.yml&title=+Feature:" label="Request a Feature" />
 					</div>
 				</div>
 			</CardContent>
-		</Card>
-
-		<Card class="col-span-2">
-			<CardHeader>
-				<div class="flex items-center gap-2">
-					<RotateCcw size={18} class="text-muted-foreground" />
-					<CardTitle>Reset</CardTitle>
-				</div>
-				<CardDescription>Reset application settings to default values</CardDescription>
-			</CardHeader>
-			<CardContent class="space-y-4">
-				<p class="text-sm text-muted-foreground">This will reset all your preferences to their default values. This cannot be undone.</p>
-			</CardContent>
-			<CardFooter>
-				<form
-					method="POST"
-					action="?/resetSettings"
-					use:enhance
-					onsubmit={(event) => {
-						event.preventDefault();
-						resetSettings();
-					}}
-					id="reset-settings-form"
-				>
-					<Button variant="destructive" size="sm" type="submit">Reset All Settings</Button>
-				</form>
-			</CardFooter>
 		</Card>
 	</div>
 </div>
