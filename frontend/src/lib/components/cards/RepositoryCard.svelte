@@ -22,16 +22,6 @@
 	function sanitizeForTestId(text: string): string {
 		return text.replace(/[^a-zA-Z0-9-]/g, '-');
 	}
-
-	// Create object to track expanded status for each image
-	let expandedImages: { [key: string]: boolean } = {};
-	// Only show a few tags by default
-	const DEFAULT_VISIBLE_TAGS = 5;
-
-	// Toggle expanded state for an image
-	function toggleExpanded(imageName: string) {
-		expandedImages[imageName] = !expandedImages[imageName];
-	}
 </script>
 
 <div class="repo-card bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden transition-all hover:shadow-md hover:border-border/80 flex flex-col h-full" data-testid="repository-card-{repo.name}">
@@ -72,7 +62,7 @@
 							{#if (image.tags || []).length > 0}
 								<div class="mt-2">
 									<div class="flex flex-wrap gap-1">
-										{#each (image.tags || []).slice(0, expandedImages[image.name] ? image.tags.length : DEFAULT_VISIBLE_TAGS) as tag}
+										{#each image.tags || [] as tag}
 											<a
 												href={`/details/${image.name}/${tag.name}`}
 												class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium transition-colors
@@ -81,12 +71,6 @@
 												{tag.name}
 											</a>
 										{/each}
-
-										{#if (image.tags || []).length > DEFAULT_VISIBLE_TAGS}
-											<button on:click={() => toggleExpanded(image.name)} class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted/30 text-muted-foreground hover:bg-muted/50">
-												{expandedImages[image.name] ? 'Show less' : `+${image.tags.length - DEFAULT_VISIBLE_TAGS} more`}
-											</button>
-										{/if}
 									</div>
 								</div>
 							{/if}

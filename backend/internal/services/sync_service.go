@@ -119,9 +119,9 @@ func (s *SyncService) PerformSync(ctx context.Context) error {
 	}
 
 	// Process each repository
-	for _, repoName := range repositories {
-		if err := s.syncRepository(ctx, repoName); err != nil {
-			log.Printf("Error syncing repository %s: %v", repoName, err)
+	for _, repoPath := range repositories {
+		if err := s.syncRepository(ctx, repoPath); err != nil {
+			log.Printf("Error syncing repository %s: %v", repoPath, err)
 			continue
 		}
 	}
@@ -129,32 +129,69 @@ func (s *SyncService) PerformSync(ctx context.Context) error {
 	return nil
 }
 
-func (s *SyncService) syncRepository(ctx context.Context, repoName string) error {
-	// Get or create repository
-	repo, err := s.dockerRepo.GetRepository(ctx, repoName)
+// Update the syncRepository function to parse namespace correctly
+func (s *SyncService) syncRepository(ctx context.Context, repoPath string) error {
+	log.Printf("Starting sync for repository: %s", repoPath)
+
+	// Extract namespace from the full path
+	namespace := "library" // Default namespace like Docker Hub uses
+	if strings.Contains(repoPath, "/") {
+		parts := strings.SplitN(repoPath, "/", 2)
+		namespace = parts[0]
+	}
+
+	// Get or create repository (namespace)
+	repo, err := s.dockerRepo.GetRepository(ctx, namespace)
 	if err != nil {
-		return fmt.Errorf("failed to get repository: %w", err)
+		return fmt.Errorf("failed to get repository namespace: %w", err)
 	}
 
 	if repo == nil {
 		repo = &models.Repository{
-			Name: repoName,
+			Name: namespace,
 		}
 		if err := s.dockerRepo.CreateRepository(ctx, repo); err != nil {
-			return fmt.Errorf("failed to create repository: %w", err)
+			return fmt.Errorf("failed to create repository namespace: %w", err)
 		}
 	}
 
-	// Get list of tags for this repository
-	tags, err := s.registry.ListTags(ctx, repoName)
+	// Extract image name from the full path
+	imageName := repoPath
+	if strings.Contains(repoPath, "/") {
+		parts := strings.SplitN(repoPath, "/", 2)
+		imageName = parts[1] // The part after the namespace
+	}
+
+	// Get or create image within this repository
+	image, err := s.imageRepo.GetImage(ctx, namespace, imageName)
+	if err != nil {
+		return fmt.Errorf("failed to get image: %w", err)
+	}
+
+	if image == nil {
+		image = &models.Image{
+			RepositoryID: repo.ID,
+			Name:         imageName,
+			FullName:     repoPath, // Keep the full path in FullName
+		}
+		if err := s.imageRepo.CreateImage(ctx, image); err != nil {
+			return fmt.Errorf("failed to create image: %w", err)
+		}
+	}
+
+	// Get list of tags for this image
+	log.Printf("Fetching tags for %s", repoPath)
+	tags, err := s.registry.ListTags(ctx, repoPath)
 	if err != nil {
 		return fmt.Errorf("failed to list tags: %w", err)
 	}
+	log.Printf("Found %d tags for %s", len(tags), repoPath)
 
 	// Process each tag
 	for _, tagName := range tags {
-		if err := s.syncTag(ctx, repo, tagName); err != nil {
-			log.Printf("Error syncing tag %s in repository %s: %v", tagName, repoName, err)
+		log.Printf("Processing tag %s for repo %s", tagName, repoPath)
+		if err := s.syncTag(ctx, repo, image, repoPath, tagName); err != nil {
+			log.Printf("Error syncing tag %s in repository %s: %v", tagName, repoPath, err)
 			continue
 		}
 	}
@@ -168,47 +205,47 @@ func (s *SyncService) syncRepository(ctx context.Context, repoName string) error
 	return nil
 }
 
-func (s *SyncService) syncTag(ctx context.Context, repo *models.Repository, tagName string) error {
+// Update syncTag to handle specific error scenarios
+func (s *SyncService) syncTag(ctx context.Context, repo *models.Repository, image *models.Image, repoPath string, tagName string) error {
 	// Get manifest for this tag
-	manifest, err := s.registry.GetManifest(ctx, repo.Name, tagName)
+	manifest, err := s.registry.GetManifest(ctx, repoPath, tagName)
 	if err != nil {
+		// If we get a 404 for the manifest, this might be expected for deleted tags
+		if strings.Contains(err.Error(), "404") {
+			log.Printf("Tag %s in repository %s no longer exists in registry, skipping", tagName, repoPath)
+			return nil
+		}
 		return fmt.Errorf("failed to get manifest: %w", err)
 	}
 
+	// Check if the manifest actually has a config
+	if manifest.Config.Digest == "" {
+		log.Printf("Manifest for tag %s in repository %s has no config digest", tagName, repoPath)
+		return fmt.Errorf("manifest has no config digest")
+	}
+
 	// Get config for this image
-	config, err := s.registry.GetConfig(ctx, repo.Name, manifest.Config.Digest)
+	config, err := s.registry.GetConfig(ctx, repoPath, manifest.Config.Digest)
 	if err != nil {
+		// If we get a 404 for the config, this might be a schema v1 image
+		if strings.Contains(err.Error(), "404") {
+			log.Printf("Config %s for tag %s in repository %s not found, might be schema v1",
+				manifest.Config.Digest, tagName, repoPath)
+
+			// For schema v1, we might want to create a minimal tag record
+			tag := &models.Tag{
+				ImageID: image.ID,
+				Name:    tagName,
+				Digest:  manifest.Config.Digest,
+			}
+
+			if err := s.tagRepo.CreateTag(ctx, tag); err != nil {
+				return fmt.Errorf("failed to create minimal tag: %w", err)
+			}
+
+			return nil
+		}
 		return fmt.Errorf("failed to get config: %w", err)
-	}
-
-	// Parse image name from repository
-	// For example: "library/ubuntu" -> "ubuntu"
-	imageName := repo.Name
-	if parts := strings.Split(repo.Name, "/"); len(parts) > 1 {
-		imageName = parts[len(parts)-1]
-	}
-
-	// Get or create image
-	image, err := s.imageRepo.GetImage(ctx, repo.Name, imageName)
-	if err != nil {
-		return fmt.Errorf("failed to get image: %w", err)
-	}
-
-	if image == nil {
-		image = &models.Image{
-			RepositoryID: repo.ID,
-			Name:         imageName,
-			FullName:     repo.Name,
-		}
-		if err := s.imageRepo.CreateImage(ctx, image); err != nil {
-			return fmt.Errorf("failed to create image: %w", err)
-		}
-	}
-
-	// Get or create tag
-	tag, err := s.tagRepo.GetTag(ctx, repo.Name, imageName, tagName)
-	if err != nil {
-		return fmt.Errorf("failed to get tag: %w", err)
 	}
 
 	// Convert exposed ports to string
@@ -224,6 +261,12 @@ func (s *SyncService) syncTag(ctx context.Context, repo *models.Repository, tagN
 	}
 	if len(config.Config.Entrypoint) > 0 {
 		entrypoint = strings.Join(config.Config.Entrypoint, " ")
+	}
+
+	// Update tag reference to be against the image
+	tag, err := s.tagRepo.GetTag(ctx, repo.Name, image.Name, tagName)
+	if err != nil {
+		return fmt.Errorf("failed to get tag: %w", err)
 	}
 
 	if tag == nil {

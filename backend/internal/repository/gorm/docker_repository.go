@@ -33,7 +33,10 @@ func (r *dockerRepository) ListRepositories(ctx context.Context, page, limit int
 	offset := (page - 1) * limit
 	err := query.Offset(offset).Limit(limit).
 		Preload("Images", func(db *gorm.DB) *gorm.DB {
-			return db.Select("id, repository_id, name, full_name, pull_count")
+			return db.Order("name ASC")
+		}).
+		Preload("Images.Tags", func(db *gorm.DB) *gorm.DB {
+			return db.Order("name ASC")
 		}).
 		Find(&repositories).Error
 
