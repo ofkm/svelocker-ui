@@ -15,7 +15,7 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
-	import type { TagWithMetadata } from '$lib/types/db';
+	import type { Tag, TagMetadata, ImageLayer } from '$lib/types/tag-type';
 
 	interface Props {
 		data: PageData;
@@ -23,14 +23,29 @@
 
 	let { data }: Props = $props();
 
-	let currentTag = $derived(data.tag.tags[data.tagIndex] as TagWithMetadata);
+	// Extract data from the page server with proper type casting
+	let tag = $derived((data.tag as Tag) || ({} as Tag));
+	let repoName = $derived(data.repoName || '');
+	let imageName = $derived(data.imageName || '');
+	let tagName = $derived(data.tagName || '');
+	let imageFullName = $derived(`${repoName}/${imageName}`);
+
+	// Extract tag metadata with proper typing
+	let metadata = $derived((tag?.metadata as TagMetadata) || ({} as TagMetadata));
 	let loadError = $state(false);
 	let errorMessage = $state('');
 	let stickyLineNumbers = $state(true);
-	const baseUrl = 'http://localhost:8080';
+	const baseUrl = env.PUBLIC_REGISTRY_URL || 'http://localhost:8080';
+
+	// Check if this is the latest tag
+	let isLatest = $derived(tagName === 'latest');
 
 	onMount(async () => {
-		if (currentTag && (!currentTag.metadata || Object.keys(currentTag.metadata).length === 0)) {
+		console.log('Page mounted with data:', data);
+		console.log('Tag data:', tag);
+		console.log('Tag metadata:', metadata);
+
+		if (!metadata || Object.keys(metadata).length === 0) {
 			try {
 				console.warn('Tag metadata appears to be empty');
 			} catch (error) {
@@ -56,7 +71,7 @@
 					registryUrl: env.PUBLIC_REGISTRY_URL,
 					repo: name,
 					digest: digest,
-					manifestType: currentTag.metadata?.isOCI ? 'application/vnd.oci.image.index.v1+json' : 'application/vnd.docker.distribution.manifest.v2+json'
+					manifestType: metadata?.isOCI ? 'application/vnd.oci.image.index.v1+json' : 'application/vnd.docker.distribution.manifest.v2+json'
 				})
 			});
 
@@ -78,11 +93,50 @@
 		}
 	}
 
-	const imageName = data.imageFullName.includes('/') ? data.imageFullName.split('/').pop() : data.imageFullName;
+	// For display in the UI, show just the image name without repo
+	let displayImageName = $derived(imageName.includes('/') ? imageName.split('/').pop() || '' : imageName);
+
+	// Format the exposed ports for display
+	function formatExposedPorts(ports: string | Record<string, any> | undefined): string {
+		if (!ports) return 'None';
+
+		if (typeof ports === 'string') {
+			return ports;
+		}
+
+		if (typeof ports === 'object') {
+			return Object.keys(ports).join(', ');
+		}
+
+		return 'None';
+	}
+
+	// Format commands and entrypoints for display
+	function formatArrayValue(value: string | string[] | undefined): string {
+		if (!value) return 'None';
+
+		if (Array.isArray(value)) {
+			return value.join(' ');
+		}
+
+		if (typeof value === 'object') {
+			return JSON.stringify(value);
+		}
+
+		return value || 'None';
+	}
+
+	onMount(() => {
+		console.log('DockerFile content available:', !!metadata?.dockerFile);
+		console.log('DockerFile content length:', metadata?.dockerFile?.length || 0);
+		console.log('First 50 chars of DockerFile:', metadata?.dockerFile?.substring(0, 50) || 'Not available');
+
+		// rest of your code...
+	});
 </script>
 
 <svelte:head>
-	<title>Svelocker UI - {data.imageFullName}:{currentTag.name}</title>
+	<title>Svelocker UI - {imageFullName}:{tagName}</title>
 </svelte:head>
 
 {#if loadError}
@@ -120,25 +174,24 @@
 							<Slash class="h-4 w-4" />
 						</Breadcrumb.Separator>
 						<Breadcrumb.Item>
-							<Breadcrumb.Link href="/details/{data.repo}" class="text-muted-foreground hover:text-foreground transition-colors">
-								{data.repo}
+							<Breadcrumb.Link href="/details/{repoName}" class="text-muted-foreground hover:text-foreground transition-colors">
+								{repoName}
 							</Breadcrumb.Link>
 						</Breadcrumb.Item>
 						<Breadcrumb.Separator>
 							<Slash class="h-4 w-4" />
 						</Breadcrumb.Separator>
 						<Breadcrumb.Item>
-							<Breadcrumb.Link href="/details/{data.repo}" class="text-muted-foreground hover:text-foreground transition-colors">
-								<!-- {data.imageFullName.includes('/') ? data.imageFullName.split('/').pop() : data.imageFullName} -->
-								{imageName}
+							<Breadcrumb.Link href="/details/{repoName}/{imageName}" class="text-muted-foreground hover:text-foreground transition-colors">
+								{displayImageName}
 							</Breadcrumb.Link>
 						</Breadcrumb.Item>
 						<Breadcrumb.Separator>
 							<Slash class="h-4 w-4" />
 						</Breadcrumb.Separator>
 						<Breadcrumb.Item>
-							<Breadcrumb.Link href="/details/{data.repo}/{imageName}/{currentTag.name}" class="text-foreground font-medium">
-								{currentTag.name}
+							<Breadcrumb.Link href="/details/{repoName}/{imageName}/{tagName}" class="text-foreground font-medium">
+								{tagName}
 							</Breadcrumb.Link>
 						</Breadcrumb.Item>
 					</Breadcrumb.List>
@@ -150,8 +203,8 @@
 				<div class="flex flex-col md:flex-row justify-between items-start gap-4">
 					<div>
 						<h1 data-testid="image-details-header" class="text-2xl font-semibold tracking-tight flex items-center flex-wrap gap-2">
-							<span>{data.imageFullName}:{currentTag.name}</span>
-							{#if data.isLatest}
+							<span>{imageFullName}:{tagName}</span>
+							{#if isLatest}
 								<div class="inline-flex items-center h-[1.5em] overflow-hidden rounded-full border border-green-400/50 bg-green-50/50 dark:bg-green-900/20 dark:border-green-800/50">
 									<div class="px-3 flex items-center h-full">
 										<span class="text-xs font-medium text-green-600 dark:text-green-400">Latest Version</span>
@@ -160,23 +213,23 @@
 							{/if}
 						</h1>
 
-						{#if currentTag.metadata?.description}
-							<p class="mt-1 text-sm text-muted-foreground">{currentTag.metadata.description}</p>
+						{#if metadata?.description}
+							<p class="mt-1 text-sm text-muted-foreground">{metadata.description}</p>
 						{/if}
 
-						{#if currentTag.metadata?.indexDigest}
+						{#if tag?.digest}
 							<div class="flex items-center mt-3 bg-muted/30 rounded-md overflow-hidden max-w-full">
 								<div class="flex-shrink-0 bg-primary/10 border border-secondary rounded-l-md px-3 py-1.5">
 									<span class="text-xs font-medium text-primary font-mono">digest</span>
 								</div>
 								<div class="px-3 py-1.5 overflow-hidden text-ellipsis whitespace-nowrap w-full">
-									<p class="text-xs text-muted-foreground font-mono truncate">{currentTag.metadata.indexDigest}</p>
+									<p class="text-xs text-muted-foreground font-mono truncate">{tag.digest}</p>
 								</div>
 							</div>
 						{/if}
 					</div>
 					<div class="flex gap-2 mt-2 md:mt-0">
-						<Button variant="outline" size="sm" class="gap-2" onclick={() => copyDockerRunCommand(data.imageFullName, currentTag.name, env.PUBLIC_REGISTRY_URL)}>
+						<Button variant="outline" size="sm" class="gap-2" onclick={() => copyDockerRunCommand(imageFullName, tagName, env.PUBLIC_REGISTRY_URL)}>
 							<Terminal class="h-4 w-4" />
 							Copy Docker Run
 						</Button>
@@ -187,14 +240,14 @@
 							</AlertDialog.Trigger>
 							<AlertDialog.Content>
 								<AlertDialog.Header>
-									<AlertDialog.Title class="font-light text-md">Are you sure you want to delete the following tag?<br /><span class="font-bold underline">{data.imageFullName}:{currentTag.name}</span></AlertDialog.Title>
+									<AlertDialog.Title class="font-light text-md">Are you sure you want to delete the following tag?<br /><span class="font-bold underline">{imageFullName}:{tagName}</span></AlertDialog.Title>
 									<AlertDialog.Description>This action <span class="font-extrabold">CAN NOT</span> be undone. <br /><span class="font-bold">All tags with the same config digest will be deleted.</span></AlertDialog.Description>
 								</AlertDialog.Header>
 								<AlertDialog.Footer>
 									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 									<AlertDialog.Action
 										onclick={() => {
-											const digest = currentTag.metadata?.indexDigest;
+											const digest = tag?.digest;
 											console.log('Selected digest:', digest);
 
 											if (!digest) {
@@ -205,9 +258,9 @@
 											}
 
 											// Strip 'library/' prefix if present
-											const imageName = data.imageFullName.startsWith('library/') ? data.imageFullName.replace('library/', '') : data.imageFullName;
+											const name = imageFullName.startsWith('library/') ? imageFullName.replace('library/', '') : imageFullName;
 
-											deleteTagBackend(imageName, digest);
+											deleteTagBackend(name, digest);
 										}}
 										class={buttonVariants({ variant: 'destructive' })}
 									>
@@ -223,24 +276,24 @@
 			<!-- Main Content Grid -->
 			<div class="grid lg:grid-cols-2 gap-6 h-[calc(100vh-290px)]">
 				<!-- Left Column: Metadata -->
-				{#if currentTag?.metadata}
+				{#if metadata && Object.keys(metadata).length > 0}
 					<div class="bg-card/50 backdrop-blur-sm border rounded-xl shadow-sm overflow-hidden flex flex-col">
 						<div class="border-b backdrop-blur-sm p-3 bg-card/80 flex-shrink-0">
 							<h2 class="text-lg font-semibold">Image Metadata</h2>
-							<p class="text-xs text-muted-foreground">Technical details for {data.imageFullName}:{currentTag.name}</p>
+							<p class="text-xs text-muted-foreground">Technical details for {imageFullName}:{tagName}</p>
 						</div>
 
 						<div class="p-4 overflow-auto flex-grow">
 							<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-								<MetadataItem label="OS" icon={AppWindowMac} value={currentTag.metadata?.os || 'Unknown'} />
-								<MetadataItem label="Architecture" icon={CircuitBoard} value={currentTag.metadata?.architecture || 'Unknown'} />
-								<MetadataItem label="Created" icon={CalendarCog} value={currentTag.metadata?.created ? convertTimeString(currentTag.metadata.created) || 'Unknown' : 'Unknown'} />
-								<MetadataItem label="Author" icon={UserPen} value={currentTag.metadata?.author || 'Unknown'} />
-								<MetadataItem label="Exposed Ports" icon={EthernetPort} value={Array.isArray(currentTag.metadata?.exposedPorts) && currentTag.metadata.exposedPorts.length > 0 ? currentTag.metadata.exposedPorts.join(', ') : 'None'} />
-								<MetadataItem label="Container Size" icon={Scaling} value={currentTag.metadata?.totalSize || 'Unknown'} />
-								<MetadataItem label="Working Directory" icon={FolderCode} value={currentTag.metadata?.workDir || 'Unknown'} />
-								<MetadataItem label="Command" icon={Terminal} value={typeof currentTag.metadata?.command === 'object' ? JSON.stringify(currentTag.metadata.command) : currentTag.metadata?.command || 'Unknown'} />
-								<MetadataItem label="Entrypoint" icon={Terminal} value={typeof currentTag.metadata?.entrypoint === 'object' ? JSON.stringify(currentTag.metadata.entrypoint) : currentTag.metadata?.entrypoint || 'Unknown'} />
+								<MetadataItem label="OS" icon={AppWindowMac} value={metadata?.os || 'Unknown'} />
+								<MetadataItem label="Architecture" icon={CircuitBoard} value={metadata?.architecture || 'Unknown'} />
+								<MetadataItem label="Created" icon={CalendarCog} value={metadata?.created ? convertTimeString(metadata.created) : 'Unknown'} />
+								<MetadataItem label="Author" icon={UserPen} value={metadata?.author || 'Unknown'} />
+								<MetadataItem label="Exposed Ports" icon={EthernetPort} value={formatExposedPorts(metadata?.exposedPorts)} />
+								<MetadataItem label="Container Size" icon={Scaling} value={metadata?.totalSize ? `${(metadata.totalSize / 1024 / 1024).toFixed(2)} MB` : 'Unknown'} />
+								<MetadataItem label="Working Directory" icon={FolderCode} value={metadata?.workDir || '/'} />
+								<MetadataItem label="Command" icon={Terminal} value={formatArrayValue(metadata?.command)} />
+								<MetadataItem label="Entrypoint" icon={Terminal} value={formatArrayValue(metadata?.entrypoint)} />
 							</div>
 						</div>
 					</div>
@@ -251,34 +304,38 @@
 					<div class="border-b backdrop-blur-sm flex justify-between items-center p-3 bg-card/80 flex-shrink-0">
 						<div>
 							<h2 class="text-lg font-semibold">Dockerfile</h2>
-							<p class="text-xs text-muted-foreground">Viewing Dockerfile for {data.imageFullName}:{currentTag.name}</p>
+							<p class="text-xs text-muted-foreground">Viewing Dockerfile for {imageFullName}:{tagName}</p>
 						</div>
 
 						<!-- Sticky Lines Switch -->
 						<div class="flex items-center gap-2">
 							<Label for="stickyLineSwitch">Sticky Line Numbers</Label>
-							<Switch id="stickyLineSwitch" bind:checked={stickyLineNumbers} />
+							<Switch id="stickyLineSwitch" checked={stickyLineNumbers} onchange={(e) => (stickyLineNumbers = e.target.checked)} />
 						</div>
 					</div>
 
 					<div class="flex-grow">
 						<ScrollArea class="h-full w-full">
-							<DockerfileEditor dockerfile={currentTag.metadata?.dockerFile} theme="auto" showLineNumbers={true} {stickyLineNumbers} showCopyButton={true} />
+							<DockerfileEditor dockerfile={tag.metadata?.dockerFile || ''} theme="auto" showLineNumbers={true} {stickyLineNumbers} showCopyButton={true} />
 						</ScrollArea>
 					</div>
 				</div>
 			</div>
 
 			<!-- Layer Visualization in Full Width Card -->
-			{#if currentTag?.metadata?.layers && Array.isArray(currentTag.metadata.layers) && currentTag.metadata.layers.length > 0}
+			{#if metadata?.layers && Array.isArray(metadata.layers) && metadata.layers.length > 0}
 				<div class="mt-6 bg-card/50 backdrop-blur-sm border rounded-xl shadow-sm overflow-hidden">
 					<div class="border-b backdrop-blur-sm p-3 bg-card/80">
 						<h2 class="text-lg font-semibold">Layer Composition</h2>
 						<p class="text-xs text-muted-foreground">Size distribution of container image layers</p>
 					</div>
 					<div class="p-4">
-						<LayerVisualization layers={currentTag.metadata.layers} />
+						<LayerVisualization layers={metadata.layers} />
 					</div>
+				</div>
+			{:else}
+				<div class="mt-6 bg-card/50 backdrop-blur-sm border border-border/40 rounded-xl p-4 text-center">
+					<p class="text-muted-foreground">No layer information available for this image.</p>
 				</div>
 			{/if}
 		</div>
