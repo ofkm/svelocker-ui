@@ -6,16 +6,16 @@
 	import { Button } from '$lib/components/ui/button';
 	import { formatDistanceToNow } from 'date-fns';
 	import type { PageData } from './$types';
+	import type { Repository, Image, Tag } from '$lib/types';
 
 	interface Props {
-		// Props without destructuring
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
 
-	// Standard reactive declarations with safe defaults
-	let repo = $derived(data?.repo || { images: [] });
+	// Handle potential undefined repository data more carefully
+	let repo = $derived(data?.repository || { name: '', images: [] }) as Repository;
 	let repoName = $derived(data?.repoName || 'Unknown');
 
 	// Helper to construct correct detail URLs
@@ -25,22 +25,13 @@
 
 	// Helper to extract just the simple name from a path (getting "caddy" from "ofkm/caddy")
 	function getSimpleName(fullName: string): string {
-		// If the name contains a slash, take only the last part
 		return fullName.includes('/') ? fullName.split('/').pop() || fullName : fullName;
 	}
 
-	// Group images by namespace
-	let groupedImages = $derived(() => {
-		const groups: Record<string, typeof repo.images> = {};
-		repo.images.forEach((image) => {
-			const namespace = image.name.includes('/') ? image.name.split('/')[0] : 'default';
-			if (!groups[namespace]) {
-				groups[namespace] = [];
-			}
-			groups[namespace].push(image);
-		});
-		return groups;
-	});
+	// Fix Button event
+	function goBack() {
+		window.history.back();
+	}
 </script>
 
 <svelte:head>
@@ -87,7 +78,7 @@
 					<div class="flex items-center gap-2.5">
 						<div class="flex items-center gap-2">
 							<span class="text-muted-foreground">Total Images:</span>
-							<span class="font-medium">{repo?.images?.length || 0}</span>
+							<span class="font-medium">{Array.isArray(repo?.images) ? repo.images.length : 0}</span>
 						</div>
 						<span class="text-muted-foreground">•</span>
 						<div class="flex items-center gap-2">
@@ -96,7 +87,7 @@
 						</div>
 					</div>
 				</div>
-				<Button variant="outline" class="gap-2" onclick={() => window.history.back()}>
+				<Button variant="outline" class="gap-2" onclick={goBack}>
 					<ArrowLeft class="h-4 w-4" />
 					Go Back
 				</Button>
@@ -106,48 +97,47 @@
 		<!-- Repository Images List -->
 		<div class="mx-10 mb-16">
 			<div class="space-y-4">
-				{#if !repo?.images || repo.images.length === 0}
+				{#if !Array.isArray(repo?.images) || repo.images.length === 0}
 					<div class="p-8 text-center bg-card/50 rounded-xl border border-border/40">
 						<Layers class="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
 						<h3 class="text-lg font-medium">No Images Found</h3>
 						<p class="text-muted-foreground">This repository doesn't have any images yet.</p>
 					</div>
 				{:else}
-					{#each Object.entries(groupedImages) as [namespace, images]}
-						<div class="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden shadow-sm mb-6">
-							<div class="border-b border-border/30 px-5 py-3 bg-muted/10 flex items-center">
-								<h3 class="text-lg font-medium">{namespace}</h3>
-								<CountBadge count={images.length} label="images" variant="primary" customClass="ml-3" />
-							</div>
-							<div class="p-5 space-y-4">
-								{#each images as image}
-									<div class="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden shadow-sm">
-										<div class="border-b border-border/30 px-5 py-3 bg-muted/10 flex items-center">
-											<h3 class="text-lg font-medium">{image.name}</h3>
-											<CountBadge count={image.tags.length} label="tags" variant="primary" customClass="ml-3" />
-										</div>
-										<div class="p-5">
-											<div class="flex flex-wrap gap-2">
-												{#if !image.tags || image.tags.length === 0}
-													<div class="w-full py-3 text-center text-muted-foreground">No tags available for this image</div>
-												{:else}
-													{#each image.tags as tag}
-														<a
-															href={getDetailUrl(repoName, getSimpleName(image.name), tag.name)}
-															class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors min-w-[2.5rem] text-center
-                              {tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-muted/50 text-foreground/80 hover:bg-muted border border-border/40 hover:border-border/60'}"
-														>
-															{tag.name}
-														</a>
-													{/each}
-												{/if}
-											</div>
+					<!-- Direct loop through images array without using groupedImages -->
+					<div class="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden shadow-sm mb-6">
+						<div class="border-b border-border/30 px-5 py-3 bg-muted/10 flex items-center">
+							<h3 class="text-lg font-medium">{repoName}</h3>
+							<CountBadge count={repo.images.length} label="images" variant="primary" customClass="ml-3" />
+						</div>
+						<div class="p-5 space-y-4">
+							{#each repo.images as image}
+								<div class="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden shadow-sm">
+									<div class="border-b border-border/30 px-5 py-3 bg-muted/10 flex items-center">
+										<h3 class="text-lg font-medium">{getSimpleName(image.name || '')}</h3>
+										<CountBadge count={Array.isArray(image.tags) ? image.tags.length : 0} label="tags" variant="primary" customClass="ml-3" />
+									</div>
+									<div class="p-5">
+										<div class="flex flex-wrap gap-2">
+											{#if !Array.isArray(image.tags) || image.tags.length === 0}
+												<div class="w-full py-3 text-center text-muted-foreground">No tags available for this image</div>
+											{:else}
+												{#each image.tags as tag}
+													<a
+														href={getDetailUrl(repoName, getSimpleName(image.name || ''), tag.name)}
+														class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors min-w-[2.5rem] text-center
+														{tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 border border-green-200 dark:border-green-800/80 hover:bg-green-200 dark:hover:bg-green-800/60' : 'bg-muted/50 text-foreground/80 hover:bg-muted border border-border/40 hover:border-border/60'}"
+													>
+														{tag.name}
+													</a>
+												{/each}
+											{/if}
 										</div>
 									</div>
-								{/each}
-							</div>
+								</div>
+							{/each}
 						</div>
-					{/each}
+					</div>
 				{/if}
 			</div>
 		</div>

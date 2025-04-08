@@ -29,7 +29,10 @@
 		<!-- Header section with namespace name and badge -->
 		<div class="flex justify-between items-start mb-3">
 			<div>
-				<h3 class="text-xl font-medium tracking-tight text-foreground">{repo.name}</h3>
+				<a href={`/details/${repo.name}`} class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+					<h3 class="text-xl font-medium tracking-tight text-foreground">{repo.name}</h3>
+				</a>
+
 				<p class="text-sm text-muted-foreground mt-1">
 					{(repo.images || []).length}
 					{(repo.images || []).length === 1 ? 'Image' : 'Images'}
