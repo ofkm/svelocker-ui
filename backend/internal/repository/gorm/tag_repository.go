@@ -76,43 +76,37 @@ func (r *tagRepository) CreateTag(ctx context.Context, tag *models.Tag) error {
 
 func (r *tagRepository) UpdateTag(ctx context.Context, tag *models.Tag) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		// Update the tag
+		// Update the tag itself
 		if err := tx.Save(tag).Error; err != nil {
-			return fmt.Errorf("failed to update tag: %w", err)
+			return fmt.Errorf("failed to save tag: %w", err)
 		}
 
 		// Update or create metadata
-		var existing models.TagMetadata
-		if err := tx.Where("tag_id = ?", tag.ID).First(&existing).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				// Create new metadata if it doesn't exist
-				tag.Metadata.TagID = tag.ID
-				tag.Metadata.ID = 0 // Reset ID to ensure auto-increment
-				if err := tx.Create(&tag.Metadata).Error; err != nil {
-					return fmt.Errorf("failed to create tag metadata: %w", err)
-				}
-			} else {
-				return fmt.Errorf("failed to query existing metadata: %w", err)
+		if tag.Metadata.ID != 0 {
+			if err := tx.Save(&tag.Metadata).Error; err != nil {
+				return fmt.Errorf("failed to update metadata: %w", err)
 			}
 		} else {
-			// Update existing metadata
-			tag.Metadata.ID = existing.ID
 			tag.Metadata.TagID = tag.ID
-			if err := tx.Save(&tag.Metadata).Error; err != nil {
-				return fmt.Errorf("failed to update tag metadata: %w", err)
+			if err := tx.Create(&tag.Metadata).Error; err != nil {
+				return fmt.Errorf("failed to create metadata: %w", err)
 			}
 		}
 
 		// Handle layers
-		if err := tx.Where("tag_metadata_id = ?", tag.Metadata.ID).Delete(&models.ImageLayer{}).Error; err != nil {
-			return fmt.Errorf("failed to delete existing layers: %w", err)
-		}
-
 		if len(tag.Metadata.Layers) > 0 {
-			for i := range tag.Metadata.Layers {
-				tag.Metadata.Layers[i].TagMetadataID = tag.Metadata.ID
-				tag.Metadata.Layers[i].ID = 0 // Reset ID to ensure auto-increment
+			// Delete existing layers
+			if err := tx.Where("tag_metadata_id = ?", tag.Metadata.ID).Delete(&models.ImageLayer{}).Error; err != nil {
+				return fmt.Errorf("failed to delete existing layers: %w", err)
 			}
+
+			// Reset layer IDs and set metadata ID
+			for i := range tag.Metadata.Layers {
+				tag.Metadata.Layers[i].ID = 0 // Reset ID to ensure auto-increment
+				tag.Metadata.Layers[i].TagMetadataID = tag.Metadata.ID
+			}
+
+			// Create new layers
 			if err := tx.Create(&tag.Metadata.Layers).Error; err != nil {
 				return fmt.Errorf("failed to create new layers: %w", err)
 			}

@@ -55,6 +55,13 @@
 		}
 	});
 
+	onMount(() => {
+		console.log('Full tag data:', tag);
+		console.log('Metadata:', metadata);
+		console.log('Author:', metadata?.author);
+		console.log('Layers:', metadata?.layers);
+	});
+
 	async function deleteTagBackend(name: string, digest: string) {
 		if (!digest) {
 			toast.error('Error Deleting Docker Tag', {
@@ -125,14 +132,6 @@
 
 		return value || 'None';
 	}
-
-	onMount(() => {
-		console.log('DockerFile content available:', !!metadata?.dockerFile);
-		console.log('DockerFile content length:', metadata?.dockerFile?.length || 0);
-		console.log('First 50 chars of DockerFile:', metadata?.dockerFile?.substring(0, 50) || 'Not available');
-
-		// rest of your code...
-	});
 </script>
 
 <svelte:head>

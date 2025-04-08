@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/ofkm/svelocker-ui/backend/internal/models"
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
+	"github.com/ofkm/svelocker-ui/backend/internal/utils"
 )
 
 type SyncService struct {
@@ -241,6 +243,68 @@ func (s *SyncService) syncTag(ctx context.Context, repo *models.Repository, imag
 }
 
 func (s *SyncService) processManifest(ctx context.Context, repo *models.Repository, image *models.Image, repoPath string, tagName string, manifest *ManifestResponse) error {
+	log.Printf("Processing manifest for %s:%s (type: %s)", repoPath, tagName, manifest.MediaType)
+
+	// Handle OCI manifest list or Docker manifest list
+	if manifest.MediaType == "application/vnd.oci.image.index.v1+json" ||
+		manifest.MediaType == "application/vnd.docker.distribution.manifest.list.v2+json" {
+
+		log.Printf("Processing manifest list for %s:%s with %d manifests", repoPath, tagName, len(manifest.Manifests))
+
+		// Get the first non-attestation manifest for the default platform
+		var targetManifest *struct {
+			MediaType string `json:"mediaType"`
+			Digest    string `json:"digest"`
+			Size      int64  `json:"size"`
+			Platform  struct {
+				Architecture string `json:"architecture"`
+				OS           string `json:"os"`
+			} `json:"platform"`
+		}
+
+		// Find first non-attestation manifest that's not for an unknown platform
+		for _, m := range manifest.Manifests {
+			if !strings.Contains(m.MediaType, "attestation") &&
+				m.Platform.OS != "unknown" &&
+				m.Platform.Architecture != "unknown" {
+				targetManifest = &m
+				log.Printf("Selected platform manifest: OS=%s, Arch=%s, Digest=%s",
+					m.Platform.OS, m.Platform.Architecture, m.Digest)
+				break
+			}
+		}
+
+		if targetManifest == nil {
+			log.Printf("No valid platform manifest found, trying first non-attestation manifest")
+			// Fallback to first non-attestation manifest
+			for _, m := range manifest.Manifests {
+				if !strings.Contains(m.MediaType, "attestation") {
+					targetManifest = &m
+					break
+				}
+			}
+		}
+
+		if targetManifest == nil {
+			return fmt.Errorf("no valid manifest found in list")
+		}
+
+		// Fetch the actual manifest using the digest
+		actualManifest, err := s.registry.GetManifest(ctx, repoPath, targetManifest.Digest)
+		if err != nil {
+			return fmt.Errorf("failed to get actual manifest: %w", err)
+		}
+
+		log.Printf("Processing platform-specific manifest for %s:%s (digest: %s)",
+			repoPath, tagName, targetManifest.Digest)
+
+		// Set the platform info from the index
+		actualManifest.Platform = targetManifest.Platform
+
+		// Process this actual manifest
+		return s.processManifest(ctx, repo, image, repoPath, tagName, actualManifest)
+	}
+
 	// Check if the manifest actually has a config
 	if manifest.Config.Digest == "" {
 		log.Printf("Manifest for tag %s in repository %s has no config digest", tagName, repoPath)
@@ -298,30 +362,10 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 		entrypoint = strings.Join(config.Config.Entrypoint, " ")
 	}
 
-	// Extract Dockerfile from history entries - simplified version matching TypeScript
-	var dockerCommands []string
-	if len(config.History) > 0 {
-		for _, historyEntry := range config.History {
-			if historyEntry.CreatedBy != "" {
-				// Clean up the command
-				cmd := strings.TrimPrefix(historyEntry.CreatedBy, "/bin/sh -c ")
-				cmd = strings.TrimPrefix(cmd, "#(nop) ")
-				cmd = strings.TrimSpace(cmd)
+	dockerFileContent := utils.ExtractDockerfileFromHistory(config.History)
 
-				if cmd != "" {
-					dockerCommands = append(dockerCommands, cmd)
-				}
-			}
-		}
-	}
-
-	dockerFileContent := "No Dockerfile found"
-	if len(dockerCommands) > 0 {
-		dockerFileContent = strings.Join(dockerCommands, "\n")
-	}
-
-	// Add debug logging
-	log.Printf("Generated Dockerfile content:\n%s", dockerFileContent)
+	// Extract author from config
+	author := utils.ExtractAuthorFromLabels(config.Config.Labels, config.Author)
 
 	// Update tag reference to be against the image
 	tag, err := s.tagRepo.GetTag(ctx, repo.Name, image.Name, tagName)
@@ -330,6 +374,7 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 	}
 
 	if tag == nil {
+		// Create new tag logic remains the same
 		tag = &models.Tag{
 			ImageID: image.ID,
 			Name:    tagName,
@@ -338,13 +383,13 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 				Created:      config.Created,
 				OS:           config.OS,
 				Architecture: config.Architecture,
-				Author:       config.Author,
+				Author:       author,
 				WorkDir:      config.Config.WorkingDir,
 				Command:      cmd,
 				Entrypoint:   entrypoint,
 				TotalSize:    manifest.Config.Size,
 				ExposedPorts: strings.Join(exposedPorts, ","),
-				DockerFile:   dockerFileContent, // Make sure this is being set
+				DockerFile:   dockerFileContent,
 			},
 		}
 
@@ -361,11 +406,70 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 			return fmt.Errorf("failed to create tag: %w", err)
 		}
 	} else {
-		// Update existing tag
-		tag.Metadata.DockerFile = dockerFileContent // Make sure this is being set for updates too
-		if err := s.tagRepo.UpdateTag(ctx, tag); err != nil {
-			log.Printf("Failed to update tag: %v", err)
-			return fmt.Errorf("failed to update tag: %w", err)
+		// Update existing tag if anything has changed
+		needsUpdate := false
+
+		// Check if basic metadata needs updating
+		if tag.Digest != manifest.Config.Digest {
+			needsUpdate = true
+			tag.Digest = manifest.Config.Digest
+		}
+
+		// Always update metadata to ensure we have the latest values
+		newMetadata := models.TagMetadata{
+			Created:      config.Created,
+			OS:           config.OS,
+			Architecture: config.Architecture,
+			Author:       author, // This should now be correctly set
+			WorkDir:      config.Config.WorkingDir,
+			Command:      cmd,
+			Entrypoint:   entrypoint,
+			TotalSize:    manifest.Config.Size,
+			ExposedPorts: strings.Join(exposedPorts, ","),
+			DockerFile:   dockerFileContent,
+		}
+
+		// If metadata exists, check if it needs updating
+		if tag.Metadata.ID != 0 {
+			if tag.Metadata.Author != newMetadata.Author ||
+				tag.Metadata.DockerFile != newMetadata.DockerFile ||
+				tag.Metadata.Command != newMetadata.Command ||
+				tag.Metadata.Entrypoint != newMetadata.Entrypoint ||
+				tag.Metadata.WorkDir != newMetadata.WorkDir ||
+				tag.Metadata.OS != newMetadata.OS ||
+				tag.Metadata.Architecture != newMetadata.Architecture {
+				needsUpdate = true
+				tag.Metadata = newMetadata
+				tag.Metadata.TagID = tag.ID // Preserve the relationship
+			}
+		} else {
+			// No existing metadata, create new
+			needsUpdate = true
+			tag.Metadata = newMetadata
+			tag.Metadata.TagID = tag.ID
+		}
+
+		// Update layers if needed
+		newLayers := make([]models.ImageLayer, len(manifest.Layers))
+		for i, layer := range manifest.Layers {
+			newLayers[i] = models.ImageLayer{
+				Size:   layer.Size,
+				Digest: layer.Digest,
+			}
+		}
+
+		if !reflect.DeepEqual(tag.Metadata.Layers, newLayers) {
+			needsUpdate = true
+			tag.Metadata.Layers = newLayers
+		}
+
+		if needsUpdate {
+			log.Printf("Updating tag %s with new metadata. Author: %s", tag.Name, author)
+			if err := s.tagRepo.UpdateTag(ctx, tag); err != nil {
+				return fmt.Errorf("failed to update tag: %w", err)
+			}
+		} else {
+			log.Printf("No updates needed for tag %s", tag.Name)
 		}
 	}
 
