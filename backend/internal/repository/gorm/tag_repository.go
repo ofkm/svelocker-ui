@@ -44,15 +44,15 @@ func (r *tagRepository) GetTag(ctx context.Context, repoName, imageName, tagName
 }
 
 func (r *tagRepository) CreateTag(ctx context.Context, tag *models.Tag) error {
-	// Start a transaction
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		// Create the tag first
 		if err := tx.Create(tag).Error; err != nil {
 			return fmt.Errorf("failed to create tag: %w", err)
 		}
 
-		// Set the TagID for the metadata
+		// Set the TagID for the metadata and ensure ID is not set
 		tag.Metadata.TagID = tag.ID
+		tag.Metadata.ID = 0 // Reset ID to ensure auto-increment
 
 		// Create the metadata
 		if err := tx.Create(&tag.Metadata).Error; err != nil {
@@ -63,6 +63,7 @@ func (r *tagRepository) CreateTag(ctx context.Context, tag *models.Tag) error {
 		if len(tag.Metadata.Layers) > 0 {
 			for i := range tag.Metadata.Layers {
 				tag.Metadata.Layers[i].TagMetadataID = tag.Metadata.ID
+				tag.Metadata.Layers[i].ID = 0 // Reset ID to ensure auto-increment
 			}
 			if err := tx.Create(&tag.Metadata.Layers).Error; err != nil {
 				return fmt.Errorf("failed to create layers: %w", err)
@@ -86,6 +87,7 @@ func (r *tagRepository) UpdateTag(ctx context.Context, tag *models.Tag) error {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				// Create new metadata if it doesn't exist
 				tag.Metadata.TagID = tag.ID
+				tag.Metadata.ID = 0 // Reset ID to ensure auto-increment
 				if err := tx.Create(&tag.Metadata).Error; err != nil {
 					return fmt.Errorf("failed to create tag metadata: %w", err)
 				}
@@ -109,6 +111,7 @@ func (r *tagRepository) UpdateTag(ctx context.Context, tag *models.Tag) error {
 		if len(tag.Metadata.Layers) > 0 {
 			for i := range tag.Metadata.Layers {
 				tag.Metadata.Layers[i].TagMetadataID = tag.Metadata.ID
+				tag.Metadata.Layers[i].ID = 0 // Reset ID to ensure auto-increment
 			}
 			if err := tx.Create(&tag.Metadata.Layers).Error; err != nil {
 				return fmt.Errorf("failed to create new layers: %w", err)

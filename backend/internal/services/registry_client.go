@@ -56,6 +56,7 @@ type ConfigResponse struct {
 		Cmd          []string            `json:"Cmd"`
 		Entrypoint   []string            `json:"Entrypoint"`
 		ExposedPorts map[string]struct{} `json:"ExposedPorts"`
+		Labels       map[string]string   `json:"Labels,omitempty"` // Add Labels field
 	} `json:"config"`
 	History []struct {
 		Created    string `json:"created"`
@@ -64,6 +65,10 @@ type ConfigResponse struct {
 		Comment    string `json:"comment"`
 		EmptyLayer bool   `json:"empty_layer"`
 	} `json:"history"`
+	RootFS struct {
+		Type    string   `json:"type"`
+		DiffIDs []string `json:"diff_ids"`
+	} `json:"rootfs,omitempty"`
 }
 
 func NewRegistryClient(baseURL, username, password string) *RegistryClient {
@@ -127,9 +132,6 @@ func (c *RegistryClient) ListTags(ctx context.Context, repository string) ([]str
 		req.SetBasicAuth(c.username, c.password)
 	}
 
-	// Add debug logging
-	log.Printf("Sending request to: %s", url)
-
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
@@ -175,8 +177,6 @@ func (c *RegistryClient) GetManifest(ctx context.Context, repository, tag string
 	if c.username != "" && c.password != "" {
 		req.SetBasicAuth(c.username, c.password)
 	}
-
-	log.Printf("Fetching manifest from: %s", url)
 
 	resp, err := c.client.Do(req)
 	if err != nil {

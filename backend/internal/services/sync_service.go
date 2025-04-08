@@ -302,18 +302,38 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 	var dockerFileBuilder strings.Builder
 	if len(config.History) > 0 {
 		for _, historyEntry := range config.History {
+			// Skip empty layers as they don't represent actual Dockerfile commands
+			if historyEntry.EmptyLayer {
+				continue
+			}
+
 			createdBy := historyEntry.CreatedBy
+			if createdBy == "" {
+				continue
+			}
+
+			// Clean up the createdBy string to make it more Dockerfile-like
+			createdBy = strings.TrimPrefix(createdBy, "/bin/sh -c ")
+			createdBy = strings.TrimPrefix(createdBy, "#(nop) ")
 
 			// Handle EXPOSE instructions
-			if strings.HasPrefix(createdBy, "EXPOSE ") {
-				// Extract port from EXPOSE instruction
-				parts := strings.Split(createdBy, " ")
-				if len(parts) > 1 {
-					port := parts[1]
-					createdBy = fmt.Sprintf("EXPOSE %s", port)
+			if strings.HasPrefix(createdBy, "EXPOSE map[") {
+				ports := []string{}
+				// Extract port numbers from the map string
+				portStr := strings.TrimPrefix(createdBy, "EXPOSE map[")
+				portStr = strings.TrimSuffix(portStr, "]")
+				for _, p := range strings.Split(portStr, " ") {
+					if strings.Contains(p, "/tcp:{}") {
+						port := strings.TrimSuffix(p, "/tcp:{}")
+						ports = append(ports, port)
+					}
+				}
+				if len(ports) > 0 {
+					createdBy = fmt.Sprintf("EXPOSE %s", strings.Join(ports, " "))
 				}
 			}
 
+			// Write the command to the Dockerfile
 			dockerFileBuilder.WriteString(createdBy)
 			dockerFileBuilder.WriteString("\n")
 		}
@@ -324,7 +344,8 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 		dockerFileContent = "No Dockerfile found"
 	}
 
-	log.Printf("Dockerfile content: %s", dockerFileContent) // Add this line
+	// Add debug logging
+	log.Printf("Generated Dockerfile content:\n%s", dockerFileContent)
 
 	// Update tag reference to be against the image
 	tag, err := s.tagRepo.GetTag(ctx, repo.Name, image.Name, tagName)
@@ -341,12 +362,13 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 				Created:      config.Created,
 				OS:           config.OS,
 				Architecture: config.Architecture,
+				Author:       config.Author,
 				WorkDir:      config.Config.WorkingDir,
 				Command:      cmd,
 				Entrypoint:   entrypoint,
 				TotalSize:    manifest.Config.Size,
 				ExposedPorts: strings.Join(exposedPorts, ","),
-				DockerFile:   dockerFileContent, // Add the Dockerfile content here
+				DockerFile:   dockerFileContent, // Make sure this is being set
 			},
 		}
 
@@ -359,34 +381,15 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 		}
 
 		if err := s.tagRepo.CreateTag(ctx, tag); err != nil {
+			log.Printf("Failed to create tag: %v", err)
 			return fmt.Errorf("failed to create tag: %w", err)
 		}
 	} else {
-		// Update existing tag if digest has changed
-		if tag.Digest != manifest.Config.Digest {
-			tag.Digest = manifest.Config.Digest
-			tag.Metadata.Created = config.Created
-			tag.Metadata.OS = config.OS
-			tag.Metadata.Architecture = config.Architecture
-			tag.Metadata.WorkDir = config.Config.WorkingDir
-			tag.Metadata.Command = cmd
-			tag.Metadata.Entrypoint = entrypoint
-			tag.Metadata.TotalSize = manifest.Config.Size
-			tag.Metadata.ExposedPorts = strings.Join(exposedPorts, ",")
-			tag.Metadata.DockerFile = dockerFileContent // Also update it here
-
-			// Update layers
-			tag.Metadata.Layers = []models.ImageLayer{}
-			for _, layer := range manifest.Layers {
-				tag.Metadata.Layers = append(tag.Metadata.Layers, models.ImageLayer{
-					Size:   layer.Size,
-					Digest: layer.Digest,
-				})
-			}
-
-			if err := s.tagRepo.UpdateTag(ctx, tag); err != nil {
-				return fmt.Errorf("failed to update tag: %w", err)
-			}
+		// Update existing tag
+		tag.Metadata.DockerFile = dockerFileContent // Make sure this is being set for updates too
+		if err := s.tagRepo.UpdateTag(ctx, tag); err != nil {
+			log.Printf("Failed to update tag: %v", err)
+			return fmt.Errorf("failed to update tag: %w", err)
 		}
 	}
 
