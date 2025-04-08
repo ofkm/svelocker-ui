@@ -310,7 +310,7 @@
 						<!-- Sticky Lines Switch -->
 						<div class="flex items-center gap-2">
 							<Label for="stickyLineSwitch">Sticky Line Numbers</Label>
-							<Switch id="stickyLineSwitch" checked={stickyLineNumbers} onchange={(e) => (stickyLineNumbers = e.target.checked)} />
+							<Switch id="stickyLineSwitch" bind:checked={stickyLineNumbers} />
 						</div>
 					</div>
 
