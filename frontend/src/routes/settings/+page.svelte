@@ -51,7 +51,7 @@
 </script>
 
 <svelte:head>
-	<title>Settings | {env.PUBLIC_REGISTRY_NAME || 'Svelocker'}</title>
+	<title>Settings | {data.appConfig.registryName || 'Svelocker'}</title>
 	<meta name="description" content="Manage application settings" />
 </svelte:head>
 
@@ -123,7 +123,7 @@
 
 				<div>
 					<h3 class="font-medium">Registry</h3>
-					<p class="text-sm text-muted-foreground mt-1">{env.PUBLIC_REGISTRY_URL || 'Not configured'}</p>
+					<p class="text-sm text-muted-foreground mt-1">{data.appConfig.registryUrl || 'Not configured'}</p>
 				</div>
 
 				<div>
