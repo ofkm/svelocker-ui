@@ -298,6 +298,34 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 		entrypoint = strings.Join(config.Config.Entrypoint, " ")
 	}
 
+	// Extract Dockerfile from history entries
+	var dockerFileBuilder strings.Builder
+	if len(config.History) > 0 {
+		for _, historyEntry := range config.History {
+			createdBy := historyEntry.CreatedBy
+
+			// Handle EXPOSE instructions
+			if strings.HasPrefix(createdBy, "EXPOSE ") {
+				// Extract port from EXPOSE instruction
+				parts := strings.Split(createdBy, " ")
+				if len(parts) > 1 {
+					port := parts[1]
+					createdBy = fmt.Sprintf("EXPOSE %s", port)
+				}
+			}
+
+			dockerFileBuilder.WriteString(createdBy)
+			dockerFileBuilder.WriteString("\n")
+		}
+	}
+
+	dockerFileContent := dockerFileBuilder.String()
+	if dockerFileContent == "" {
+		dockerFileContent = "No Dockerfile found"
+	}
+
+	log.Printf("Dockerfile content: %s", dockerFileContent) // Add this line
+
 	// Update tag reference to be against the image
 	tag, err := s.tagRepo.GetTag(ctx, repo.Name, image.Name, tagName)
 	if err != nil {
@@ -313,12 +341,12 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 				Created:      config.Created,
 				OS:           config.OS,
 				Architecture: config.Architecture,
-				Author:       config.Author,
 				WorkDir:      config.Config.WorkingDir,
 				Command:      cmd,
 				Entrypoint:   entrypoint,
 				TotalSize:    manifest.Config.Size,
 				ExposedPorts: strings.Join(exposedPorts, ","),
+				DockerFile:   dockerFileContent, // Add the Dockerfile content here
 			},
 		}
 
@@ -340,12 +368,12 @@ func (s *SyncService) processManifest(ctx context.Context, repo *models.Reposito
 			tag.Metadata.Created = config.Created
 			tag.Metadata.OS = config.OS
 			tag.Metadata.Architecture = config.Architecture
-			tag.Metadata.Author = config.Author
 			tag.Metadata.WorkDir = config.Config.WorkingDir
 			tag.Metadata.Command = cmd
 			tag.Metadata.Entrypoint = entrypoint
 			tag.Metadata.TotalSize = manifest.Config.Size
 			tag.Metadata.ExposedPorts = strings.Join(exposedPorts, ",")
+			tag.Metadata.DockerFile = dockerFileContent // Also update it here
 
 			// Update layers
 			tag.Metadata.Layers = []models.ImageLayer{}

@@ -3,6 +3,7 @@ package gorm
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/ofkm/svelocker-ui/backend/internal/models"
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
@@ -43,11 +44,79 @@ func (r *tagRepository) GetTag(ctx context.Context, repoName, imageName, tagName
 }
 
 func (r *tagRepository) CreateTag(ctx context.Context, tag *models.Tag) error {
-	return r.db.Create(tag).Error
+	// Start a transaction
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		// Create the tag first
+		if err := tx.Create(tag).Error; err != nil {
+			return fmt.Errorf("failed to create tag: %w", err)
+		}
+
+		// Set the TagID for the metadata
+		tag.Metadata.TagID = tag.ID
+
+		// Create the metadata
+		if err := tx.Create(&tag.Metadata).Error; err != nil {
+			return fmt.Errorf("failed to create tag metadata: %w", err)
+		}
+
+		// Create the layers if they exist
+		if len(tag.Metadata.Layers) > 0 {
+			for i := range tag.Metadata.Layers {
+				tag.Metadata.Layers[i].TagMetadataID = tag.Metadata.ID
+			}
+			if err := tx.Create(&tag.Metadata.Layers).Error; err != nil {
+				return fmt.Errorf("failed to create layers: %w", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func (r *tagRepository) UpdateTag(ctx context.Context, tag *models.Tag) error {
-	return r.db.Save(tag).Error
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		// Update the tag
+		if err := tx.Save(tag).Error; err != nil {
+			return fmt.Errorf("failed to update tag: %w", err)
+		}
+
+		// Update or create metadata
+		var existing models.TagMetadata
+		if err := tx.Where("tag_id = ?", tag.ID).First(&existing).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// Create new metadata if it doesn't exist
+				tag.Metadata.TagID = tag.ID
+				if err := tx.Create(&tag.Metadata).Error; err != nil {
+					return fmt.Errorf("failed to create tag metadata: %w", err)
+				}
+			} else {
+				return fmt.Errorf("failed to query existing metadata: %w", err)
+			}
+		} else {
+			// Update existing metadata
+			tag.Metadata.ID = existing.ID
+			tag.Metadata.TagID = tag.ID
+			if err := tx.Save(&tag.Metadata).Error; err != nil {
+				return fmt.Errorf("failed to update tag metadata: %w", err)
+			}
+		}
+
+		// Handle layers
+		if err := tx.Where("tag_metadata_id = ?", tag.Metadata.ID).Delete(&models.ImageLayer{}).Error; err != nil {
+			return fmt.Errorf("failed to delete existing layers: %w", err)
+		}
+
+		if len(tag.Metadata.Layers) > 0 {
+			for i := range tag.Metadata.Layers {
+				tag.Metadata.Layers[i].TagMetadataID = tag.Metadata.ID
+			}
+			if err := tx.Create(&tag.Metadata.Layers).Error; err != nil {
+				return fmt.Errorf("failed to create new layers: %w", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func (r *tagRepository) DeleteTag(ctx context.Context, repoName, imageName, tagName string) error {

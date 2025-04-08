@@ -225,5 +225,8 @@ func (c *RegistryClient) GetConfig(ctx context.Context, repository, digest strin
 		return nil, err
 	}
 
+	// Add this logging
+	log.Printf("Config from registry: %+v", config)
+
 	return &config, nil
 }
