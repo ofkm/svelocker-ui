@@ -114,7 +114,10 @@
 							{#each repo.images as image}
 								<div class="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden shadow-sm">
 									<div class="border-b border-border/30 px-5 py-3 bg-muted/10 flex items-center">
-										<h3 class="text-lg font-medium">{getSimpleName(image.name || '')}</h3>
+										<a href={`/details/${image.fullName}`}>
+											<h3 class="text-lg font-medium">{getSimpleName(image.name || '')}</h3>
+										</a>
+
 										<CountBadge count={Array.isArray(image.tags) ? image.tags.length : 0} label="tags" variant="primary" customClass="ml-3" />
 									</div>
 									<div class="p-5">

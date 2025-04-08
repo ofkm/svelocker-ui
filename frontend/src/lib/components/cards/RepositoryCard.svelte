@@ -51,7 +51,7 @@
 					{#each repo.images || [] as image}
 						<div class="bg-background/60 rounded-lg p-3 border border-border/30 hover:bg-background hover:border-border/50 transition-all" data-testid="image-row-{sanitizeForTestId(image.name)}">
 							<div class="flex items-center justify-between">
-								<a href={getImageUrl(image.name)} class="flex-1">
+								<a href={`/details/${image.fullName}`} class="flex-1">
 									<h4 class="font-medium text-sm">{getRepoName(image.name)}</h4>
 								</a>
 								<div class="flex items-center gap-2">
