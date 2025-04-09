@@ -16,6 +16,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 	import type { Tag, TagMetadata, ImageLayer } from '$lib/types/tag-type';
+	import { formatSize, getTotalLayerSize } from '$lib/utils/formatting';
 
 	interface Props {
 		data: PageData;
@@ -41,9 +42,6 @@
 	let isLatest = $derived(tagName === 'latest');
 
 	onMount(async () => {
-		console.log('Page mounted with data:', data);
-		console.log('Tag data:', tag);
-		console.log('Tag metadata:', metadata);
 
 		if (!metadata || Object.keys(metadata).length === 0) {
 			try {
@@ -53,13 +51,6 @@
 				errorMessage = error instanceof Error ? error.message : 'Failed to load tag details';
 			}
 		}
-	});
-
-	onMount(() => {
-		console.log('Full tag data:', tag);
-		console.log('Metadata:', metadata);
-		console.log('Author:', metadata?.author);
-		console.log('Layers:', metadata?.layers);
 	});
 
 	async function deleteTagBackend(name: string, digest: string) {
@@ -289,7 +280,8 @@
 								<MetadataItem label="Created" icon={CalendarCog} value={metadata?.created ? convertTimeString(metadata.created) : 'Unknown'} />
 								<MetadataItem label="Author" icon={UserPen} value={metadata?.author || 'Unknown'} />
 								<MetadataItem label="Exposed Ports" icon={EthernetPort} value={formatExposedPorts(metadata?.exposedPorts)} />
-								<MetadataItem label="Container Size" icon={Scaling} value={metadata?.totalSize ? `${(metadata.totalSize / 1024 / 1024).toFixed(2)} MB` : 'Unknown'} />
+								<!-- <MetadataItem label="Container Size" icon={Scaling} value={metadata?.totalSize ? `${(metadata.totalSize / 1024 / 1024).toFixed(2)} MB` : 'Unknown'} /> -->
+								<MetadataItem label="Container Size" icon={Scaling} value={metadata?.totalSize ? `${formatSize(getTotalLayerSize(metadata?.layers || []))}` : 'Unknown'} />
 								<MetadataItem label="Working Directory" icon={FolderCode} value={metadata?.workDir || '/'} />
 								<MetadataItem label="Command" icon={Terminal} value={formatArrayValue(metadata?.command)} />
 								<MetadataItem label="Entrypoint" icon={Terminal} value={formatArrayValue(metadata?.entrypoint)} />
