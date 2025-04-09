@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
@@ -53,40 +52,6 @@ func (h *AppConfigHandler) UpdateConfig(c *gin.Context) {
 	}
 
 	err := h.repo.Update(c.Request.Context(), key, input.Value)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.Status(http.StatusOK)
-}
-
-// UpdateSyncInterval handles PUT /api/config/sync_interval
-func (h *AppConfigHandler) UpdateSyncInterval(c *gin.Context) {
-	var input struct {
-		Interval int `json:"interval" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Validate interval
-	validIntervals := []int{5, 15, 30, 60}
-	isValid := false
-	for _, valid := range validIntervals {
-		if input.Interval == valid {
-			isValid = true
-			break
-		}
-	}
-	if !isValid {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid sync interval: must be 5, 15, 30, or 60 minutes"})
-		return
-	}
-
-	// Update config in database
-	err := h.repo.Update(c.Request.Context(), "sync_interval", strconv.Itoa(input.Interval))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

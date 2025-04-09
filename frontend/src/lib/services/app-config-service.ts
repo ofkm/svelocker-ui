@@ -78,7 +78,7 @@ export class AppConfigService {
 			throw new Error('Invalid sync interval: must be 5, 15, 30, or 60 minutes');
 		}
 
-		// Use the existing updateConfig method
+		// Use the existing updateConfig method which uses the generic endpoint
 		await this.updateConfig('sync_interval', interval.toString());
 	}
 
