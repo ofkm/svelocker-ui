@@ -1,8 +1,6 @@
 package bootstrap
 
 import (
-	"os"
-
 	"github.com/gin-gonic/gin"
 	"github.com/ofkm/svelocker-ui/backend/internal/api/routes"
 )
@@ -20,14 +18,8 @@ func (app *Application) initRouter() error {
 
 	// Set up CORS middleware
 	r.Use(func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
-		// Allow specific origins
-		if origin == getEnv("PUBLIC_APP_URL", "http://localhost") {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-		} else {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		}
 
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		// Allow credentials to be sent with the request
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -46,12 +38,4 @@ func (app *Application) initRouter() error {
 
 	app.Router = r
 	return nil
-}
-
-// Helper function to get environment variable with default value
-func getEnv(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-	return defaultValue
 }

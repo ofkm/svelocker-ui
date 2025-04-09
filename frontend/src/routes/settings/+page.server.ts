@@ -3,6 +3,8 @@ import { AppConfigService } from '$lib/services/app-config-service';
 import { env } from '$env/dynamic/public';
 import { json, fail } from '@sveltejs/kit';
 
+// TODO - Implement Server Side callback for sync button
+
 export const load: PageServerLoad = async () => {
 	const configService = AppConfigService.getInstance();
 	const syncInterval = await configService.getSyncInterval();

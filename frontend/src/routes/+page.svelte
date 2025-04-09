@@ -13,6 +13,8 @@
 	import { fade } from 'svelte/transition';
 	import { Button } from '$lib/components/ui/button';
 
+	// TODO - Implement Server Side callback for sync button
+
 	let { data }: { data: PageData } = $props();
 	const isHealthy = data.healthStatus?.isHealthy;
 
