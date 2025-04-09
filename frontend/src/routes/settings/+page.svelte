@@ -1,40 +1,34 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Database, RotateCcw, LifeBuoy } from 'lucide-svelte';
+	import { Database, LifeBuoy } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import SyncButton from '$lib/components/buttons/SyncButton.svelte';
 	import { version as currentVersion } from '$app/environment';
 	import SupportLinkButton from '$lib/components/buttons/SupportLinkButton.svelte';
 	import { enhance } from '$app/forms';
+	import { AppConfigService } from '$lib/services/app-config-service';
 
 	let { data }: { data: PageData } = $props();
 
-	// Initialize syncInterval from server data
-	let syncInterval = $state(data.settings?.sync_interval || '5');
+	// Initialize syncInterval as a string since Select values are strings
+	let syncInterval = $state(data.syncInterval?.toString() || '5');
 	let formElement: HTMLFormElement | undefined = $state();
 
-	function handleSyncIntervalChange(value: string | undefined) {
-		if (value !== undefined && value !== syncInterval) {
-			// Update local state
-			syncInterval = value;
+	const configService = AppConfigService.getInstance();
 
-			// We'll store to the database using the form submission
-			// Submit the form programmatically using the reference
-			if (formElement) {
-				const hiddenValueInput = formElement.querySelector('input[name="value"]') as HTMLInputElement;
-				if (hiddenValueInput) {
-					hiddenValueInput.value = syncInterval;
-				}
-				formElement.requestSubmit();
-
-				// Show success message
-				const displayValue = syncInterval === '60' ? '1 hour' : `${syncInterval} minutes`;
-				toast.success(`Sync interval changed to ${displayValue}`);
+	async function handleSyncIntervalChange(value: string) {
+		if (value) {
+			try {
+				await configService.updateSyncInterval(parseInt(value, 10));
+				syncInterval = value; // Update the local state
+				toast.success('Sync interval updated successfully');
+			} catch (error) {
+				toast.error('Failed to update sync interval');
+				console.error('Error updating sync interval:', error);
 			}
 		}
 	}
@@ -81,15 +75,15 @@
 						</div>
 						<form method="POST" action="?/updateSetting" use:enhance bind:this={formElement}>
 							<input type="hidden" name="key" value="sync_interval" />
-							<Select.Root type="single" value={syncInterval} onValueChange={handleSyncIntervalChange}>
+							<Select.Root type="single" bind:value={syncInterval} onValueChange={handleSyncIntervalChange}>
 								<Select.Trigger class="w-[140px]" aria-label="Sync Interval">
 									{syncInterval === '60' ? '1 hour' : `${syncInterval} minutes`}
 								</Select.Trigger>
 								<Select.Content>
-									<Select.Item value="5" label="5 minutes">5 minutes</Select.Item>
-									<Select.Item value="15" label="15 minutes">15 minutes</Select.Item>
-									<Select.Item value="30" label="30 minutes">30 minutes</Select.Item>
-									<Select.Item value="60" label="1 hour">1 hour</Select.Item>
+									<Select.Item value="5">5 minutes</Select.Item>
+									<Select.Item value="15">15 minutes</Select.Item>
+									<Select.Item value="30">30 minutes</Select.Item>
+									<Select.Item value="60">60 minutes</Select.Item>
 								</Select.Content>
 							</Select.Root>
 							<input type="hidden" name="value" value={syncInterval} />

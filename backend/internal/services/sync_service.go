@@ -57,7 +57,15 @@ func (s *SyncService) Start(ctx context.Context) error {
 	interval := 5
 	if syncConfig != nil {
 		if i, err := strconv.Atoi(syncConfig.Value); err == nil {
-			interval = i
+			if isValidInterval(i) {
+				interval = i
+			}
+		}
+	} else {
+		// Create default config if it doesn't exist
+		err = s.configRepo.Update(ctx, "sync_interval", "5")
+		if err != nil {
+			return fmt.Errorf("failed to create default sync interval config: %w", err)
 		}
 	}
 
@@ -85,6 +93,35 @@ func (s *SyncService) Start(ctx context.Context) error {
 			}
 		}
 	}()
+
+	return nil
+}
+
+// Add helper function to validate intervals
+func isValidInterval(interval int) bool {
+	validIntervals := []int{5, 15, 30, 60}
+	for _, valid := range validIntervals {
+		if interval == valid {
+			return true
+		}
+	}
+	return false
+}
+
+// Add method to update sync interval
+func (s *SyncService) UpdateSyncInterval(ctx context.Context, interval int) error {
+	if !isValidInterval(interval) {
+		return fmt.Errorf("invalid sync interval: must be 5, 15, 30, or 60 minutes")
+	}
+
+	// Update in database
+	err := s.configRepo.Update(ctx, "sync_interval", strconv.Itoa(interval))
+	if err != nil {
+		return fmt.Errorf("failed to update sync interval: %w", err)
+	}
+
+	// Update ticker
+	s.ticker.Reset(time.Duration(interval) * time.Minute)
 
 	return nil
 }

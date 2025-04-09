@@ -14,6 +14,7 @@ type AppConfig struct {
 	Database DatabaseConfig
 	Registry RegistryConfig
 	Logging  LoggingConfig
+	Sync     SyncConfig
 }
 
 type ServerConfig struct {
@@ -30,6 +31,10 @@ type RegistryConfig struct {
 
 type LoggingConfig struct {
 	Level string
+}
+
+type SyncConfig struct {
+	Interval int // Interval in minutes
 }
 
 // NewAppConfig creates a new application configuration
@@ -51,7 +56,21 @@ func NewAppConfig() (*AppConfig, error) {
 		Logging: LoggingConfig{
 			Level: getEnv("PUBLIC_LOG_LEVEL", "INFO"),
 		},
+		Sync: SyncConfig{
+			Interval: 5, // Default to 5 minutes, will be overridden by database value
+		},
 	}, nil
+}
+
+// Add this helper function to validate the sync interval
+func validateSyncInterval(interval int) int {
+	validIntervals := []int{5, 15, 30, 60}
+	for _, valid := range validIntervals {
+		if interval == valid {
+			return interval
+		}
+	}
+	return 5 // Default to 5 minutes if invalid value provided
 }
 
 // Helper functions for environment variables

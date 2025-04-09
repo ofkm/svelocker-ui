@@ -70,6 +70,22 @@ export class AppConfigService {
 	getCachedConfig(key: string): string | undefined {
 		return this.configCache.get(key);
 	}
+
+	async updateSyncInterval(interval: number): Promise<void> {
+		// Validate interval
+		const validIntervals = [5, 15, 30, 60];
+		if (!validIntervals.includes(interval)) {
+			throw new Error('Invalid sync interval: must be 5, 15, 30, or 60 minutes');
+		}
+
+		// Use the existing updateConfig method
+		await this.updateConfig('sync_interval', interval.toString());
+	}
+
+	async getSyncInterval(): Promise<number> {
+		const interval = await this.getConfig('sync_interval');
+		return interval ? parseInt(interval, 10) : 5; // Default to 5 minutes if not set
+	}
 }
 
 // Example Usage
