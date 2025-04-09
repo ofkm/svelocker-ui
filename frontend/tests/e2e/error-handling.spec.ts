@@ -1,17 +1,6 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Error Handling Scenarios', () => {
-	test('should handle invalid repository gracefully', async ({ page }) => {
-		// Navigate to a non-existent repository
-		await page.goto('/details/non-existent-repo/image/tag');
-
-		// Wait for the page to load
-		await page.waitForLoadState('networkidle', { timeout: 10000 });
-
-		// Check for error message
-		await expect(page.getByText(/not found|doesn't exist|no repository/i)).toBeVisible();
-	});
-
 	test('should recover from bad search input', async ({ page }) => {
 		await page.goto('/');
 

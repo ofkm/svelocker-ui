@@ -343,8 +343,8 @@ test.describe('Registry UI with Real Registry', () => {
 		await page.waitForSelector('[data-testid^="repository-card-"]', { timeout: 15000 });
 
 		// Check that the nginx image has multiple tags (1.27.4-alpine and beta)
-		await expect(page.locator('[data-testid="tag-pill-test-test-nginx-1-27-4-alpine"]')).toBeVisible();
-		await expect(page.locator('[data-testid="tag-pill-test-test-nginx-beta"]')).toBeVisible();
+		await expect(page.locator('[data-testid="tag-pill-test-nginx-1-27-4-alpine"]')).toBeVisible();
+		await expect(page.locator('[data-testid="tag-pill-test-nginx-beta"]')).toBeVisible();
 
 		// Navigate to one tag
 		await page.locator('[data-testid="tag-pill-test-test-nginx-1-27-4-alpine"]').click();
