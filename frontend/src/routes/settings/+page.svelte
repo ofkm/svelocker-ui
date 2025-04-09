@@ -33,8 +33,10 @@
             });
 
             const result = await response.json();
+			console.log(result)
             if (response.ok) {
-                toast.success(result.message);
+				const reponseData = JSON.parse(result.data)
+                toast.success(reponseData[2]);
             } else {
                 toast.error(result.error);
             }
