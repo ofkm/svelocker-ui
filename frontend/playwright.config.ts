@@ -19,19 +19,4 @@ export default defineConfig({
 			use: { browserName: 'chromium' }
 		}
 	]
-
-	// webServer: {
-	// 	command: 'npm run build && PLAYWRIGHT=true DB_PATH=test.db npm run preview -- --host',
-	// 	port: 3000,
-	// 	reuseExistingServer: !process.env.CI,
-	// 	env: {
-	// 		PLAYWRIGHT: 'true',
-	// 		DB_PATH: './tests/e2e/test.db',
-	// 		PUBLIC_REGISTRY_URL: 'http://localhost:5001',
-	// 		PUBLIC_REGISTRY_NAME: 'Playwright Registry'
-	// 	},
-	// 	timeout: 120000, // Increase timeout to 2 minutes
-	// 	stdout: 'pipe', // Pipe server output for better debugging
-	// 	stderr: 'pipe'
-	// }
 });
