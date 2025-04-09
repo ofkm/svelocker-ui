@@ -64,6 +64,7 @@
 									<div class="flex flex-wrap gap-1">
 										{#each image.tags || [] as tag}
 											<a
+												data-testid="tag-pill-test-{sanitizeForTestId(image.name)}"
 												href={`/details/${image.fullName}/${tag.name}`}
 												class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium transition-colors
 												{tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' : 'bg-muted/50 text-foreground/80 hover:bg-muted'}"

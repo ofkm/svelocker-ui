@@ -88,7 +88,7 @@ jobs:
             -p 3000:3000 \
             -e APP_ENV=development \
             -e PUBLIC_REGISTRY_URL=http://registry:5000 \
-            -e PUBLIC_REGISTRY_NAME="Test Registry" \
+            -e PUBLIC_REGISTRY_NAME="Playwright Registry" \
             svelocker-ui:test
 
       - name: Install frontend dependencies
@@ -110,17 +110,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-results
-          path: tests/.test-report
+          path: tests/.output
           include-hidden-files: true
           retention-days: 30
-
-      - name: Upload backend logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-logs
-          path: /tmp/backend.log
-          retention-days: 15
 
       - name: Cleanup Docker containers
         if: always()
