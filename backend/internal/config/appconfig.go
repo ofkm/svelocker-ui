@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
 
 // AppConfig holds all configuration for the application
@@ -77,14 +76,6 @@ func getEnvAsInt(key string, fallback int) int {
 		if intVal, err := strconv.Atoi(value); err == nil {
 			return intVal
 		}
-	}
-	return fallback
-}
-
-//nolint:golint
-func getEnvAsBool(key string, fallback bool) bool {
-	if value, ok := os.LookupEnv(key); ok {
-		return strings.ToLower(value) == "true"
 	}
 	return fallback
 }

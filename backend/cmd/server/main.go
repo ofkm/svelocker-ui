@@ -48,7 +48,23 @@ func main() {
 	// Block until we receive a shutdown signal or server error
 	select {
 	case err := <-serverErrors:
-		log.Fatal("Server error:", err)
+		log.Printf("Server error: %v", err)
+
+		// Create shutdown context with timeout
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer shutdownCancel()
+
+		// Trigger application cleanup
+		if err := app.Close(); err != nil {
+			log.Printf("Error during cleanup: %v", err)
+		}
+
+		// Shutdown server
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			log.Printf("Error during server shutdown: %v", err)
+			server.Close()
+		}
+		os.Exit(1) // Exit after cleanup
 
 	case <-shutdown:
 		log.Println("Starting graceful shutdown...")
