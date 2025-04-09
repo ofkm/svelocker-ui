@@ -1,9 +1,10 @@
 import type { AppConfigItem } from '$lib/types';
+import { env } from '$env/dynamic/public';
 
 export class AppConfigService {
 	private static instance: AppConfigService;
 	private configCache: Map<string, string> = new Map();
-	private baseUrl = 'http://localhost:8080';
+	private baseUrl = env.PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 	private constructor() {}
 

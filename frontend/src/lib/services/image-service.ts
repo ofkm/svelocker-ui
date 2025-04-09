@@ -1,13 +1,14 @@
 import axios from 'axios';
 import type { Image } from '$lib/types';
 import { Logger } from './logger';
+import { env } from '$env/dynamic/public';
 
 export class ImageService {
 	private static instance: ImageService;
 	private logger = Logger.getInstance('ImageService');
 	private imageCache: Map<string, Image[]> = new Map();
 	private singleImageCache: Map<string, Image> = new Map();
-	private baseUrl = 'http://localhost:8080';
+	private baseUrl = env.PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 	private constructor() {}
 

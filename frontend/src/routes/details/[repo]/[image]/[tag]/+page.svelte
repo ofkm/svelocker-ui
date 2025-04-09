@@ -35,7 +35,7 @@
 	let loadError = $state(false);
 	let errorMessage = $state('');
 	let stickyLineNumbers = $state(true);
-	const baseUrl = env.PUBLIC_REGISTRY_URL || 'http://localhost:8080';
+	const baseUrl = env.PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 	// Check if this is the latest tag
 	let isLatest = $derived(tagName === 'latest');

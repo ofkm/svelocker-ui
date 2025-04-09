@@ -2,9 +2,10 @@
 	import { Button } from '$lib/components/ui/button';
 	import { RefreshCw } from 'lucide-svelte';
 	import { startSync, isSyncing, notifySyncComplete } from '$lib/stores/sync-store';
+	import { env } from '$env/dynamic/public';
 
 	let isLoading = false;
-	const baseUrl = 'http://localhost:8080';
+	const baseUrl = env.PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 	async function handleSync() {
 		if (isLoading) return;

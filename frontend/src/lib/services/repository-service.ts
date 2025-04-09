@@ -1,12 +1,13 @@
 import axios from 'axios';
 import type { Repository, RepositoryResponse } from '$lib/types';
 import { Logger } from './logger';
+import { env } from '$env/dynamic/public';
 
 export class RepositoryService {
 	private static instance: RepositoryService;
 	private logger = Logger.getInstance('RepositoryService');
 	private repositoryCache: Map<string, Repository> = new Map();
-	private baseUrl = 'http://localhost:8080';
+	private baseUrl = env.PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 	private constructor() {}
 

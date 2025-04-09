@@ -1,11 +1,12 @@
 import axios from 'axios';
 import type { Tag } from '$lib/types';
 import { Logger } from './logger';
+import { env } from '$env/dynamic/public';
 
 export class TagService {
 	private static instance: TagService;
 	private logger = Logger.getInstance('TagService');
-	private baseUrl = 'http://localhost:8080';
+	private baseUrl = env.PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 	private constructor() {}
 
