@@ -62,17 +62,6 @@ func NewAppConfig() (*AppConfig, error) {
 	}, nil
 }
 
-// Add this helper function to validate the sync interval
-func validateSyncInterval(interval int) int {
-	validIntervals := []int{5, 15, 30, 60}
-	for _, valid := range validIntervals {
-		if interval == valid {
-			return interval
-		}
-	}
-	return 5 // Default to 5 minutes if invalid value provided
-}
-
 // Helper functions for environment variables
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
