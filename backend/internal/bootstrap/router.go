@@ -21,9 +21,8 @@ func (app *Application) initRouter() error {
 	// Set up CORS middleware
 	r.Use(func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-
-		// Always allow the origin that sent the request (more permissive approach)
-		if origin != "" {
+		// Allow specific origins
+		if origin == getEnv("PUBLIC_APP_URL", "http://localhost") {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 		} else {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")

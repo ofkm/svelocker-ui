@@ -21,17 +21,29 @@
 	const configService = AppConfigService.getInstance();
 
 	async function handleSyncIntervalChange(value: string) {
-		if (value) {
-			try {
-				await configService.updateSyncInterval(parseInt(value, 10));
-				syncInterval = value; // Update the local state
-				toast.success('Sync interval updated successfully');
-			} catch (error) {
-				toast.error('Failed to update sync interval');
-				console.error('Error updating sync interval:', error);
-			}
-		}
-	}
+    if (value) {
+        try {
+            const formData = new FormData();
+            formData.append('key', 'sync_interval');
+            formData.append('value', value);
+
+            const response = await fetch('?/updateSyncInterval', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                toast.success(result.message);
+            } else {
+                toast.error(result.error);
+            }
+        } catch (error) {
+            toast.error('Failed to update sync interval');
+            console.error('Error updating sync interval:', error);
+        }
+    }
+}
 </script>
 
 <svelte:head>
@@ -63,7 +75,7 @@
 							<Label for="sync-interval" class="text-base">Sync Interval</Label>
 							<p class="text-sm text-muted-foreground">How often to check for registry changes</p>
 						</div>
-						<form method="POST" action="?/updateSetting" use:enhance bind:this={formElement}>
+						<form method="POST" action="?/updateSyncInterval" use:enhance bind:this={formElement}>
 							<input type="hidden" name="key" value="sync_interval" />
 							<Select.Root type="single" bind:value={syncInterval} onValueChange={handleSyncIntervalChange}>
 								<Select.Trigger class="w-[140px]" aria-label="Sync Interval">
