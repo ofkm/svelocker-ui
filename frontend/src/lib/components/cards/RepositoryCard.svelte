@@ -13,9 +13,10 @@
 		return fullName;
 	}
 
-	// Helper to construct correct image URLs
-	function getImageUrl(repoName: string): string {
-		return `/details/${repoName}`;
+	// Helper to construct correct image URLs, handling the 'library' namespace correctly
+	function getDetailsUrl(repoName: string, path: string = ''): string {
+		// If the repository is 'library', we need to keep it in the URL
+		return `/details/${repoName}${path ? '/' + path : ''}`;
 	}
 
 	// Add a helper function to sanitize names for data-testid
@@ -29,7 +30,7 @@
 		<!-- Header section with namespace name and badge -->
 		<div class="flex justify-between items-start mb-3">
 			<div>
-				<a href={`/details/${repo.name}`} class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+				<a href={getDetailsUrl(repo.name)} class="text-sm text-muted-foreground hover:text-foreground transition-colors">
 					<h3 class="text-xl font-medium tracking-tight text-foreground">{repo.name}</h3>
 				</a>
 
@@ -51,7 +52,7 @@
 					{#each repo.images || [] as image}
 						<div class="bg-background/60 rounded-lg p-3 border border-border/30 hover:bg-background hover:border-border/50 transition-all" data-testid="image-row-{sanitizeForTestId(image.name)}">
 							<div class="flex items-center justify-between">
-								<a href={`/details/${image.fullName}`} class="flex-1">
+								<a href={getDetailsUrl(repo.name, getRepoName(image.name))} class="flex-1">
 									<h4 class="font-medium text-sm">{getRepoName(image.name)}</h4>
 								</a>
 								<div class="flex items-center gap-2">
@@ -65,7 +66,7 @@
 										{#each image.tags || [] as tag}
 											<a
 												data-testid="tag-pill-test-{sanitizeForTestId(image.name)}-{sanitizeForTestId(tag.name)}"
-												href={`/details/${image.fullName}/${tag.name}`}
+												href={getDetailsUrl(repo.name, `${getRepoName(image.name)}/${tag.name}`)}
 												class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium transition-colors
 												{tag.name === 'latest' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' : 'bg-muted/50 text-foreground/80 hover:bg-muted'}"
 											>
@@ -80,7 +81,7 @@
 				</div>
 
 				{#if (repo.images || []).length > 3}
-					<a href={`/details/${repo.name}`} class="flex items-center justify-center w-full py-2 rounded-lg bg-muted/20 text-sm text-muted-foreground hover:bg-muted/40 transition-colors mt-3">
+					<a href={getDetailsUrl(repo.name)} class="flex items-center justify-center w-full py-2 rounded-lg bg-muted/20 text-sm text-muted-foreground hover:bg-muted/40 transition-colors mt-3">
 						View all {(repo.images || []).length} images
 					</a>
 				{/if}
