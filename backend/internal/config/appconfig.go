@@ -18,8 +18,9 @@ type AppConfig struct {
 }
 
 type ServerConfig struct {
-	Host string
-	Port int
+	Host       string
+	Port       int
+	BackendUrl string
 }
 
 type RegistryConfig struct {
@@ -41,8 +42,9 @@ type SyncConfig struct {
 func NewAppConfig() (*AppConfig, error) {
 	return &AppConfig{
 		Server: ServerConfig{
-			Host: getEnv("SERVER_HOST", "0.0.0.0"),
-			Port: getEnvAsInt("SERVER_PORT", 8080),
+			Host:       getEnv("SERVER_HOST", "0.0.0.0"),
+			Port:       getEnvAsInt("SERVER_PORT", 8080),
+			BackendUrl: getEnv("PUBLIC_BACKEND_URL", "http://localhost:8080"),
 		},
 		Database: DatabaseConfig{
 			Path: getEnv("DB_PATH", "data/svelockerui.db"),
