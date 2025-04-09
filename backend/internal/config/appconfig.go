@@ -81,6 +81,7 @@ func getEnvAsInt(key string, fallback int) int {
 	return fallback
 }
 
+//nolint:golint
 func getEnvAsBool(key string, fallback bool) bool {
 	if value, ok := os.LookupEnv(key); ok {
 		return strings.ToLower(value) == "true"

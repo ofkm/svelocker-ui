@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"log"
 	"path/filepath"
 
 	"github.com/joho/godotenv"
@@ -12,7 +13,8 @@ func (app *Application) initConfig() error {
 	if err := godotenv.Load(filepath.Join(".", ".env")); err != nil {
 		// Try loading from backend directory
 		if err := godotenv.Load(filepath.Join("backend", ".env")); err != nil {
-			// Continue without .env file - using environment variables
+			// Log the error or handle it as needed
+			log.Println("No .env file found, using environment variables")
 		}
 	}
 
