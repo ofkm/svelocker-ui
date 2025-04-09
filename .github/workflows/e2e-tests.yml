@@ -77,9 +77,6 @@ jobs:
           -e REGISTRY_STORAGE_DELETE_ENABLED=true \
           registry:3
 
-          # Wait for registry to be ready
-          sleep 5
-
       - name: Run Svelocker UI container
         run: |
           docker run -d --name svelocker-ui \
@@ -110,7 +107,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-results
-          path: tests/.output
+          path: |
+            tests/.output
+            test-results/report.html
+            test-results/results.json
           include-hidden-files: true
           retention-days: 30
 
