@@ -10,7 +10,7 @@ export default defineConfig({
 	fullyParallel: false,
 	globalSetup: './tests/e2e/global-setup',
 	globalTeardown: './tests/e2e/global-teardown',
-	reporter: process.env.CI ? [['html', { outputFolder: 'tests/.output/.report' }], ['github']] : [['line'], ['html', { open: 'never', outputFolder: 'tests/.report' }]],
+	reporter: process.env.CI ? [['html', { outputFolder: 'tests-results/.report' }], ['github']] : [['line'], ['html', { open: 'never', outputFolder: 'tests-results/.report' }]],
 	use: {
 		baseURL: 'http://localhost:3000',
 		trace: 'on-first-retry'
