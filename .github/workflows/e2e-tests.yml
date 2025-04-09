@@ -74,6 +74,8 @@ jobs:
           docker run -d --name svelocker-ui \
             --network svelocker-network \
             -p 8080:8080 \
+            -p 3000:3000 \
+            -e APP_ENV=development \
             -e PUBLIC_REGISTRY_URL=http://registry:5000 \
             -e PUBLIC_REGISTRY_NAME="Test Registry" \
             svelocker-ui:test
