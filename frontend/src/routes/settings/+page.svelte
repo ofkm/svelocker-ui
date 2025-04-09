@@ -32,16 +32,6 @@
 			}
 		}
 	}
-
-	function resetSettings() {
-		// We'll use the server action to reset settings
-		// The form submission will trigger the server-side resetSettings action
-		const resetForm = document.getElementById('reset-settings-form') as HTMLFormElement;
-		if (resetForm) {
-			resetForm.requestSubmit();
-			toast.success('Settings reset to defaults');
-		}
-	}
 </script>
 
 <svelte:head>

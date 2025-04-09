@@ -17,7 +17,10 @@ export class AppConfigService {
 
 	async loadAllConfigs(): Promise<Map<string, string>> {
 		try {
-			const response = await fetch(`${this.baseUrl}/api/v1/config`);
+			const response = await fetch(`${this.baseUrl}/api/v1/config`, {
+				credentials: 'include',
+				mode: 'cors'
+			});
 			if (!response.ok) {
 				throw new Error('Failed to load configurations');
 			}
@@ -33,7 +36,10 @@ export class AppConfigService {
 
 	async getConfig(key: string): Promise<string | null> {
 		try {
-			const response = await fetch(`${this.baseUrl}/api/v1/config/${key}`);
+			const response = await fetch(`${this.baseUrl}/api/v1/config/${key}`, {
+				credentials: 'include',
+				mode: 'cors'
+			});
 			if (response.status === 404) {
 				return null;
 			}
@@ -56,7 +62,9 @@ export class AppConfigService {
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ value })
+				body: JSON.stringify({ value }),
+				credentials: 'include',
+				mode: 'cors'
 			});
 			if (!response.ok) {
 				throw new Error('Failed to update configuration');
