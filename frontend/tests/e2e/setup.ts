@@ -33,7 +33,7 @@ export async function setupTestEnvironment() {
 
 		// Set environment variables for tests
 		process.env.DB_PATH = TEST_DB_PATH;
-		process.env.PUBLIC_REGISTRY_URL = 'http://localhost:5001';
+		process.env.PUBLIC_REGISTRY_URL = 'http://localhost:5000';
 		process.env.PUBLIC_APP_URL = 'http://localhost:3000';
 
 		console.log('✅ Test environment setup complete');
