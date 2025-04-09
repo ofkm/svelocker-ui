@@ -90,7 +90,7 @@ func NewRegistryClient(baseURL, username, password string) *RegistryClient {
 
 func (c *RegistryClient) ListRepositories(ctx context.Context) ([]string, error) {
 	url := fmt.Sprintf("%s/v2/_catalog", c.baseURL)
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (c *RegistryClient) ListTags(ctx context.Context, repository string) ([]str
 	repository = strings.Trim(repository, "/")
 
 	url := fmt.Sprintf("%s/v2/%s/tags/list", c.baseURL, repository)
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -169,7 +169,7 @@ func (c *RegistryClient) GetManifest(ctx context.Context, repository, reference 
 	repository = strings.Trim(repository, "/")
 	url := fmt.Sprintf("%s/v2/%s/manifests/%s", c.baseURL, repository, reference)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -222,7 +222,7 @@ func (c *RegistryClient) GetManifest(ctx context.Context, repository, reference 
 
 func (c *RegistryClient) GetConfig(ctx context.Context, repository, digest string) (*ConfigResponse, error) {
 	url := fmt.Sprintf("%s/v2/%s/blobs/%s", c.baseURL, repository, digest)
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
