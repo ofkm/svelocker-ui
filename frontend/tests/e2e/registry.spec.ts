@@ -347,7 +347,7 @@ test.describe('Registry UI with Real Registry', () => {
 		await expect(page.locator('[data-testid="tag-pill-test-nginx-beta"]')).toBeVisible();
 
 		// Navigate to one tag
-		await page.locator('[data-testid="tag-pill-test-test-nginx-1-27-4-alpine"]').click();
+		await page.locator('[data-testid="tag-pill-test-nginx-1-27-4-alpine"]').click();
 		await page.waitForLoadState('networkidle', { timeout: 15000 });
 
 		// Verify we're on the details page
