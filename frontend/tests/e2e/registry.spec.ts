@@ -80,10 +80,10 @@ test.describe('Registry UI with Real Registry', () => {
 		await expect(page.getByText('nginx', { exact: true })).toBeVisible();
 
 		// Check the alpine tag is visible (be specific to avoid strict mode violation)
-		await expect(page.locator('[data-testid="tag-pill-test-test-nginx-1-27-4-alpine"]')).toBeVisible({ timeout: 10000 });
+		await expect(page.locator('[data-testid="tag-pill-test-nginx-1-27-4-alpine"]')).toBeVisible({ timeout: 10000 });
 
 		// Check a beta tag is visible (now using a specific tag pill instead of filtering)
-		await expect(page.locator('[data-testid="tag-pill-test-test-nginx-beta"]')).toBeVisible({ timeout: 10000 });
+		await expect(page.locator('[data-testid="tag-pill-test-nginx-beta"]')).toBeVisible({ timeout: 10000 });
 	});
 
 	test('should navigate to tag details page', async ({ page }) => {
@@ -96,7 +96,7 @@ test.describe('Registry UI with Real Registry', () => {
 		await page.waitForSelector('[data-testid^="repository-card-"]', { timeout: 15000 });
 
 		// Use a specific data-testid to find the tag link
-		const alpineTagLink = page.locator('[data-testid="tag-pill-test-test-nginx-1-27-4-alpine"]');
+		const alpineTagLink = page.locator('[data-testid="tag-pill-test-nginx-1-27-4-alpine"]');
 		await alpineTagLink.waitFor({ timeout: 10000 });
 
 		// Take a screenshot before clicking
