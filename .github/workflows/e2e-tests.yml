@@ -69,6 +69,17 @@ jobs:
       - name: Create Docker network
         run: docker network create svelocker-network
 
+      - name: Start test registry
+        run: |
+          docker run -d --name registry \
+          --network svelocker-network \
+          -p 5000:5000 \
+          -e REGISTRY_STORAGE_DELETE_ENABLED=true \
+          registry:3
+
+          # Wait for registry to be ready
+          sleep 5
+
       - name: Run Svelocker UI container
         run: |
           docker run -d --name svelocker-ui \
