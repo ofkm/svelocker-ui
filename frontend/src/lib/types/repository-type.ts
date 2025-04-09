@@ -6,7 +6,7 @@ export interface Repository {
 	UpdatedAt?: string;
 	DeletedAt?: null | string;
 	name: string;
-	lastSynced: string;
+	lastSynced: string | null;
 	images?: Image[];
 }
 
