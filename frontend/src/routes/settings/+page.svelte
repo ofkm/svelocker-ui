@@ -10,15 +10,12 @@
 	import { version as currentVersion } from '$app/environment';
 	import SupportLinkButton from '$lib/components/buttons/SupportLinkButton.svelte';
 	import { enhance } from '$app/forms';
-	import { AppConfigService } from '$lib/services/app-config-service';
 
 	let { data }: { data: PageData } = $props();
 
 	// Initialize syncInterval as a string since Select values are strings
 	let syncInterval = $state(data.syncInterval?.toString() || '5');
 	let formElement: HTMLFormElement | undefined = $state();
-
-	const configService = AppConfigService.getInstance();
 
 	async function handleSyncIntervalChange(value: string) {
     if (value) {
@@ -35,7 +32,7 @@
             const result = await response.json();
 			console.log(result)
             if (response.ok) {
-				const reponseData = JSON.parse(result.data)
+				const reponseData = JSON.parse(result.data) // Get the correct reponse message
                 toast.success(reponseData[2]);
             } else {
                 toast.error(result.error);
