@@ -358,8 +358,8 @@ test.describe('Registry UI with Real Registry', () => {
 		await page.waitForLoadState('networkidle', { timeout: 15000 });
 
 		// Navigate to the other tag
-		await page.waitForSelector('[data-testid="tag-pill-test-test-nginx-beta"]', { timeout: 15000 });
-		await page.locator('[data-testid="tag-pill-test-test-nginx-beta"]').click();
+		await page.waitForSelector('[data-testid="tag-pill-test-nginx-beta"]', { timeout: 15000 });
+		await page.locator('[data-testid="tag-pill-test-nginx-beta"]').click();
 
 		// Verify we're on the details page for the beta tag
 		await expect(page).toHaveURL(/.*\/details\/test\/nginx\/beta/);
