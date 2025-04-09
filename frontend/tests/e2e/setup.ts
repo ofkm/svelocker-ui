@@ -21,9 +21,8 @@ export async function setupTestEnvironment() {
 	console.log('🚀 Setting up test environment...');
 
 	try {
-		// Start Docker services
-		await execPromise('docker compose -f tests/e2e/docker-compose.test.yml up -d');
-		console.log('✅ Started Docker registry container');
+		// await execPromise('docker compose -f tests/e2e/docker-compose.test.yml up -d');
+		// console.log('✅ Started Docker registry container');
 
 		// Wait for services to be ready
 		await new Promise((resolve) => setTimeout(resolve, 3000));
