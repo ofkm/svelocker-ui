@@ -38,7 +38,7 @@ func Bootstrap(ctx context.Context) (*Application, error) {
 	}
 
 	// Initialize repositories
-	if err := app.initRepositories(); err != nil {
+	if err := app.initRepositories(ctx); err != nil {
 		return nil, err
 	}
 

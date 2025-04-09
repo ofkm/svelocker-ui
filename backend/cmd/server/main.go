@@ -21,7 +21,7 @@ func main() {
 	// Bootstrap the application
 	app, err := bootstrap.Bootstrap(ctx)
 	if err != nil {
-		log.Fatal("Failed to bootstrap application:", err)
+		log.Fatalf("Failed to bootstrap application: %v", err)
 	}
 	defer app.Close()
 
