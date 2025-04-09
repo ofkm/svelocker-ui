@@ -90,7 +90,7 @@ jobs:
 
       - name: Run E2E tests
         working-directory: ./frontend
-        run: npm run test:e2e
+        run: npx playwright test
         env:
           PLAYWRIGHT: "true"
 
