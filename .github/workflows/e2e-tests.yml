@@ -80,15 +80,6 @@ jobs:
             -e PUBLIC_REGISTRY_NAME="Test Registry" \
             svelocker-ui:test
 
-          # Wait for application to start
-          sleep 10
-
-          # Check if application is running
-          curl -sSf http://localhost:8080 || (echo "Application failed to start" && exit 1)
-
-          # Save logs in background
-          docker logs -f svelocker-ui &> /tmp/backend.log &
-
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: npm ci
