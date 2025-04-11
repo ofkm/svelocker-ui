@@ -3,21 +3,48 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.github/**'
+      - "docs/**"
+      - "**.md"
+      - ".github/**"
   pull_request:
     branches: [main]
     paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.github/**'
+      - "docs/**"
+      - "**.md"
+      - ".github/**"
 
 jobs:
+  build:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Svelocker UI Repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2
+
+      - name: Build and export Docker image
+        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
+        with:
+          context: .
+          tags: svelocker-ui:test
+          outputs: type=docker,dest=/tmp/svelocker-ui.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: svelocker-ui-image
+          path: /tmp/svelocker-ui.tar
+
   e2e-tests:
+    needs: build
     permissions:
       contents: read
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout Svelocker UI Repo
@@ -27,35 +54,69 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Get node_modules cache key
-        id: cache-key
-        run: echo "key=${{ runner.os }}-${{ hashFiles('package-lock.json') }}" >> $GITHUB_OUTPUT
-
-      - name: Cache Node Modules
-        uses: actions/cache@v4
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
         with:
-          path: node_modules
-          key: ${{ steps.cache-key.outputs.key }}
+          name: svelocker-ui-image
+          path: /tmp
 
-      - name: Install dependencies
+      - name: Load Docker image
+        run: docker load -i /tmp/svelocker-ui.tar
+
+      - name: Create Docker network
+        run: docker network create svelocker-network
+
+      - name: Start test registry
+        run: |
+          docker run -d --name registry \
+          --network svelocker-network \
+          -p 5000:5000 \
+          -e REGISTRY_STORAGE_DELETE_ENABLED=true \
+          registry:3
+
+      - name: Run Svelocker UI container
+        run: |
+          docker run -d --name svelocker-ui \
+            --network svelocker-network \
+            -p 8080:8080 \
+            -p 3000:3000 \
+            -e APP_ENV=development \
+            -e PUBLIC_REGISTRY_URL=http://registry:5000 \
+            -e PUBLIC_REGISTRY_NAME="Playwright Registry" \
+            svelocker-ui:test
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
         run: npm ci
 
       - name: Install Playwright Browsers
+        working-directory: ./frontend
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: npm run test:e2e
+        working-directory: ./frontend
+        run: npx playwright test
         env:
-          PLAYWRIGHT: 'true'
+          PLAYWRIGHT: "true"
 
       - name: Upload Playwright test results
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-results
-          path: tests/.test-report
+          path: |
+            tests/.output
+            test-results/report.html
+            test-results/results.json
           include-hidden-files: true
           retention-days: 30
+
+      - name: Cleanup Docker containers
+        if: always()
+        run: |
+          docker stop svelocker-ui registry || true
+          docker rm svelocker-ui registry || true
+          docker network rm svelocker-network || true

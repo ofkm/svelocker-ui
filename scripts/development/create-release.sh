@@ -1,5 +1,5 @@
 # Check if the script is being run from the root of the project
-if [ ! -f .version ] || [ ! -f package.json ] || [ ! -f CHANGELOG.md ]; then
+if [ ! -f .version ] || [ ! -f frontend/package.json ] || [ ! -f CHANGELOG.md ]; then
     echo "Error: This script must be run from the root of the project."
     exit 1
 fi
@@ -71,7 +71,7 @@ echo $NEW_VERSION >.version
 git add .version
 
 # Update version in package.json
-jq --arg new_version "$NEW_VERSION" '.version = $new_version' package.json >package_tmp.json && mv package_tmp.json package.json
+jq --arg new_version "$NEW_VERSION" '.version = $new_version' frontend/package.json >frontend/package_tmp.json && mv frontend/package_tmp.json frontend/package.json
 git add package.json
 
 # Check if conventional-changelog is installed, if not install it

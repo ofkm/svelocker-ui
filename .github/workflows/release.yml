@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_type:
-        description: 'Release type (major, minor, patch)'
+        description: "Release type (major, minor, patch)"
         required: true
-        default: 'patch'
+        default: "patch"
         type: choice
         options:
           - major
@@ -82,8 +82,8 @@ jobs:
           echo "${{ steps.version.outputs.new_version }}" > .version
 
           # Update package.json
-          jq --arg new_version "${{ steps.version.outputs.new_version }}" '.version = $new_version' package.json > package_tmp.json
-          mv package_tmp.json package.json
+          jq --arg new_version "${{ steps.version.outputs.new_version }}" '.version = $new_version' frontend/package.json > frontend/package_tmp.json
+          mv frontend/package_tmp.json frontend/package.json
 
       - name: Generate Changelog
         run: conventional-changelog -p conventionalcommits -i CHANGELOG.md -s
@@ -136,7 +136,7 @@ jobs:
 
       - name: Commit Changes
         run: |
-          git add .version package.json CHANGELOG.md
+          git add .version frontend/package.json CHANGELOG.md
           git commit -m "release: ${{ steps.version.outputs.new_version }}"
 
       - name: Push Changes
@@ -169,7 +169,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
