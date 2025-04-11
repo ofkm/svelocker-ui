@@ -13,6 +13,7 @@ import (
 	"github.com/ofkm/svelocker-ui/backend/internal/bootstrap"
 )
 
+//nolint:gocritic
 func main() {
 	// Create context that can be cancelled on shutdown
 	ctx, cancel := context.WithCancel(context.Background())
