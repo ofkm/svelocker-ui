@@ -275,6 +275,7 @@ func (s *SyncService) syncTag(ctx context.Context, repo *models.Repository, imag
 	return s.processManifest(ctx, repo, image, repoPath, tagName, manifest)
 }
 
+//nolint:gocognit
 func (s *SyncService) processManifest(ctx context.Context, repo *models.Repository, image *models.Image, repoPath string, tagName string, manifest *ManifestResponse) error {
 
 	// Handle OCI manifest list or Docker manifest list
