@@ -29,8 +29,9 @@ func main() {
 
 	// Create HTTP server
 	server := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", app.Config.Server.Host, app.Config.Server.Port),
-		Handler: app.Router,
+		Addr:              fmt.Sprintf("%s:%d", app.Config.Server.Host, app.Config.Server.Port),
+		Handler:           app.Router,
+		ReadHeaderTimeout: 20 * time.Second,
 	}
 
 	// Channel to listen for errors coming from the server
