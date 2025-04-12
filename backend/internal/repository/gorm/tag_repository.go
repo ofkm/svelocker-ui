@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/ofkm/svelocker-ui/backend/internal/models"
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
+	"github.com/ofkm/svelocker-ui/backend/internal/services"
 	"gorm.io/gorm"
 )
 
@@ -117,8 +120,65 @@ func (r *tagRepository) UpdateTag(ctx context.Context, tag *models.Tag) error {
 }
 
 func (r *tagRepository) DeleteTag(ctx context.Context, repoName, imageName, tagName string) error {
-	return r.db.Joins("JOIN images ON images.id = tags.image_id").
-		Joins("JOIN repositories ON repositories.id = images.repository_id").
-		Where("repositories.name = ? AND images.name = ? AND tags.name = ?", repoName, imageName, tagName).
-		Delete(&models.Tag{}).Error
+	// Start a transaction for consistency
+	tx := r.db.Begin()
+
+	var tag models.Tag
+
+	// Find the tag to delete
+	result := tx.Where("name = ? AND image_name = ? AND repository_name = ?",
+		tagName, imageName, repoName).First(&tag)
+
+	if result.Error != nil {
+		tx.Rollback()
+		return result.Error
+	}
+
+	// Get the digest for deletion from registry
+	digest := tag.Digest
+
+	// Delete any metadata related to this tag in the database
+	if err := tx.Where("tag_id = ?", tag.ID).Delete(&models.TagMetadata{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Delete the tag from database
+	if err := tx.Delete(&tag).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Commit the database transaction
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+
+	// If we have a digest, also delete from registry
+	if digest != "" {
+		// Create context for the registry operation
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		// Get registry client
+		registryClient := services.GetRegistryClient()
+
+		// Format repository name for registry (combine repo and image)
+		registryRepo := repoName
+		if repoName != "library" {
+			registryRepo = fmt.Sprintf("%s/%s", repoName, imageName)
+		} else {
+			registryRepo = imageName
+		}
+
+		// Delete from registry
+		if err := registryClient.DeleteManifest(ctx, registryRepo, digest); err != nil {
+			// Log the error but don't fail the operation if DB delete was successful
+			log.Printf("Failed to delete manifest from registry: %v", err)
+			// Optionally return the error if you want the operation to fail when registry deletion fails
+			// return err
+		}
+	}
+
+	return nil
 }

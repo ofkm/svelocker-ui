@@ -43,4 +43,17 @@ export class TagService {
 			throw error;
 		}
 	}
+
+	/**
+	 * Delete a tag from a repository
+	 */
+	async deleteTag(repoName: string, imageName: string, tagName: string): Promise<void> {
+		try {
+			await axios.delete(`${this.baseUrl}/api/v1/repositories/${encodeURIComponent(repoName)}/images/${encodeURIComponent(imageName)}/tags/${encodeURIComponent(tagName)}`);
+			this.logger.info(`Successfully deleted tag ${tagName} from image ${imageName} in repository ${repoName}`);
+		} catch (error) {
+			this.logger.error(`Failed to delete tag ${tagName}:`, error);
+			throw error;
+		}
+	}
 }

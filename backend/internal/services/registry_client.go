@@ -7,7 +7,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -86,6 +88,22 @@ func NewRegistryClient(baseURL, username, password string) *RegistryClient {
 		password: password,
 		client:   client,
 	}
+}
+
+var registryClientInstance *RegistryClient
+var registryClientOnce sync.Once
+
+func GetRegistryClient() *RegistryClient {
+	registryClientOnce.Do(func() {
+		// Get registry details from environment or config
+		baseURL := os.Getenv("REGISTRY_URL")
+		username := os.Getenv("REGISTRY_USERNAME")
+		password := os.Getenv("REGISTRY_PASSWORD")
+
+		registryClientInstance = NewRegistryClient(baseURL, username, password)
+	})
+
+	return registryClientInstance
 }
 
 func (c *RegistryClient) ListRepositories(ctx context.Context) ([]string, error) {
@@ -247,4 +265,46 @@ func (c *RegistryClient) GetConfig(ctx context.Context, repository, digest strin
 	}
 
 	return &config, nil
+}
+
+// DeleteManifest deletes a manifest from the registry by its digest
+func (c *RegistryClient) DeleteManifest(ctx context.Context, repository, digest string) error {
+	// Make sure repository is correctly formatted (no leading or trailing slashes)
+	repository = strings.Trim(repository, "/")
+
+	// Construct the URL for deleting the manifest
+	url := fmt.Sprintf("%s/v2/%s/manifests/%s", c.baseURL, repository, digest)
+
+	// Create a new DELETE request
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create DELETE request: %w", err)
+	}
+
+	// Add accept header similar to the TypeScript implementation
+	req.Header.Add("Accept",
+		"application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.index.v1+json")
+
+	// Add authorization if credentials are provided
+	if c.username != "" && c.password != "" {
+		req.SetBasicAuth(c.username, c.password)
+	}
+
+	// Execute the request
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("delete manifest request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response status
+	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("registry returned status %d for DELETE %s: %s",
+			resp.StatusCode, url, string(bodyBytes))
+	}
+
+	// Log success
+	log.Printf("Successfully deleted manifest %s from repository %s", digest, repository)
+	return nil
 }

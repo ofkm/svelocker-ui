@@ -53,6 +53,7 @@ func SetupRoutes(
 			// Tag routes
 			repos.GET("/:name/images/:image/tags", tagHandler.ListTags)
 			repos.GET("/:name/images/:image/tags/:tag", tagHandler.GetTag)
+			repos.DELETE("/:name/images/:image/tags/:tag", tagHandler.DeleteTag)
 		}
 	}
 }
