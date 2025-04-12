@@ -1,3 +1,4 @@
+/dependabot.yml
 # To get started with Dependabot version updates, you'll need to specify which
 # package ecosystems to update and where the package manifests are located.
 # Please see the documentation for all configuration options:
@@ -5,26 +6,77 @@
 
 version: 2
 updates:
-  # Enable version updates for npm
+  # Frontend dependencies
   - package-ecosystem: "npm"
-    # Look for `package.json` and `lock` files in the `root` directory
     directory: "/frontend"
-    # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
+    groups:
+      frontend-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@types/*"
+          - "typescript"
+          - "eslint*"
+          - "prettier*"
+          - "vite"
+          - "*-plugin"
+          - "*-loader"
+          - "jest*"
+          - "vitest*"
+          - "@testing-library/*"
+          - "@playwright/*"
+        update-types:
+          - "minor"
+          - "patch"
+      frontend-dev-dependencies:
+        patterns:
+          - "@types/*"
+          - "typescript"
+          - "eslint*"
+          - "prettier*"
+          - "vite"
+          - "*-plugin"
+          - "*-loader"
+          - "jest*"
+          - "vitest*"
+          - "@testing-library/*"
+          - "@playwright/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Major version updates in separate group to handle with care
+      frontend-major-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
 
-  # Enable version updates for Docker
+  # Backend dependencies
   - package-ecosystem: "gomod"
-    # Look for a `Dockerfile` in the `root` directory
     directory: "/backend"
-    # Check for updates once a week
     schedule:
       interval: "daily"
+    groups:
+      backend-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      backend-major-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
 
-  # Enable version updates for GitHub Actions
+  # GitHub Actions
   - package-ecosystem: "github-actions"
-    # Workflow files stored in the default location of `.github/workflows`
-    # You don't need to specify `/.github/workflows` for `directory`. You can use `directory: "/"`.
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
