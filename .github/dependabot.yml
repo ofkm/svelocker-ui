@@ -27,3 +27,7 @@ updates:
         update-types:
           - 'minor'
           - 'patch'
+    - package-ecosystem: "gomod"
+      directory: "/backend"
+      schedule:
+        interval: "daily"
