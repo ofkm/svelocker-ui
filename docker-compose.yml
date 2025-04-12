@@ -1,0 +1,18 @@
+services:
+  svelocker-ui:
+    image: ghcr.io/ofkm/svelocker-ui:latest
+    container_name: svelocker-ui
+    ports:
+      - "3000:3000" # Frontend
+      - "8080:8080" # Backend
+    environment:
+      APP_ENV: production
+      PUBLIC_REGISTRY_URL: http://localhost:5000
+      PUBLIC_REGISTRY_NAME: Local Registry
+      REGISTRY_USERNAME: your-username
+      REGISTRY_PASSWORD: your-password
+      PUID: 1000
+      PGID: 1000
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

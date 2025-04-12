@@ -29,10 +29,12 @@ Before you submit the pull request for review please ensure that
 ## Setup project
 
 The frontend is built with [SvelteKit](https://kit.svelte.dev) and written in TypeScript.
+The backend is written in Go and built with GIN and GORM for the database.
 
 #### Setup
 
 1. Open the project folder
-2. Install the dependencies with `npm install`
-3. Start the frontend with `npm run dev`
-
+2. Copy the .env.example to the backend and frontend folders, and rename it .env, and make the correct modifications.
+3. Install the frontend dependencies with `cd frontend && npm install`
+4. Start the backend `cd backend && go run cmd/server/main.go`
+5. Start the frontend with `cd frontend && npm run dev`
