@@ -4,8 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"time"
+	"os"
 
 	"github.com/ofkm/svelocker-ui/backend/internal/models"
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
@@ -120,63 +119,64 @@ func (r *tagRepository) UpdateTag(ctx context.Context, tag *models.Tag) error {
 }
 
 func (r *tagRepository) DeleteTag(ctx context.Context, repoName, imageName, tagName string) error {
-	// Start a transaction for consistency
+	// Start a transaction
 	tx := r.db.Begin()
 
+	// Find the tag to delete
 	var tag models.Tag
 
-	// Find the tag to delete
-	result := tx.Where("name = ? AND image_name = ? AND repository_name = ?",
-		tagName, imageName, repoName).First(&tag)
+	// Find the tag using the correct JOIN structure (matching your other methods)
+	result := tx.Joins("JOIN images ON images.id = tags.image_id").
+		Joins("JOIN repositories ON repositories.id = images.repository_id").
+		Where("repositories.name = ? AND images.name = ? AND tags.name = ?", repoName, imageName, tagName).
+		First(&tag)
 
 	if result.Error != nil {
 		tx.Rollback()
 		return result.Error
 	}
 
-	// Get the digest for deletion from registry
+	// Store the digest for registry deletion later
 	digest := tag.Digest
 
-	// Delete any metadata related to this tag in the database
+	// Delete any metadata related to this tag
 	if err := tx.Where("tag_id = ?", tag.ID).Delete(&models.TagMetadata{}).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	// Delete the tag from database
+	// Delete the tag itself
 	if err := tx.Delete(&tag).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	// Commit the database transaction
+	// Commit the transaction
 	if err := tx.Commit().Error; err != nil {
 		return err
 	}
 
-	// If we have a digest, also delete from registry
+	// If we have a digest, also delete the manifest from the registry
 	if digest != "" {
-		// Create context for the registry operation
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
+		// Get registry client from environment config
+		baseURL := os.Getenv("PUBLIC_REGISTRY_URL")
+		username := os.Getenv("REGISTRY_USERNAME")
+		password := os.Getenv("REGISTRY_PASSWORD")
 
-		// Get registry client
-		registryClient := services.GetRegistryClient()
+		client := services.NewRegistryClient(baseURL, username, password)
 
-		// Format repository name for registry (combine repo and image)
-		registryRepo := repoName
+		// Format repository path for registry API
+		// For Docker registry, format is [namespace]/[repository]
+		registryPath := imageName
 		if repoName != "library" {
-			registryRepo = fmt.Sprintf("%s/%s", repoName, imageName)
-		} else {
-			registryRepo = imageName
+			registryPath = fmt.Sprintf("%s/%s", repoName, imageName)
 		}
 
-		// Delete from registry
-		if err := registryClient.DeleteManifest(ctx, registryRepo, digest); err != nil {
-			// Log the error but don't fail the operation if DB delete was successful
-			log.Printf("Failed to delete manifest from registry: %v", err)
-			// Optionally return the error if you want the operation to fail when registry deletion fails
-			// return err
+		// Delete manifest from registry
+		if err := client.DeleteManifest(ctx, registryPath, digest); err != nil {
+			// Log error but continue - we've already deleted from DB
+			// Implementation choice: you could return this error if you want the operation to fail
+			return fmt.Errorf("database updated but failed to delete manifest from registry: %w", err)
 		}
 	}
 
