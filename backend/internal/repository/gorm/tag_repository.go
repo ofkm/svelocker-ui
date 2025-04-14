@@ -4,11 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/ofkm/svelocker-ui/backend/internal/models"
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
 	"github.com/ofkm/svelocker-ui/backend/internal/services"
+	"github.com/ofkm/svelocker-ui/backend/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -129,7 +134,7 @@ func (r *tagRepository) DeleteTag(ctx context.Context, repoName, imageName, tagN
 	result := tx.Joins("JOIN images ON images.id = tags.image_id").
 		Joins("JOIN repositories ON repositories.id = images.repository_id").
 		Where("repositories.name = ? AND images.name = ? AND tags.name = ?", repoName, imageName, tagName).
-		Preload("Metadata"). // Preload metadata to get the proper deletion digest
+		Preload("Metadata").
 		First(&tag)
 
 	if result.Error != nil {
@@ -137,68 +142,116 @@ func (r *tagRepository) DeleteTag(ctx context.Context, repoName, imageName, tagN
 		return result.Error
 	}
 
-	// Store the digest for registry deletion later
-	// First try to use ContentDigest, then IndexDigest, then fall back to Digest as last resort
-	var digestToDelete string
-	if tag.Metadata.ContentDigest != "" {
-		digestToDelete = tag.Metadata.ContentDigest
-	} else if tag.Metadata.IndexDigest != "" {
-		digestToDelete = tag.Metadata.IndexDigest
-	} else {
-		digestToDelete = tag.Digest
+	// Store various digests we might use for deletion
+	var possibleDigests []string
+
+	// Add the tag's primary digest
+	if tag.Digest != "" {
+		possibleDigests = append(possibleDigests, tag.Digest)
 	}
 
-	// Delete any metadata related to this tag
+	// Add metadata digests if available
+	if tag.Metadata.IndexDigest != "" {
+		possibleDigests = append(possibleDigests, tag.Metadata.IndexDigest)
+	}
+	if tag.Metadata.ContentDigest != "" {
+		possibleDigests = append(possibleDigests, tag.Metadata.ContentDigest)
+	}
+
+	// Delete metadata and tag from database first
 	if err := tx.Where("tag_id = ?", tag.ID).Delete(&models.TagMetadata{}).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
-
-	// Delete the tag itself
 	if err := tx.Delete(&tag).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
-
-	// Commit the transaction
 	if err := tx.Commit().Error; err != nil {
 		return err
 	}
 
-	// If we have a digest, also delete the manifest from the registry
-	if digestToDelete != "" {
-		// Get registry client from environment config
-		baseURL := os.Getenv("PUBLIC_REGISTRY_URL")
-		username := os.Getenv("REGISTRY_USERNAME")
-		password := os.Getenv("REGISTRY_PASSWORD")
+	log.Printf("Successfully deleted tag %s from database", tagName)
 
-		client := services.NewRegistryClient(baseURL, username, password)
+	// Registry path setup
+	baseURL := os.Getenv("PUBLIC_REGISTRY_URL")
+	username := os.Getenv("REGISTRY_USERNAME")
+	password := os.Getenv("REGISTRY_PASSWORD")
+	client := services.NewRegistryClient(baseURL, username, password)
 
-		// Format repository path for registry API
-		registryPath := imageName
-		if repoName != "library" {
-			registryPath = fmt.Sprintf("%s/%s", repoName, imageName)
-		}
+	registryPath := imageName
+	if repoName != "library" {
+		registryPath = fmt.Sprintf("%s/%s", repoName, imageName)
+	}
 
-		// Add debug logging
-		fmt.Printf("Attempting to delete manifest with digest: %s for path: %s\n", digestToDelete, registryPath)
+	// First try to get the current manifest to extract its digest
+	// This is the most reliable approach for getting the correct digest
+	currentManifestDigest := getManifestDigestForTag(ctx, baseURL, username, password, registryPath, tagName)
+	if currentManifestDigest != "" {
+		possibleDigests = append([]string{currentManifestDigest}, possibleDigests...)
+	}
 
-		// Delete manifest from registry
-		if err := client.DeleteManifest(ctx, registryPath, digestToDelete); err != nil {
-			// Log error but continue - we've already deleted from DB
-			fmt.Printf("Error deleting manifest: %v\n", err)
+	// Try deleting using each digest until one succeeds
+	var lastErr error
+	for _, digest := range possibleDigests {
+		log.Printf("Attempting to delete manifest using digest: %s", digest)
 
-			// Try again with a different digest if available
-			if tag.Metadata.IndexDigest != "" && tag.Metadata.IndexDigest != digestToDelete {
-				fmt.Printf("Retry with IndexDigest: %s\n", tag.Metadata.IndexDigest)
-				if err := client.DeleteManifest(ctx, registryPath, tag.Metadata.IndexDigest); err != nil {
-					return fmt.Errorf("database updated but failed to delete manifest from registry: %w", err)
-				}
-			} else {
-				return fmt.Errorf("database updated but failed to delete manifest from registry: %w", err)
-			}
+		if err := client.DeleteManifest(ctx, registryPath, digest); err == nil {
+			log.Printf("Successfully deleted manifest with digest: %s", digest)
+			return nil
+		} else {
+			log.Printf("Failed to delete manifest with digest %s: %v", digest, err)
+			lastErr = err
 		}
 	}
 
-	return nil
+	if lastErr != nil {
+		log.Printf("Warning: All deletion attempts failed. Database updated but registry cleanup failed: %v", lastErr)
+	}
+
+	return nil // Database was updated successfully even if registry deletion failed
+}
+
+// Helper function to get manifest digest for a tag
+func getManifestDigestForTag(ctx context.Context, baseURL, username, password, repository, tag string) string {
+	url := fmt.Sprintf("%s/v2/%s/manifests/%s", baseURL, repository, tag)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		log.Printf("Failed to create request: %v", err)
+		return ""
+	}
+
+	// Accept all manifest types to be thorough
+	req.Header.Add("Accept",
+		"application/vnd.docker.distribution.manifest.v2+json,"+
+			"application/vnd.oci.image.manifest.v1+json,"+
+			"application/vnd.docker.distribution.manifest.list.v2+json,"+
+			"application/vnd.oci.image.index.v1+json")
+
+	if username != "" && password != "" {
+		req.SetBasicAuth(username, password)
+	}
+
+	client := &http.Client{Timeout: time.Minute}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Failed to get manifest: %v", err)
+		return ""
+	}
+	defer resp.Body.Close()
+
+	// Extract body content from response for digest calculation
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	bodyContent := string(bodyBytes)
+
+	// Get the proper digest for deletion - check header first, then calculate if needed
+	digestToDelete := utils.GetCorrectDeleteDigest(
+		resp.Header.Get("Docker-Content-Digest"),
+		bodyContent,
+	)
+
+	log.Printf("Using digest for deletion: %s", digestToDelete)
+
+	return digestToDelete
 }
