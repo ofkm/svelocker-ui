@@ -273,7 +273,8 @@ func (c *RegistryClient) DeleteManifest(ctx context.Context, repository, digest 
 	repository = strings.Trim(repository, "/")
 
 	// Construct the URL for deleting the manifest
-	url := fmt.Sprintf("%s/v2/%s/manifests/%s", c.baseURL, repository, digest)
+	url := fmt.Sprintf("%s/v2/%s/blobs/%s", c.baseURL, repository, digest)
+	// `${registryUrl}/v2/${repo}/manifests/${digest
 
 	// Create a new DELETE request
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)

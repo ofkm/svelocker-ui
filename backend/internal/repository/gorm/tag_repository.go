@@ -125,10 +125,11 @@ func (r *tagRepository) DeleteTag(ctx context.Context, repoName, imageName, tagN
 	// Find the tag to delete
 	var tag models.Tag
 
-	// Find the tag using the correct JOIN structure (matching your other methods)
+	// Find the tag using the correct JOIN structure
 	result := tx.Joins("JOIN images ON images.id = tags.image_id").
 		Joins("JOIN repositories ON repositories.id = images.repository_id").
 		Where("repositories.name = ? AND images.name = ? AND tags.name = ?", repoName, imageName, tagName).
+		Preload("Metadata"). // Preload metadata to get the proper deletion digest
 		First(&tag)
 
 	if result.Error != nil {
@@ -137,7 +138,15 @@ func (r *tagRepository) DeleteTag(ctx context.Context, repoName, imageName, tagN
 	}
 
 	// Store the digest for registry deletion later
-	digest := tag.Digest
+	// First try to use ContentDigest, then IndexDigest, then fall back to Digest as last resort
+	var digestToDelete string
+	if tag.Metadata.ContentDigest != "" {
+		digestToDelete = tag.Metadata.ContentDigest
+	} else if tag.Metadata.IndexDigest != "" {
+		digestToDelete = tag.Metadata.IndexDigest
+	} else {
+		digestToDelete = tag.Digest
+	}
 
 	// Delete any metadata related to this tag
 	if err := tx.Where("tag_id = ?", tag.ID).Delete(&models.TagMetadata{}).Error; err != nil {
@@ -157,7 +166,7 @@ func (r *tagRepository) DeleteTag(ctx context.Context, repoName, imageName, tagN
 	}
 
 	// If we have a digest, also delete the manifest from the registry
-	if digest != "" {
+	if digestToDelete != "" {
 		// Get registry client from environment config
 		baseURL := os.Getenv("PUBLIC_REGISTRY_URL")
 		username := os.Getenv("REGISTRY_USERNAME")
@@ -166,17 +175,28 @@ func (r *tagRepository) DeleteTag(ctx context.Context, repoName, imageName, tagN
 		client := services.NewRegistryClient(baseURL, username, password)
 
 		// Format repository path for registry API
-		// For Docker registry, format is [namespace]/[repository]
 		registryPath := imageName
 		if repoName != "library" {
 			registryPath = fmt.Sprintf("%s/%s", repoName, imageName)
 		}
 
+		// Add debug logging
+		fmt.Printf("Attempting to delete manifest with digest: %s for path: %s\n", digestToDelete, registryPath)
+
 		// Delete manifest from registry
-		if err := client.DeleteManifest(ctx, registryPath, digest); err != nil {
+		if err := client.DeleteManifest(ctx, registryPath, digestToDelete); err != nil {
 			// Log error but continue - we've already deleted from DB
-			// Implementation choice: you could return this error if you want the operation to fail
-			return fmt.Errorf("database updated but failed to delete manifest from registry: %w", err)
+			fmt.Printf("Error deleting manifest: %v\n", err)
+
+			// Try again with a different digest if available
+			if tag.Metadata.IndexDigest != "" && tag.Metadata.IndexDigest != digestToDelete {
+				fmt.Printf("Retry with IndexDigest: %s\n", tag.Metadata.IndexDigest)
+				if err := client.DeleteManifest(ctx, registryPath, tag.Metadata.IndexDigest); err != nil {
+					return fmt.Errorf("database updated but failed to delete manifest from registry: %w", err)
+				}
+			} else {
+				return fmt.Errorf("database updated but failed to delete manifest from registry: %w", err)
+			}
 		}
 	}
 
