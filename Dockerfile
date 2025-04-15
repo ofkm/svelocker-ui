@@ -21,12 +21,7 @@ RUN apk add --no-cache gcc musl-dev git
 
 COPY ./backend ./
 WORKDIR /app/backend/cmd/server
-RUN CGO_ENABLED=1 \
-    GOOS=linux \
-    go build \
-    -tags "${BUILD_TAGS}" \
-    -o /app/backend/svelocker-backend \
-    .
+RUN CGO_ENABLED=1 GOOS=linux go build -tags "${BUILD_TAGS}" -o /app/backend/svelocker-backend .
 
 # Stage 3: Production Image
 FROM node:22-alpine
