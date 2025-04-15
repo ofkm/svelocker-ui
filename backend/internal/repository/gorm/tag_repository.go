@@ -171,7 +171,9 @@ func (r *tagRepository) DeleteTag(ctx context.Context, repoName, imageName, tagN
 		return err
 	}
 
-	log.Printf("Successfully deleted tag %s from database", tagName)
+	sanitizedTagName := strings.ReplaceAll(tagName, "\n", "")
+	sanitizedTagName = strings.ReplaceAll(sanitizedTagName, "\r", "")
+	log.Printf("Successfully deleted tag %s from database", sanitizedTagName)
 
 	// Registry path setup
 	baseURL := os.Getenv("PUBLIC_REGISTRY_URL")
