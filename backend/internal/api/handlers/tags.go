@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ofkm/svelocker-ui/backend/internal/repository"
@@ -46,4 +48,30 @@ func (h *TagHandler) GetTag(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, tag)
+}
+
+// DeleteTag handles requests to delete a specific tag
+func (h *TagHandler) DeleteTag(c *gin.Context) {
+	repoName := c.Param("name")
+	imageName := c.Param("image")
+	tagName := c.Param("tag")
+
+	// Call repository method to delete the tag
+	err := h.repo.DeleteTag(c, repoName, imageName, tagName)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "record not found") {
+			status = http.StatusNotFound
+		}
+
+		c.JSON(status, gin.H{
+			"error": fmt.Sprintf("Failed to delete tag: %v", err),
+		})
+		return
+	}
+
+	// Return success response
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Tag %s deleted successfully", tagName),
+	})
 }

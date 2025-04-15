@@ -7,7 +7,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -86,6 +88,22 @@ func NewRegistryClient(baseURL, username, password string) *RegistryClient {
 		password: password,
 		client:   client,
 	}
+}
+
+var registryClientInstance *RegistryClient
+var registryClientOnce sync.Once
+
+func GetRegistryClient() *RegistryClient {
+	registryClientOnce.Do(func() {
+		// Get registry details from environment or config
+		baseURL := os.Getenv("REGISTRY_URL")
+		username := os.Getenv("REGISTRY_USERNAME")
+		password := os.Getenv("REGISTRY_PASSWORD")
+
+		registryClientInstance = NewRegistryClient(baseURL, username, password)
+	})
+
+	return registryClientInstance
 }
 
 func (c *RegistryClient) ListRepositories(ctx context.Context) ([]string, error) {
@@ -247,4 +265,85 @@ func (c *RegistryClient) GetConfig(ctx context.Context, repository, digest strin
 	}
 
 	return &config, nil
+}
+
+// DeleteManifest deletes a manifest from the registry using the provided digest
+func (c *RegistryClient) DeleteManifest(ctx context.Context, repository, digest string) error {
+	// Make sure repository is correctly formatted
+	repository = strings.Trim(repository, "/")
+
+	// Ensure digest has sha256: prefix if not present
+	if !strings.Contains(digest, ":") {
+		digest = "sha256:" + digest
+	}
+
+	// Construct the URL for deleting the manifest
+	url := fmt.Sprintf("%s/v2/%s/manifests/%s", c.baseURL, repository, digest)
+
+	// Create request with proper headers for OCI manifests
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create DELETE request: %w", err)
+	}
+
+	// Add ALL relevant accept headers for both OCI and Docker manifests
+	req.Header.Add("Accept",
+		"application/vnd.docker.distribution.manifest.v2+json,"+
+			"application/vnd.oci.image.manifest.v1+json,"+
+			"application/vnd.docker.distribution.manifest.list.v2+json,"+
+			"application/vnd.oci.image.index.v1+json")
+
+	// Add authentication
+	if c.username != "" && c.password != "" {
+		req.SetBasicAuth(c.username, c.password)
+	}
+
+	// Execute request with retry logic
+	var resp *http.Response
+	maxRetries := 3
+
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		sanitizedURL := strings.ReplaceAll(url, "\n", "")
+		sanitizedURL = strings.ReplaceAll(sanitizedURL, "\r", "")
+		log.Printf("DELETE request attempt %d to %s", attempt, sanitizedURL)
+		resp, err = c.client.Do(req)
+
+		if err == nil {
+			statusOK := resp.StatusCode == http.StatusOK ||
+				resp.StatusCode == http.StatusAccepted
+
+			if statusOK {
+				defer resp.Body.Close()
+				sanitizedRepository := strings.ReplaceAll(repository, "\n", "")
+				sanitizedRepository = strings.ReplaceAll(sanitizedRepository, "\r", "")
+				log.Printf("Successfully deleted manifest %s from %s", digest, sanitizedRepository)
+				return nil
+			}
+		}
+
+		if resp != nil {
+			body, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			log.Printf("Attempt %d failed with status %d: %s", attempt, resp.StatusCode, string(body))
+
+			// If NotFound, consider this a success (already deleted)
+			if resp.StatusCode == http.StatusNotFound {
+				sanitizedRepository := strings.ReplaceAll(repository, "\n", "")
+				sanitizedRepository = strings.ReplaceAll(sanitizedRepository, "\r", "")
+				log.Printf("Manifest %s not found in %s (already deleted)", digest, sanitizedRepository)
+				return nil
+			}
+
+			// Wait before retrying
+			if attempt < maxRetries {
+				time.Sleep(time.Duration(attempt) * time.Second)
+			}
+		}
+	}
+
+	if resp != nil {
+		return fmt.Errorf("registry returned status %d after %d attempts", resp.StatusCode, maxRetries)
+	}
+
+	return fmt.Errorf("failed to delete manifest after %d attempts: %w", maxRetries, err)
 }

@@ -17,6 +17,8 @@
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 	import type { Tag, TagMetadata, ImageLayer } from '$lib/types/tag-type';
 	import { formatSize, getTotalLayerSize } from '$lib/utils/formatting';
+	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 
 	interface Props {
 		data: PageData;
@@ -41,8 +43,9 @@
 	// Check if this is the latest tag
 	let isLatest = $derived(tagName === 'latest');
 
-	onMount(async () => {
+	let showDeleteModal = $state(false);
 
+	onMount(async () => {
 		if (!metadata || Object.keys(metadata).length === 0) {
 			try {
 				console.warn('Tag metadata appears to be empty');
@@ -122,6 +125,14 @@
 		}
 
 		return value || 'None';
+	}
+
+	function handleEnhance() {
+		return async ({ result }) => {
+			if (result.type === 'redirect') {
+				goto(result.location);
+			}
+		};
 	}
 </script>
 
@@ -224,41 +235,9 @@
 							Copy Docker Run
 						</Button>
 
-						<AlertDialog.Root>
-							<AlertDialog.Trigger class="{buttonVariants({ variant: 'destructive', size: 'sm' })} gap-2">
-								<Trash2 class="h-4 w-4" /> Delete Tag
-							</AlertDialog.Trigger>
-							<AlertDialog.Content>
-								<AlertDialog.Header>
-									<AlertDialog.Title class="font-light text-md">Are you sure you want to delete the following tag?<br /><span class="font-bold underline">{imageFullName}:{tagName}</span></AlertDialog.Title>
-									<AlertDialog.Description>This action <span class="font-extrabold">CAN NOT</span> be undone. <br /><span class="font-bold">All tags with the same config digest will be deleted.</span></AlertDialog.Description>
-								</AlertDialog.Header>
-								<AlertDialog.Footer>
-									<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-									<AlertDialog.Action
-										onclick={() => {
-											const digest = tag?.digest;
-											console.log('Selected digest:', digest);
-
-											if (!digest) {
-												toast.error('Error Deleting Docker Tag', {
-													description: 'No digest found for this tag'
-												});
-												return;
-											}
-
-											// Strip 'library/' prefix if present
-											const name = imageFullName.startsWith('library/') ? imageFullName.replace('library/', '') : imageFullName;
-
-											deleteTagBackend(name, digest);
-										}}
-										class={buttonVariants({ variant: 'destructive' })}
-									>
-										Delete
-									</AlertDialog.Action>
-								</AlertDialog.Footer>
-							</AlertDialog.Content>
-						</AlertDialog.Root>
+						<Button variant="destructive" size="sm" class="gap-2" onclick={() => (showDeleteModal = true)}>
+							<Trash2 class="h-4 w-4" /> Delete Tag
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -329,6 +308,30 @@
 					<p class="text-muted-foreground">No layer information available for this image.</p>
 				</div>
 			{/if}
+
+			<!-- Delete Confirmation Modal -->
+			<AlertDialog.Root open={showDeleteModal} onOpenChange={(open) => (showDeleteModal = open)}>
+				<AlertDialog.Content>
+					<AlertDialog.Header>
+						<AlertDialog.Title class="font-light text-md">
+							Are you sure you want to delete the following tag?<br />
+							<span class="font-bold underline">{imageFullName}:{tagName}</span>
+						</AlertDialog.Title>
+						<AlertDialog.Description>
+							This action <span class="font-extrabold">CAN NOT</span> be undone.
+							<br />
+							<span class="font-bold">All tags with the same config digest will be deleted.</span>
+						</AlertDialog.Description>
+					</AlertDialog.Header>
+					<AlertDialog.Footer>
+						<AlertDialog.Cancel onclick={() => (showDeleteModal = false)}>Cancel</AlertDialog.Cancel>
+						<form action="?/deleteTag" method="POST" use:enhance={handleEnhance}>
+							<input type="hidden" name="confirm" value="true" />
+							<button type="submit" class={buttonVariants({ variant: 'destructive' })}>Delete</button>
+						</form>
+					</AlertDialog.Footer>
+				</AlertDialog.Content>
+			</AlertDialog.Root>
 		</div>
 	</div>
 {/if}
