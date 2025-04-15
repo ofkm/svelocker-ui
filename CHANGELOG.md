@@ -1,3 +1,8 @@
+## [](https://github.com/ofkm/svelocker-ui/compare/v0.27.0...v) (2025-04-15)
+
+### Bug Fixes
+
+* dockerfile formatting and version mismatch ([54de3a3](https://github.com/ofkm/svelocker-ui/commit/54de3a36151a300f47304f6ecaff13357ab31ab1))
 ## [](https://github.com/ofkm/svelocker-ui/compare/v0.26.1...v) (2025-04-15)
 
 ### Features
