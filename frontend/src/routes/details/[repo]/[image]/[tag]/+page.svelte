@@ -18,6 +18,7 @@
 	import type { Tag, TagMetadata, ImageLayer } from '$lib/types/tag-type';
 	import { formatSize, getTotalLayerSize } from '$lib/utils/formatting';
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 
 	interface Props {
 		data: PageData;
@@ -124,6 +125,14 @@
 		}
 
 		return value || 'None';
+	}
+
+	function handleEnhance() {
+		return async ({ result }) => {
+			if (result.type === 'redirect') {
+				goto(result.location);
+			}
+		};
 	}
 </script>
 
@@ -316,9 +325,9 @@
 					</AlertDialog.Header>
 					<AlertDialog.Footer>
 						<AlertDialog.Cancel onclick={() => (showDeleteModal = false)}>Cancel</AlertDialog.Cancel>
-						<form action="?/deleteTag" method="POST" use:enhance>
+						<form action="?/deleteTag" method="POST" use:enhance={handleEnhance}>
 							<input type="hidden" name="confirm" value="true" />
-							<button type="submit" class={buttonVariants({ variant: 'destructive' })}> Delete </button>
+							<button type="submit" class={buttonVariants({ variant: 'destructive' })}>Delete</button>
 						</form>
 					</AlertDialog.Footer>
 				</AlertDialog.Content>

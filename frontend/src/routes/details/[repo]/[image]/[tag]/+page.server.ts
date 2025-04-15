@@ -16,27 +16,21 @@ export const load: PageServerLoad = async ({ params }) => {
 
 export const actions: Actions = {
 	deleteTag: async ({ params, request }) => {
-		try {
-			const tagService = TagService.getInstance();
+		const tagService = TagService.getInstance();
 
-			// Extract form data (for any potential confirmation fields)
-			const formData = await request.formData();
-			const confirmation = formData.get('confirm');
+		// Extract form data
+		const formData = await request.formData();
+		const confirmation = formData.get('confirm');
 
-			// Optional: Check for confirmation
-			if (confirmation !== 'true') {
-				return { success: false, error: 'Please confirm deletion' };
-			}
-
-			// Call delete method in service
-			await tagService.deleteTag(params.repo, params.image, params.tag);
-
-			// Redirect to the image page after successful deletion
-			throw redirect(303, `/details/${params.repo}/${params.image}`);
-		} catch (err) {
-			// Handle errors
-			console.error('Failed to delete tag:', err);
-			throw error(500, { message: 'Failed to delete tag' });
+		// Optional: Check for confirmation
+		if (confirmation !== 'true') {
+			return { success: false, error: 'Please confirm deletion' };
 		}
+
+		// Call delete method in service
+		await tagService.deleteTag(params.repo, params.image, params.tag);
+
+		// Throw a redirect instead of returning an object
+		throw redirect(303, `/details/${params.repo}/${params.image}`);
 	}
 };
