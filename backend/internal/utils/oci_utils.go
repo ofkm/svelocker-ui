@@ -48,7 +48,7 @@ func FilterAttestationManifests(manifestJson string) (string, error) {
 	}
 
 	// Filter out attestation manifests if present
-	if manifest.Manifests != nil && len(manifest.Manifests) > 0 {
+	if len(manifest.Manifests) > 0 {
 		var filteredManifests []*OCIManifest
 
 		for _, m := range manifest.Manifests {
