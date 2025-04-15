@@ -39,7 +39,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install Dependencies
-        run: npm ci
+        run: cd frontend && npm ci
 
       - name: Install conventional-changelog-cli
         run: npm install -g conventional-changelog-cli
