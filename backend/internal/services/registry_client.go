@@ -303,7 +303,9 @@ func (c *RegistryClient) DeleteManifest(ctx context.Context, repository, digest 
 	maxRetries := 3
 
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-		log.Printf("DELETE request attempt %d to %s", attempt, url)
+		sanitizedURL := strings.ReplaceAll(url, "\n", "")
+		sanitizedURL = strings.ReplaceAll(sanitizedURL, "\r", "")
+		log.Printf("DELETE request attempt %d to %s", attempt, sanitizedURL)
 		resp, err = c.client.Do(req)
 
 		if err == nil {
@@ -312,7 +314,9 @@ func (c *RegistryClient) DeleteManifest(ctx context.Context, repository, digest 
 
 			if statusOK {
 				defer resp.Body.Close()
-				log.Printf("Successfully deleted manifest %s from %s", digest, repository)
+				sanitizedRepository := strings.ReplaceAll(repository, "\n", "")
+				sanitizedRepository = strings.ReplaceAll(sanitizedRepository, "\r", "")
+				log.Printf("Successfully deleted manifest %s from %s", digest, sanitizedRepository)
 				return nil
 			}
 		}
@@ -324,7 +328,9 @@ func (c *RegistryClient) DeleteManifest(ctx context.Context, repository, digest 
 
 			// If NotFound, consider this a success (already deleted)
 			if resp.StatusCode == http.StatusNotFound {
-				log.Printf("Manifest %s not found in %s (already deleted)", digest, repository)
+				sanitizedRepository := strings.ReplaceAll(repository, "\n", "")
+				sanitizedRepository = strings.ReplaceAll(sanitizedRepository, "\r", "")
+				log.Printf("Manifest %s not found in %s (already deleted)", digest, sanitizedRepository)
 				return nil
 			}
 
