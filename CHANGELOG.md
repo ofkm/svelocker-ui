@@ -1,3 +1,14 @@
+## [](https://github.com/ofkm/svelocker-ui/compare/v0.26.1...v) (2025-04-15)
+
+### Features
+
+* configurable sync schedule ([#188](https://github.com/ofkm/svelocker-ui/issues/188)) ([2abd12a](https://github.com/ofkm/svelocker-ui/commit/2abd12a366b9ea651c8a0fcc46a86a837e43fc0e))
+* migrate to go backend ([#195](https://github.com/ofkm/svelocker-ui/issues/195)) ([fae1aa4](https://github.com/ofkm/svelocker-ui/commit/fae1aa4082295816c8b8c435c9ebb2310568e313))
+
+### Bug Fixes
+
+* delete tags with go backend ([#216](https://github.com/ofkm/svelocker-ui/issues/216)) ([c28e3b1](https://github.com/ofkm/svelocker-ui/commit/c28e3b1ae68c4ba0ffa1e9c26b1d563157872a7f))
+* move database migrations to hooks.server vs layout server ([#187](https://github.com/ofkm/svelocker-ui/issues/187)) ([efe8a4d](https://github.com/ofkm/svelocker-ui/commit/efe8a4de1a0cae533bb0a05b9f78dad03f50b91d))
 ## [0.26.1](https://github.com/kmendell/svelocker-ui/compare/v0.26.0...v0.26.1) (2025-04-02)
 
 ### Bug Fixes
