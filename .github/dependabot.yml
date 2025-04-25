@@ -9,7 +9,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     groups:
       frontend-dependencies:
         patterns:
