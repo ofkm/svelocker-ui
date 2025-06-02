@@ -32,7 +32,7 @@ jobs:
           go-version-file: backend/go.mod
 
       - name: Run Golangci-lint
-        uses: golangci/golangci-lint-action@58da3487666a22a9057aef56dd81edb8fb24693e # v7.0.0
+        uses: golangci/golangci-lint-action@5286ed6a0851c6869b5bce32518201fef4ca2173 # v7.0.0
         with:
           version: v2.0.2
           working-directory: backend
