@@ -27,10 +27,28 @@ export const actions: Actions = {
 			return { success: false, error: 'Please confirm deletion' };
 		}
 
-		// Call delete method in service
-		await tagService.deleteTag(params.repo, params.image, params.tag);
+		try {
+			// Call delete method in service
+			await tagService.deleteTag(params.repo, params.image, params.tag);
 
-		// Throw a redirect instead of returning an object
-		throw redirect(303, `/details/${params.repo}/${params.image}`);
+			// Throw a redirect instead of returning an object
+			throw redirect(303, `/details/${params.repo}/${params.image}`);
+		} catch (err: any) {
+			console.error('Server action deleteTag failed:', err);
+			
+			// Return error instead of throwing to prevent page crash
+			return { 
+				success: false, 
+				error: `Failed to delete tag: ${err.message || err}`,
+				details: {
+					repo: params.repo,
+					image: params.image,
+					tag: params.tag,
+					errorType: err.name || 'Unknown',
+					statusCode: err.response?.status,
+					responseData: err.response?.data
+				}
+			};
+		}
 	}
 };

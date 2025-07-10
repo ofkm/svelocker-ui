@@ -7,6 +7,7 @@ services:
       - "8080:8080" # Backend
     environment:
       APP_ENV: production
+      PUBLIC_BACKEND_URL: http://localhost:8080
       PUBLIC_REGISTRY_URL: http://localhost:5000
       PUBLIC_REGISTRY_NAME: Local Registry
       REGISTRY_USERNAME: your-username

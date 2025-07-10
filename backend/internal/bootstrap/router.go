@@ -20,12 +20,22 @@ func (app *Application) initRouter() error {
 
 	// Set up CORS middleware
 	r.Use(func(c *gin.Context) {
-
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		// Allow credentials to be sent with the request
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		origin := c.Request.Header.Get("Origin")
+		
+		// Set CORS headers
+		if origin != "" {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		} else {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		}
+		
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		
+		// Only set credentials header if we have a specific origin
+		if origin != "" {
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
 
 		if c.Request.Method == http.MethodOptions {
 			c.AbortWithStatus(204)

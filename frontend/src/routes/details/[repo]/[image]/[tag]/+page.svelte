@@ -56,44 +56,6 @@
 		}
 	});
 
-	async function deleteTagBackend(name: string, digest: string) {
-		if (!digest) {
-			toast.error('Error Deleting Docker Tag', {
-				description: 'No digest found for this tag'
-			});
-			return;
-		}
-
-		try {
-			const response = await fetch(`${baseUrl}/api/delete`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					registryUrl: env.PUBLIC_REGISTRY_URL,
-					repo: name,
-					digest: digest,
-					manifestType: metadata?.isOCI ? 'application/vnd.oci.image.index.v1+json' : 'application/vnd.docker.distribution.manifest.v2+json'
-				})
-			});
-
-			const result = await response.json();
-			if (result.success) {
-				toast.success('Docker Tag Deleted Successfully', {
-					description: result.message || 'Run `registry garbage-collect /etc/docker/registry/config.yml` to cleanup. Refreshing...'
-				});
-				setTimeout(() => (window.location.href = '/'), 3000);
-			} else {
-				toast.error('Error Deleting Docker Tag', {
-					description: result.error || 'Check your Registry configuration.'
-				});
-			}
-		} catch (error) {
-			toast.error('Error Deleting Docker Tag', {
-				description: error instanceof Error ? error.message : 'An unexpected error occurred'
-			});
-		}
-	}
-
 	// For display in the UI, show just the image name without repo
 	let displayImageName = $derived(imageName.includes('/') ? imageName.split('/').pop() || '' : imageName);
 
@@ -128,9 +90,18 @@
 	}
 
 	function handleEnhance() {
-		return async ({ result }) => {
+		return async ({ result, update }) => {
 			if (result.type === 'redirect') {
 				goto(result.location);
+			} else if (result.type === 'failure') {
+				console.error('Delete action failed:', result);
+				toast.error('Failed to delete tag', {
+					description: result.data?.error || 'An unknown error occurred'
+				});
+				showDeleteModal = false;
+			} else {
+				// Handle other result types
+				await update();
 			}
 		};
 	}
